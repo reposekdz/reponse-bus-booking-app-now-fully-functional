@@ -90,7 +90,7 @@ const App: React.FC = () => {
       case 'bookings':
         return <BookingsPage />;
       case 'companies':
-        return <CompaniesPage />;
+        return <CompaniesPage onNavigate={navigate} />;
       case 'help':
         return <HelpPage />;
       case 'contact':

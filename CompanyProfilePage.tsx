@@ -185,6 +185,7 @@ const CompanyProfilePage: React.FC<CompanyProfilePageProps> = ({ company, onSele
                 <nav className="flex space-x-4">
                     <TabButton tabName="about" label="Abo Turi Bo" />
                     <TabButton tabName="schedule" label="Jadwali y'Ingendo" />
+                    <TabButton tabName="routes" label="Ingendo Zose" />
                     <TabButton tabName="fleet" label="Imodoka" />
                     <TabButton tabName="services" label="Serivisi" />
                 </nav>
@@ -248,6 +249,35 @@ const CompanyProfilePage: React.FC<CompanyProfilePageProps> = ({ company, onSele
                             )}
                         </div>
                      </div>
+                </div>
+              )}
+               {activeTab === 'routes' && (
+                <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-lg shadow-sm border dark:border-gray-700/50">
+                    <h3 className="text-2xl font-bold mb-4 text-gray-800 dark:text-white">Ingendo Zose</h3>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                            <thead className="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-400">
+                                <tr>
+                                    <th scope="col" className="px-6 py-3">Uva</th>
+                                    <th scope="col" className="px-6 py-3">Ujya</th>
+                                    <th scope="col" className="px-6 py-3">Igiciro</th>
+                                    <th scope="col" className="px-6 py-3"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {data.routes.map((route: any, index: number) => (
+                                    <tr key={index} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                        <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{route.from}</td>
+                                        <td className="px-6 py-4">{route.to}</td>
+                                        <td className="px-6 py-4 font-semibold text-green-600 dark:text-green-400">{route.price}</td>
+                                        <td className="px-6 py-4 text-right">
+                                            <button onClick={() => onSelectTrip(route.from, route.to)} className="font-medium text-blue-600 dark:text-blue-500 hover:underline">Gura Itike</button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
               )}
               {activeTab === 'fleet' && (
