@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 // FIX: Add missing icon imports
-import { UserCircleIcon, CogIcon, ArrowRightIcon, WalletIcon, ArrowUpRightIcon, ArrowDownLeftIcon, ChatBubbleLeftRightIcon, BellAlertIcon, ChartBarIcon, SearchIcon, BusIcon, BuildingOfficeIcon, MapPinIcon } from './components/icons';
+import { UserCircleIcon, CogIcon, ArrowRightIcon, WalletIcon, ArrowUpRightIcon, ArrowDownLeftIcon, ChatBubbleLeftRightIcon, BellAlertIcon, ChartBarIcon, SearchIcon, BusIcon, BuildingOfficeIcon, MapPinIcon, BriefcaseIcon } from './components/icons';
 import StarRating from './components/StarRating';
 
 
@@ -95,7 +95,8 @@ const ProfilePage: React.FC = () => {
     // Analytics calculations
     const analytics = useMemo(() => {
         // FIX: Correctly type the reduce accumulator by providing a generic type argument to the `reduce` function. This resolves downstream type errors.
-        const companyCounts = travelHistory.reduce<Record<string, number>>((acc, trip) => {
+        // FIX: Explicitly typing the accumulator `acc` to fix type inference issues.
+        const companyCounts = travelHistory.reduce((acc: Record<string, number>, trip) => {
             acc[trip.company] = (acc[trip.company] || 0) + 1;
             return acc;
         }, {});
@@ -103,7 +104,8 @@ const ProfilePage: React.FC = () => {
         const favoriteCompany = Object.keys(companyCounts).length > 0 ? Object.keys(companyCounts).reduce((a, b) => companyCounts[a] > companyCounts[b] ? a : b) : 'N/A';
 
         // FIX: Correctly type the reduce accumulator by providing a generic type argument to the `reduce` function.
-        const destinationCounts = travelHistory.reduce<Record<string, number>>((acc, trip) => {
+        // FIX: Explicitly typing the accumulator `acc` to fix type inference issues.
+        const destinationCounts = travelHistory.reduce((acc: Record<string, number>, trip) => {
             acc[trip.to] = (acc[trip.to] || 0) + 1;
             return acc;
         }, {});
@@ -111,7 +113,8 @@ const ProfilePage: React.FC = () => {
         const mostVisitedCity = Object.keys(destinationCounts).length > 0 ? Object.keys(destinationCounts).reduce((a, b) => destinationCounts[a] > destinationCounts[b] ? a : b) : 'N/A';
 
         // FIX: Correctly type the reduce accumulator by providing a generic type argument to the `reduce` function. This resolves downstream type errors for `amount` and `maxSpending`.
-        const monthlySpending = travelHistory.reduce<Record<string, number>>((acc, trip) => {
+        // FIX: Explicitly typing the accumulator `acc` to fix type inference issues.
+        const monthlySpending = travelHistory.reduce((acc: Record<string, number>, trip) => {
             const month = new Date(trip.date).toLocaleString('default', { month: 'short', year: '2-digit' });
             acc[month] = (acc[month] || 0) + trip.price;
             return acc;
@@ -130,6 +133,41 @@ const ProfilePage: React.FC = () => {
             trip.to.toLowerCase().includes(searchTerm.toLowerCase())
         );
     }, [searchTerm]);
+
+    const summaryByCompany = useMemo(() => {
+        const summary = travelHistory.reduce((acc, trip) => {
+            if (!acc[trip.company]) {
+                acc[trip.company] = { count: 0, totalSpent: 0, destinations: new Set(), logoUrl: trip.logoUrl };
+            }
+            acc[trip.company].count += 1;
+            acc[trip.company].totalSpent += trip.price;
+            acc[trip.company].destinations.add(trip.to);
+            return acc;
+        }, {} as Record<string, { count: number; totalSpent: number; destinations: Set<string>, logoUrl: string | null }>);
+
+        return Object.entries(summary).map(([name, data]) => ({
+            name,
+            ...data,
+            destinations: Array.from(data.destinations)
+        })).sort((a,b) => b.count - a.count);
+    }, []);
+
+     const summaryByDestination = useMemo(() => {
+        const summary = travelHistory.reduce((acc, trip) => {
+            if (!acc[trip.to]) {
+                acc[trip.to] = { count: 0, companies: new Set() };
+            }
+            acc[trip.to].count += 1;
+            acc[trip.to].companies.add(trip.company);
+            return acc;
+        }, {} as Record<string, { count: number; companies: Set<string> }>);
+
+        return Object.entries(summary).map(([name, data]) => ({
+            name,
+            ...data,
+            companies: Array.from(data.companies)
+        })).sort((a,b) => b.count - a.count);
+    }, []);
 
 
     const handleToggle = (setting: keyof typeof notificationSettings) => {
@@ -155,6 +193,7 @@ const ProfilePage: React.FC = () => {
                     <div className="border-b border-gray-200 dark:border-gray-700 pb-4 mb-6">
                         <div className="flex items-center space-x-2 overflow-x-auto custom-scrollbar pb-2">
                            <TabButton label="Uko Ugena" isActive={activeTab === 'analytics'} onClick={() => setActiveTab('analytics')} icon={ChartBarIcon}/>
+                           <TabButton label="Amateka" isActive={activeTab === 'history'} onClick={() => setActiveTab('history')} icon={BriefcaseIcon}/>
                            <TabButton label="Ikofi & Ibikorwa" isActive={activeTab === 'wallet'} onClick={() => setActiveTab('wallet')} icon={WalletIcon} />
                            <TabButton label="Ibisubizo Byanjye" isActive={activeTab === 'reviews'} onClick={() => setActiveTab('reviews')} icon={ChatBubbleLeftRightIcon}/>
                            <TabButton label="Iboneza" isActive={activeTab === 'settings'} onClick={() => setActiveTab('settings')} icon={CogIcon} />
@@ -188,7 +227,7 @@ const ProfilePage: React.FC = () => {
                                 </div>
                             </div>
                              <div>
-                                <h3 className="text-xl font-bold mb-4 dark:text-white">Amateka y'Ingendo</h3>
+                                <h3 className="text-xl font-bold mb-4 dark:text-white">Amateka y'Ingendo (byose)</h3>
                                 <div className="relative mb-4">
                                      <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                                     <input 
@@ -223,6 +262,43 @@ const ProfilePage: React.FC = () => {
                                             ))}
                                         </tbody>
                                     </table>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    
+                    {activeTab === 'history' && (
+                        <div className="animate-fade-in space-y-8">
+                             <div>
+                                <h3 className="text-xl font-bold mb-4 dark:text-white">Incāmunigo ku Kigo</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {summaryByCompany.map(company => (
+                                        <div key={company.name} className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
+                                            <div className="flex items-center space-x-3 mb-3">
+                                                {company.logoUrl ? <img src={company.logoUrl} alt={company.name} className="w-8 h-8 object-contain"/> : <div className="w-8 h-8 bg-gray-200 dark:bg-gray-600 rounded-full"></div>}
+                                                <h4 className="font-bold text-gray-800 dark:text-white">{company.name}</h4>
+                                            </div>
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-gray-500 dark:text-gray-400">Ingendo: <span className="font-semibold text-gray-700 dark:text-gray-300">{company.count}</span></span>
+                                                <span className="text-gray-500 dark:text-gray-400">Yose: <span className="font-semibold text-green-600 dark:text-green-400">{new Intl.NumberFormat('fr-RW').format(company.totalSpent)}</span></span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                             <div>
+                                <h3 className="text-xl font-bold mb-4 dark:text-white">Incāmunigo ku Cyerekezo</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {summaryByDestination.map(dest => (
+                                        <div key={dest.name} className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
+                                            <div className="flex items-center space-x-3 mb-2">
+                                                 <MapPinIcon className="w-6 h-6 text-blue-500"/>
+                                                <h4 className="font-bold text-gray-800 dark:text-white">{dest.name}</h4>
+                                            </div>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400">Ingendo <span className="font-semibold text-gray-700 dark:text-gray-300">{dest.count}</span> wakozeyo</p>
+                                             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Via: {dest.companies.join(', ')}</p>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                         </div>
