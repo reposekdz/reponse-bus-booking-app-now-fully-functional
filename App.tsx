@@ -15,13 +15,15 @@ import SeatSelectionPage from './SeatSelectionPage';
 import PartnerCompanies from './components/PartnerCompanies';
 import AITripPlanner from './components/AITripPlanner';
 import BottomNavigation from './components/BottomNavigation';
+import CompanyProfilePage from './CompanyProfilePage';
 
-export type Page = 'home' | 'login' | 'register' | 'bookings' | 'companies' | 'help' | 'contact' | 'searchResults' | 'seatSelection';
+export type Page = 'home' | 'login' | 'register' | 'bookings' | 'companies' | 'help' | 'contact' | 'searchResults' | 'seatSelection' | 'companyProfile';
 
 const App: React.FC = () => {
   const [page, setPage] = useState<Page>('home');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [bookingData, setBookingData] = useState<any>(null);
+  const [selectedCompany, setSelectedCompany] = useState<any>(null);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
   useEffect(() => {
@@ -32,10 +34,13 @@ const App: React.FC = () => {
     }
   }, [theme]);
 
-  const navigate = (targetPage: Page) => {
+  const navigate = (targetPage: Page, data?: any) => {
     if ((targetPage === 'bookings') && !isLoggedIn) {
       setPage('login');
       return;
+    }
+    if (targetPage === 'companyProfile' && data) {
+        setSelectedCompany(data);
     }
     setPage(targetPage);
     window.scrollTo(0, 0);
@@ -84,12 +89,14 @@ const App: React.FC = () => {
         return <SearchResultsPage onTripSelect={handleTripSelect} />;
       case 'seatSelection':
         return <SeatSelectionPage tripData={bookingData.trip} onConfirm={handleBookingConfirm} />;
+      case 'companyProfile':
+        return <CompanyProfilePage company={selectedCompany} onSelectTrip={handleSearch} />;
       case 'home':
       default:
         return (
           <>
             <HeroSection onSearch={handleSearch} />
-            <PartnerCompanies />
+            <PartnerCompanies navigate={navigate} />
             <FeaturedRoutes />
             <HowItWorks />
             <AITripPlanner />
