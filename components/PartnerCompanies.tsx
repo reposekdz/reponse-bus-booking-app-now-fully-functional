@@ -1,32 +1,46 @@
 import React from 'react';
 import type { Page } from '../App';
+import StarRating from './StarRating';
+import { ArrowRightIcon } from './icons';
 
 interface PartnerCompaniesProps {
     navigate: (page: Page, data?: any) => void;
 }
 
 const partners = [
-  { id: 'ritco', name: 'RITCO', logoText: 'RITCO', slogan: 'Urugendo Rwiza' },
-  { id: 'volcano', name: 'VOLCANO EXPRESS', logoText: 'VOLCANO', slogan: 'The People\'s Choice' },
-  { id: 'horizon', name: 'HORIZON EXPRESS', logoText: 'HORIZON', slogan: 'Comfort and Safety' },
-  { id: 'trinity', name: 'TRINITY EXPRESS', logoText: 'TRINITY', slogan: 'Connecting Rwanda' },
-  { id: 'international', name: 'INTERNATIONAL EXPRESS', logoText: 'INTL', slogan: 'Your Travel Partner' },
-  { id: 'stellart', name: 'STELLART', logoText: 'STELLART', slogan: 'Excellence in Motion' },
-  { id: 'select', name: 'SELECT', logoText: 'SELECT', slogan: 'Ride with Class' },
-  { id: 'onatra', name: 'ONATRACOM', logoText: 'ONATRA', slogan: 'The Classic Ride' }
+  { id: 'volcano', name: 'Volcano Express', logoText: 'VOLCANO', rating: 4.8, reviews: 250, bgImage: 'https://images.unsplash.com/photo-1593256398246-8853b3815c32?q=80&w=2070&auto=format&fit=crop' },
+  { id: 'ritco', name: 'RITCO', logoText: 'RITCO', rating: 4.5, reviews: 120, bgImage: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?q=80&w=2048&auto=format&fit=crop' },
+  { id: 'horizon', name: 'Horizon Express', logoText: 'HORIZON', rating: 4.2, reviews: 98, bgImage: 'https://images.unsplash.com/photo-1605641793224-6512a8d8363b?q=80&w=1974&auto=format&fit=crop' },
+  { id: 'stellart', name: 'STELLART', logoText: 'STELLART', rating: 4.6, reviews: 150, bgImage: 'https://images.unsplash.com/photo-1616372819235-9b2e1577a2d4?q=80&w=2070&auto=format&fit=crop' },
 ];
 
 const PartnerCard: React.FC<{ partner: typeof partners[0]; onSelect: () => void }> = ({ partner, onSelect }) => (
-    <button onClick={onSelect} className="group perspective">
-        <div className="relative w-full h-40 preserve-3d group-hover:-translate-y-2 transition-transform duration-500 ease-in-out">
-            <div className="absolute inset-0 bg-white dark:bg-gray-800 rounded-xl shadow-lg flex flex-col items-center justify-center p-4 border dark:border-gray-200 dark:border-gray-700">
-                <div className="w-20 h-20 flex items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-700 dark:from-blue-600 dark:to-blue-800 shadow-inner">
-                    <h3 className="text-2xl font-extrabold tracking-widest text-white uppercase">{partner.logoText}</h3>
-                </div>
-                <p className="text-sm font-bold text-gray-700 dark:text-gray-300 mt-3">{partner.name}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">{partner.slogan}</p>
+    <button 
+        onClick={onSelect} 
+        className="group relative block w-full h-80 rounded-2xl overflow-hidden shadow-2xl perspective"
+        style={{ transformStyle: 'preserve-3d' }}
+    >
+        <div className="absolute inset-0 transform-gpu transition-transform duration-500 ease-out group-hover:scale-110">
+            <img src={partner.bgImage} alt={partner.name} className="w-full h-full object-cover" />
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+        
+        <div 
+            className="absolute inset-0 p-6 flex flex-col justify-end transform-gpu transition-transform duration-500 ease-out group-hover:[transform:translateZ(40px)]"
+            style={{ transformStyle: 'preserve-3d' }}
+        >
+            <div className="w-16 h-16 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-md border-2 border-white/30 mb-4">
+                <h3 className="text-xl font-extrabold tracking-widest text-white uppercase">{partner.logoText}</h3>
             </div>
-            <div className="absolute inset-0 bg-yellow-400 rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 transform translate-x-4 translate-y-4 rotate-6 -z-10"></div>
+            <h4 className="text-2xl font-bold text-white" style={{textShadow: '2px 2px 4px rgba(0,0,0,0.5)'}}>{partner.name}</h4>
+            <div className="flex items-center mt-2 space-x-2">
+                <StarRating rating={partner.rating} />
+                <span className="text-sm text-gray-300">({partner.reviews} ibitekerezo)</span>
+            </div>
+            
+            <div className="absolute bottom-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <ArrowRightIcon className="w-8 h-8 text-white bg-white/20 p-1.5 rounded-full" />
+            </div>
         </div>
     </button>
 );
@@ -42,7 +56,7 @@ const PartnerCompanies: React.FC<PartnerCompaniesProps> = ({ navigate }) => {
             Kanda ku kigo kugira ngo umenye byinshi ku ngendo zacyo n'imodoka zikoreshwa.
           </p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {partners.map(partner => (
             <PartnerCard key={partner.name} partner={partner} onSelect={() => navigate('companyProfile', partner)} />
           ))}

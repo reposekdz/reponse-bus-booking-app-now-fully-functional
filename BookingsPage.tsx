@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import StarRating from './components/StarRating';
 import AdBanner from './components/AdBanner';
-import { QrCodeIcon, MapIcon, XIcon, ArrowRightIcon } from './components/icons';
+import { QrCodeIcon, MapIcon, XIcon, ArrowRightIcon, BusIcon, ShareIcon, WalletIcon } from './components/icons';
 import LiveTrackingModal from './components/LiveTrackingModal';
 
 const ReviewModal: React.FC<{ trip: any; onClose: () => void }> = ({ trip, onClose }) => {
@@ -19,7 +19,7 @@ const ReviewModal: React.FC<{ trip: any; onClose: () => void }> = ({ trip, onClo
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-8 max-w-md w-full">
         <h3 className="text-xl font-bold mb-2 dark:text-white">Tanga igitekerezo ku rugendo rwawe</h3>
-        <p className="text-gray-600 dark:text-gray-400 mb-4">{trip.route}</p>
+        <p className="text-gray-600 dark:text-gray-400 mb-4">{trip.from} - {trip.to}</p>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Amanota yawe</label>
@@ -51,49 +51,71 @@ const ReviewModal: React.FC<{ trip: any; onClose: () => void }> = ({ trip, onClo
 };
 
 const TicketModal: React.FC<{ trip: any; onClose: () => void }> = ({ trip, onClose }) => {
+    const InfoField: React.FC<{label: string, value: string, className?: string}> = ({label, value, className}) => (
+        <div className={className}>
+            <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">{label}</p>
+            <p className="font-bold text-gray-800 dark:text-white">{value}</p>
+        </div>
+    );
+
     return (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 animate-fade-in">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full relative">
-                <button onClick={onClose} className="absolute top-4 right-4 p-1 rounded-full text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-600 dark:hover:text-gray-200 transition-colors z-10">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-sm w-full relative">
+                 <button onClick={onClose} className="absolute top-4 right-4 p-1 rounded-full text-gray-500 bg-white/50 hover:bg-white dark:bg-gray-900/50 dark:hover:bg-gray-900 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors z-20">
                     <XIcon className="w-6 h-6" />
                 </button>
-                <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-6 rounded-t-2xl">
-                    <h3 className="text-2xl font-bold">{trip.company}</h3>
-                    <p className="opacity-80">Itike ya Bisi ya Elegitoronike</p>
+                <div className="ticket-body">
+                    {/* Main Ticket Part */}
+                    <div className="p-6">
+                        <div className="flex items-center space-x-4 mb-4">
+                            <img src={trip.logoUrl} alt={`${trip.company} logo`} className="w-16 h-16 rounded-full object-cover border-2 border-white dark:border-gray-600 shadow-md" />
+                            <div>
+                                <h3 className="text-xl font-bold dark:text-white">{trip.company}</h3>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">Itike y'Urugendo</p>
+                            </div>
+                        </div>
+
+                        <div className="my-6 text-center">
+                            <p className="text-xl font-light text-gray-600 dark:text-gray-300">{trip.from}</p>
+                            <div className="flex items-center justify-center my-2 text-gray-400 dark:text-gray-500">
+                                <div className="w-full h-px bg-gray-200 dark:bg-gray-700"></div>
+                                <BusIcon className="w-6 h-6 mx-4 flex-shrink-0" />
+                                <div className="w-full h-px bg-gray-200 dark:bg-gray-700"></div>
+                            </div>
+                            <p className="text-2xl font-bold text-gray-800 dark:text-white">{trip.to}</p>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-4 text-sm mb-6">
+                            <InfoField label="Itariki" value={trip.date} />
+                            <InfoField label="Guhaguruka" value={trip.departureTime} />
+                            <InfoField label="Kugera" value={trip.arrivalTime} />
+                             <InfoField label="Umugenzi" value="Kalisa Jean" />
+                        </div>
+                        
+                        <div className="text-center">
+                             <QrCodeIcon className="w-32 h-32 mx-auto text-gray-800 dark:text-gray-200" />
+                        </div>
+                    </div>
+
+                    {/* Stub Part */}
+                    <div className="border-t-2 border-dashed border-gray-300 dark:border-gray-600 relative">
+                        <div className="absolute -top-4 left-0 w-full flex justify-between">
+                            <div className="w-7 h-7 bg-white dark:bg-gray-800 rounded-full transform -translate-x-1/2"></div>
+                            <div className="w-7 h-7 bg-white dark:bg-gray-800 rounded-full transform translate-x-1/2"></div>
+                        </div>
+                        <div className="p-6 grid grid-cols-3 gap-4 text-sm">
+                            <InfoField label="Imyanya" value={trip.seats} className="col-span-1"/>
+                            <InfoField label="Ikirango cya Bisi" value={trip.busPlate} className="col-span-2"/>
+                            <InfoField label="Nomero y'Itike" value={trip.ticketId} className="col-span-3"/>
+                        </div>
+                    </div>
                 </div>
-                <div className="p-6">
-                    <div className="text-center mb-6">
-                        <QrCodeIcon className="w-40 h-40 mx-auto text-gray-800 dark:text-gray-200" />
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Iyi ni itike yawe. Sikana iyi kode mbere yo kwinjira muri bisi.</p>
-                    </div>
-                    <div className="space-y-4 text-sm">
-                        <div className="flex justify-between">
-                            <span className="text-gray-500 dark:text-gray-400">Umugenzi</span>
-                            <span className="font-semibold dark:text-white">Kalisa Jean</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span className="text-gray-500 dark:text-gray-400">Urugendo</span>
-                            <span className="font-semibold dark:text-white">{trip.route}</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span className="text-gray-500 dark:text-gray-400">Itariki</span>
-                            <span className="font-semibold dark:text-white">{trip.date}</span>
-                        </div>
-                         <div className="flex justify-between">
-                            <span className="text-gray-500 dark:text-gray-400">Igihe cyo guhaguruka</span>
-                            <span className="font-semibold dark:text-white">07:00 AM</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span className="text-gray-500 dark:text-gray-400">Imyanya</span>
-                            <span className="font-semibold text-blue-600 dark:text-blue-400">{trip.seats}</span>
-                        </div>
-                        <div className="flex justify-between border-t dark:border-gray-700 pt-4 mt-4">
-                            <span className="text-gray-500 dark:text-gray-400">Igiciro Cyose</span>
-                            <span className="font-bold text-lg text-green-600 dark:text-green-400">{trip.price}</span>
-                        </div>
-                    </div>
-                     <button className="mt-6 w-full py-3 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-semibold">
-                        Vanamo PDF
+                <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-b-2xl flex space-x-2">
+                    <button className="w-full flex items-center justify-center py-3 bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900 transition-colors font-semibold text-sm">
+                        <WalletIcon className="w-5 h-5 mr-2" /> Bika mu Ikofi
+                    </button>
+                     <button className="w-full flex items-center justify-center py-3 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors font-semibold text-sm">
+                        <ShareIcon className="w-5 h-5 mr-2" /> Sangiza
                     </button>
                 </div>
             </div>
@@ -108,7 +130,7 @@ const BookingCard: React.FC<{ trip: any; isPast?: boolean; onReview: (trip: any)
       <div className="flex justify-between items-start">
         <div>
           <p className="text-sm text-gray-500 dark:text-gray-400">{trip.date}</p>
-          <h4 className="text-lg font-bold text-gray-800 dark:text-white">{trip.route}</h4>
+          <h4 className="text-lg font-bold text-gray-800 dark:text-white">{trip.from} <ArrowRightIcon className="inline w-4 h-4 text-gray-400"/> {trip.to}</h4>
           <p className="text-sm text-gray-600 dark:text-gray-300">Gikoreshwa na {trip.company}</p>
         </div>
         <div className={`text-xs font-bold uppercase px-2 py-1 rounded-full ${isPast ? 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300' : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'}`}>
@@ -154,11 +176,49 @@ const BookingsPage: React.FC = () => {
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
 
   const upcomingTrips = [
-    { date: '28 Ukwakira, 2024', route: 'Kigali - Rubavu', company: 'Volcano Express', seats: 'A5, A6', price: '9,000 FRW' },
+    { 
+        date: '28 Ukwakira, 2024', 
+        from: 'Kigali', 
+        to: 'Rubavu',
+        departureTime: '07:00 AM',
+        arrivalTime: '10:30 AM',
+        company: 'Volcano Express', 
+        seats: 'A5, A6', 
+        price: '9,000 FRW',
+        ticketId: 'VK-83AD1',
+        busPlate: 'RAD 123 B',
+        logoUrl: 'https://seeklogo.com/images/V/volcano-express-logo-F735513A51-seeklogo.com.png'
+    },
   ];
   const pastTrips = [
-    { date: '15 Nzeri, 2024', route: 'Huye - Musanze', company: 'Horizon Express', seats: 'C2', price: '5,000 FRW', rawDate: new Date('2024-09-15') },
-    { date: '02 Kanama, 2024', route: 'Kigali - Nyungwe', company: 'RITCO', seats: 'B1, B2', price: '14,000 FRW', rawDate: new Date('2024-08-02') },
+    { 
+        date: '15 Nzeri, 2024', 
+        from: 'Huye',
+        to: 'Musanze',
+        departureTime: '09:00 AM',
+        arrivalTime: '12:15 PM',
+        company: 'Horizon Express', 
+        seats: 'C2', 
+        price: '5,000 FRW', 
+        rawDate: new Date('2024-09-15'),
+        ticketId: 'HZ-45BC2',
+        busPlate: 'RAE 456 C',
+        logoUrl: 'https://media.jobinrwanda.com/logo/horizon-express-ltd-1681284534.png'
+    },
+    { 
+        date: '02 Kanama, 2024', 
+        from: 'Kigali',
+        to: 'Nyungwe',
+        departureTime: '06:30 AM',
+        arrivalTime: '11:00 AM',
+        company: 'RITCO', 
+        seats: 'B1, B2', 
+        price: '14,000 FRW', 
+        rawDate: new Date('2024-08-02'),
+        ticketId: 'RT-98CD3',
+        busPlate: 'RAF 789 D',
+        logoUrl: 'https://www.ritco.rw/wp-content/uploads/2021/03/logo.svg'
+    },
   ];
   
   const pastTripCompanies = useMemo(() => ['all', ...Array.from(new Set(pastTrips.map(t => t.company)))], [pastTrips]);

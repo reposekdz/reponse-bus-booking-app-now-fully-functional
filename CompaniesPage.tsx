@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import StarRating from './components/StarRating';
-import { SearchIcon } from './components/icons';
+import { SearchIcon, ChevronRightIcon } from './components/icons';
 import type { Page } from './App';
 
 interface CompaniesPageProps {
@@ -17,14 +17,23 @@ const companies = [
 ];
 
 const CompanyCard: React.FC<{ company: typeof companies[0], onSelect: () => void }> = ({ company, onSelect }) => (
-    <button onClick={onSelect} className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 flex flex-col items-center text-center transform hover:-translate-y-2 transition-transform duration-300 w-full">
-        <div className="h-24 w-24 bg-gray-100 dark:bg-gray-700 border-4 border-white dark:border-gray-600 -mt-16 mb-4 rounded-full flex items-center justify-center shadow-lg">
-            <p className="font-bold text-gray-700 dark:text-gray-300 tracking-widest text-sm">{company.logoText}</p>
+    <button 
+        onClick={onSelect} 
+        className="w-full text-left bg-white dark:bg-gray-800 rounded-xl shadow-md p-5 flex items-center space-x-5 border-2 border-transparent hover:border-blue-500/50 hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300"
+    >
+        <div className="flex-shrink-0 h-20 w-20 bg-gradient-to-br from-blue-100 to-blue-200 dark:from-gray-700 dark:to-gray-600 rounded-full flex items-center justify-center shadow-inner">
+            <p className="font-bold text-blue-800 dark:text-gray-200 tracking-widest text-base">{company.logoText}</p>
         </div>
-        <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">{company.name}</h3>
-        <div className="flex items-center space-x-2">
-            <StarRating rating={company.rating} />
-            <span className="text-sm text-gray-500 dark:text-gray-400">({company.reviews} ibitekerezo)</span>
+        <div className="flex-grow">
+            <h3 className="text-xl font-bold text-gray-800 dark:text-white">{company.name}</h3>
+            <div className="flex items-center space-x-2 mt-1">
+                <StarRating rating={company.rating} />
+                <span className="text-sm text-yellow-500 font-bold">{company.rating.toFixed(1)}</span>
+            </div>
+             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{company.reviews} ibitekerezo</p>
+        </div>
+        <div className="flex-shrink-0">
+            <ChevronRightIcon className="w-6 h-6 text-gray-400 dark:text-gray-500" />
         </div>
     </button>
 );
@@ -87,7 +96,7 @@ const CompaniesPage: React.FC<CompaniesPageProps> = ({ onNavigate }) => {
             </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
           {filteredAndSortedCompanies.map(company => (
             <CompanyCard key={company.id} company={company} onSelect={() => onNavigate('companyProfile', company)} />
           ))}
