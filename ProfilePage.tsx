@@ -100,7 +100,7 @@ const ProfilePage: React.FC = () => {
             return acc;
         }, {});
 
-        const favoriteCompany = Object.keys(companyCounts).reduce((a, b) => companyCounts[a] > companyCounts[b] ? a : b, '');
+        const favoriteCompany = Object.keys(companyCounts).length > 0 ? Object.keys(companyCounts).reduce((a, b) => companyCounts[a] > companyCounts[b] ? a : b) : 'N/A';
 
         // FIX: Correctly type the reduce accumulator by providing a generic type argument to the `reduce` function.
         const destinationCounts = travelHistory.reduce<Record<string, number>>((acc, trip) => {
@@ -108,7 +108,7 @@ const ProfilePage: React.FC = () => {
             return acc;
         }, {});
         
-        const mostVisitedCity = Object.keys(destinationCounts).reduce((a, b) => destinationCounts[a] > destinationCounts[b] ? a : b, '');
+        const mostVisitedCity = Object.keys(destinationCounts).length > 0 ? Object.keys(destinationCounts).reduce((a, b) => destinationCounts[a] > destinationCounts[b] ? a : b) : 'N/A';
 
         // FIX: Correctly type the reduce accumulator by providing a generic type argument to the `reduce` function. This resolves downstream type errors for `amount` and `maxSpending`.
         const monthlySpending = travelHistory.reduce<Record<string, number>>((acc, trip) => {
@@ -180,7 +180,7 @@ const ProfilePage: React.FC = () => {
                                                 <div className="text-xs font-bold text-gray-800 dark:text-white bg-white/50 dark:bg-black/20 px-2 py-1 rounded-md mb-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                                     {new Intl.NumberFormat('fr-RW').format(amount)}
                                                 </div>
-                                                <div className="w-full bg-blue-200 dark:bg-blue-800/80 rounded-t-lg hover:bg-blue-300 dark:hover:bg-blue-700 transition-colors" style={{height: `${(amount / maxSpending) * 100}%`}}></div>
+                                                <div className="w-full bg-blue-200 dark:bg-blue-800/80 rounded-t-lg hover:bg-blue-300 dark:hover:bg-blue-700 transition-colors" style={{height: `${(amount / (maxSpending || 1)) * 100}%`}}></div>
                                                 <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{month}</div>
                                             </div>
                                         ))}
