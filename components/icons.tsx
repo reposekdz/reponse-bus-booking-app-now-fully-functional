@@ -129,3 +129,39 @@ export const GoogleIcon: React.FC<{ className?: string }> = ({ className }) => (
         <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-.792 2.237-2.231 4.166-4.087 5.571l6.19 5.238C42.012 36.49 44 30.684 44 24c0-1.341-.138-2.65-.389-3.917z"></path>
     </svg>
 );
+
+export const SparklesIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0m-8.486 2.828L5 21m14-14l.707-.707M12 21a1 1 0 011-1h.01a1 1 0 110 2H12a1 1 0 01-1-1z" />
+    </svg>
+);
+
+export const PaperAirplaneIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+    </svg>
+);
+
+export const WifiIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.111 16.556a5.5 5.5 0 017.778 0M12 20.25a.75.75 0 01.75-.75h.008a.75.75 0 010 1.5H12a.75.75 0 01-.75-.75zM4.444 12.889a10 10 0 0115.112 0" />
+    </svg>
+);
+
+export const AcIcon: React.FC<{ className?: string }> = ({ className }) => ( // Snowflake for AC
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2L12 22M2 12H22M4.929 4.929L19.071 19.071M4.929 19.071L19.071 4.929" />
+    </svg>
+);
+
+export const PowerIcon: React.FC<{ className?: string }> = ({ className }) => ( // Bolt for charging port
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+    </svg>
+);
+
+export const QrCodeIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4h4v4H4V4zm0 12h4v4H4v-4zM16 4h4v4h-4V4zM16 16h4v4h-4v-4zM12 4h4v4h-4V4zM4 12h4v4H4v-4zm8 0h4v4h-4v-4zm-4-4h4v4H8V8zM12 12h.01M8 16h.01M16 8h.01M12 8v.01" />
+    </svg>
+);

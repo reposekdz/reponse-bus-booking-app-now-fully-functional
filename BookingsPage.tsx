@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import StarRating from './components/StarRating';
 import AdBanner from './components/AdBanner';
+import { QrCodeIcon } from './components/icons';
 
 const ReviewModal: React.FC<{ trip: any; onClose: () => void }> = ({ trip, onClose }) => {
   const [rating, setRating] = useState(0);
@@ -50,7 +51,7 @@ const ReviewModal: React.FC<{ trip: any; onClose: () => void }> = ({ trip, onClo
 
 
 const BookingCard: React.FC<{ trip: any; isPast?: boolean; onReview: (trip: any) => void }> = ({ trip, isPast, onReview }) => (
-  <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden flex flex-col sm:flex-row">
+  <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden flex flex-col sm:flex-row transition-shadow hover:shadow-xl">
     <div className="p-5 flex-grow">
       <div className="flex justify-between items-start">
         <div>
@@ -68,13 +69,21 @@ const BookingCard: React.FC<{ trip: any; isPast?: boolean; onReview: (trip: any)
           <p className="text-sm text-gray-500 dark:text-gray-400">Imyanya: <span className="font-medium text-gray-800 dark:text-white">{trip.seats}</span></p>
           <p className="text-sm text-gray-500 dark:text-gray-400">Igiciro Cyose: <span className="font-medium text-gray-800 dark:text-white">{trip.price}</span></p>
         </div>
-        {isPast && (
+        {isPast ? (
           <button onClick={() => onReview(trip)} className="px-4 py-2 rounded-md bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-semibold hover:from-blue-600 hover:to-blue-700 transition-all">
             Tanga igitekerezo
           </button>
+        ) : (
+           <button className="text-sm text-blue-600 dark:text-blue-400 hover:underline">Reba ibisobanuro</button>
         )}
       </div>
     </div>
+    {!isPast && (
+      <div className="flex-shrink-0 bg-gray-50 dark:bg-gray-700/50 p-4 flex flex-col items-center justify-center border-l dark:border-gray-700">
+        <QrCodeIcon className="w-20 h-20 text-gray-400 dark:text-gray-500" />
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">Sikana ku muryango</p>
+      </div>
+    )}
   </div>
 );
 
