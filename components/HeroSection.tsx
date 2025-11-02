@@ -18,6 +18,12 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onSearch }) => {
         <div className="bg-gradient-to-br from-white/20 to-white/0 backdrop-blur-xl rounded-2xl shadow-2xl p-6 md:p-8 max-w-4xl mx-auto border border-white/20">
            <SearchForm onSearch={onSearch} />
         </div>
+         <button 
+            onClick={() => onSearch()} 
+            className="mt-8 px-8 py-3 rounded-full bg-transparent border-2 border-yellow-300 text-yellow-300 font-bold text-lg hover:bg-yellow-300 hover:text-[#0033A0] transform hover:scale-105 transition-all duration-300 shadow-lg"
+          >
+            Kata Itike Nonaha
+          </button>
       </div>
     </section>
   );

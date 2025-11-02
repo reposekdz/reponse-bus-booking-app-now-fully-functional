@@ -18,8 +18,8 @@ import ProfilePage from './ProfilePage';
 import NextTripWidget from './components/NextTripWidget';
 import AdminDashboard from './AdminDashboard';
 import CompanyDashboard from './CompanyDashboard';
-import ServicesPage from './ServicesPage'; // Import new Services page
-import LoadingSpinner from './components/LoadingSpinner'; // Import new Loading Spinner
+import ServicesPage from './ServicesPage';
+import LoadingSpinner from './components/LoadingSpinner';
 import { mockCompaniesData } from './AdminDashboard';
 
 export type Page = 'home' | 'login' | 'register' | 'bookings' | 'companies' | 'help' | 'contact' | 'searchResults' | 'seatSelection' | 'companyProfile' | 'profile' | 'services';
@@ -33,9 +33,9 @@ const App: React.FC = () => {
   const [selectedCompany, setSelectedCompany] = useState<any>(null);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [showNextTripWidget, setShowNextTripWidget] = useState(false);
-  const [isLoading, setIsLoading] = useState(false); // New state for loading indicator
+  const [isLoading, setIsLoading] = useState(false);
+  const [companies, setCompanies] = useState(mockCompaniesData); // State for companies lifted up
 
-  // Functions to control the loader
   const showLoader = () => setIsLoading(true);
   const hideLoader = () => setIsLoading(false);
 
@@ -63,8 +63,7 @@ const App: React.FC = () => {
 
   const handleLogin = (credentials: { email?: string, password?: string }) => {
     showLoader();
-    setTimeout(() => { // Simulate API call
-        // Admin Login Check
+    setTimeout(() => {
         if (credentials.email === 'reponse@gmail.com' && credentials.password === '2025') {
             setIsLoggedIn(true);
             setUserRole('admin');
@@ -73,8 +72,8 @@ const App: React.FC = () => {
             return;
         }
         
-        // Company Login Check
-        const companyUser = mockCompaniesData.find(
+        // Use the live 'companies' state for login check
+        const companyUser = companies.find(
           c => c.contactEmail === credentials.email && c.password === credentials.password
         );
 
@@ -86,7 +85,6 @@ const App: React.FC = () => {
             return;
         }
         
-        // Default to passenger login for any other successful login
         setIsLoggedIn(true);
         setUserRole('passenger');
         setCurrentUser({ name: 'Kalisa Jean' });
@@ -122,9 +120,6 @@ const App: React.FC = () => {
     showLoader();
     setTimeout(() => {
       console.log('Booking confirmed:', selection);
-      // alert('Itike yawe yemejwe! Reba amakuru yayo mu "Amatike Yanjye".');
-      // navigate('bookings');
-      // Logic is now handled in SeatSelectionPage to show a confirmation screen
       hideLoader();
     }, 2000);
   }
@@ -149,7 +144,7 @@ const App: React.FC = () => {
         return <HelpPage />;
       case 'contact':
         return <ContactPage />;
-      case 'services': // Add services page case
+      case 'services':
         return <ServicesPage />;
       case 'searchResults':
         return <SearchResultsPage onTripSelect={handleTripSelect} />;
@@ -173,7 +168,7 @@ const App: React.FC = () => {
 
   if (isLoggedIn) {
       if (userRole === 'admin') {
-          return <AdminDashboard onLogout={handleLogout} theme={theme} setTheme={setTheme} />;
+          return <AdminDashboard onLogout={handleLogout} theme={theme} setTheme={setTheme} companies={companies} onUpdateCompanies={setCompanies} />;
       }
       if (userRole === 'company') {
           return <CompanyDashboard onLogout={handleLogout} theme={theme} setTheme={setTheme} companyData={currentUser} />;

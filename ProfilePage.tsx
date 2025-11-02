@@ -1,4 +1,7 @@
 
+
+
+
 import React, { useState, useMemo } from 'react';
 import { UserCircleIcon, CogIcon, ArrowRightIcon, WalletIcon, ArrowUpRightIcon, ArrowDownLeftIcon, ChatBubbleLeftRightIcon, BellAlertIcon, ChartBarIcon, SearchIcon, BusIcon, BuildingOfficeIcon, MapPinIcon, BriefcaseIcon } from './components/icons';
 import StarRating from './components/StarRating';
@@ -95,7 +98,7 @@ const ProfilePage: React.FC = () => {
     // Analytics calculations
     const analytics = useMemo(() => {
         // FIX: Specify the accumulator type for `reduce` to ensure `companyCounts` is correctly typed as Record<string, number>.
-        const companyCounts = travelHistory.reduce<Record<string, number>>((acc, trip) => {
+        const companyCounts = travelHistory.reduce((acc: Record<string, number>, trip) => {
             acc[trip.company] = (acc[trip.company] || 0) + 1;
             return acc;
         }, {});
@@ -103,7 +106,7 @@ const ProfilePage: React.FC = () => {
         const favoriteCompany = Object.keys(companyCounts).length > 0 ? Object.keys(companyCounts).reduce((a, b) => companyCounts[a] > companyCounts[b] ? a : b) : 'N/A';
 
         // FIX: Specify the accumulator type for `reduce` to ensure `destinationCounts` is correctly typed as Record<string, number>.
-        const destinationCounts = travelHistory.reduce<Record<string, number>>((acc, trip) => {
+        const destinationCounts = travelHistory.reduce((acc: Record<string, number>, trip) => {
             acc[trip.to] = (acc[trip.to] || 0) + 1;
             return acc;
         }, {});
@@ -111,7 +114,7 @@ const ProfilePage: React.FC = () => {
         const mostVisitedCity = Object.keys(destinationCounts).length > 0 ? Object.keys(destinationCounts).reduce((a, b) => destinationCounts[a] > destinationCounts[b] ? a : b) : 'N/A';
 
         // FIX: Specify the accumulator type for `reduce` to fix downstream type errors with `Math.max` and `Intl.NumberFormat`.
-        const monthlySpending = travelHistory.reduce<Record<string, number>>((acc, trip) => {
+        const monthlySpending = travelHistory.reduce((acc: Record<string, number>, trip) => {
             const month = new Date(trip.date).toLocaleString('default', { month: 'short', year: '2-digit' });
             acc[month] = (acc[month] || 0) + trip.price;
             return acc;
@@ -133,7 +136,7 @@ const ProfilePage: React.FC = () => {
 
     const summaryByCompany = useMemo(() => {
         // FIX: Specify the complex accumulator type for `reduce` to ensure correct type inference for `summary`.
-        const summary = travelHistory.reduce<Record<string, { count: number; totalSpent: number; destinations: Set<string>, logoUrl: string | null }>>((acc, trip) => {
+        const summary = travelHistory.reduce((acc: Record<string, { count: number; totalSpent: number; destinations: Set<string>, logoUrl: string | null }>, trip) => {
             if (!acc[trip.company]) {
                 acc[trip.company] = { count: 0, totalSpent: 0, destinations: new Set(), logoUrl: trip.logoUrl };
             }
@@ -152,7 +155,7 @@ const ProfilePage: React.FC = () => {
 
      const summaryByDestination = useMemo(() => {
         // FIX: Specify the complex accumulator type for `reduce` to ensure correct type inference for `summary`.
-        const summary = travelHistory.reduce<Record<string, { count: number; companies: Set<string> }>>((acc, trip) => {
+        const summary = travelHistory.reduce((acc: Record<string, { count: number; companies: Set<string> }>, trip) => {
             if (!acc[trip.to]) {
                 acc[trip.to] = { count: 0, companies: new Set() };
             }

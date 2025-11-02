@@ -1,4 +1,4 @@
-import React, { useState, useMemo, ChangeEvent } from 'react';
+import React, { useState, useMemo, ChangeEvent, FormEvent } from 'react';
 import {
     SunIcon, MoonIcon, BellIcon, UserCircleIcon, CogIcon, UsersIcon, ChartBarIcon, BuildingOfficeIcon,
     BusIcon, MapIcon, PencilSquareIcon, TrashIcon, PlusIcon, ArrowUpTrayIcon, XIcon, SearchIcon
@@ -142,6 +142,44 @@ const BusFormModal = ({ bus, onSave, onClose }) => {
     );
 };
 
+const RouteFormModal = ({ route, onSave, onClose }) => {
+    const [formData, setFormData] = useState(route);
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        const isNumber = ['price', 'tripsToday', 'avgPassengers'].includes(name);
+        setFormData(prev => ({ ...prev, [name]: isNumber ? Number(value) : value }));
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-6 max-w-md w-full">
+                <h3 className="text-lg font-bold mb-4 dark:text-white">{route.id.startsWith('New-') ? 'Add New Route' : 'Edit Route'}</h3>
+                <form onSubmit={(e) => { e.preventDefault(); onSave(formData); }} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="text-sm dark:text-gray-300">From</label>
+                            <input name="from" value={formData.from} onChange={handleChange} className="w-full mt-1 p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" required />
+                        </div>
+                        <div>
+                            <label className="text-sm dark:text-gray-300">To</label>
+                            <input name="to" value={formData.to} onChange={handleChange} className="w-full mt-1 p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" required />
+                        </div>
+                    </div>
+                    <div>
+                        <label className="text-sm dark:text-gray-300">Price (RWF)</label>
+                        <input name="price" type="number" value={formData.price} onChange={handleChange} className="w-full mt-1 p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" required />
+                    </div>
+                    <div className="flex justify-end space-x-4 pt-4 border-t dark:border-gray-700">
+                        <button type="button" onClick={onClose} className="px-4 py-2 border rounded-lg dark:border-gray-600">Cancel</button>
+                        <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Save Route</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+};
+
 
 const FleetManagement = ({ fleet, onUpdate }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -153,7 +191,7 @@ const FleetManagement = ({ fleet, onUpdate }) => {
     };
 
     const handleSave = (bus) => {
-        const newFleet = editingBus.id.startsWith('New-')
+        const newFleet = bus.id.startsWith('New-')
             ? [...fleet, bus]
             : fleet.map(b => b.id === bus.id ? bus : b);
         onUpdate(newFleet);
@@ -206,6 +244,69 @@ const FleetManagement = ({ fleet, onUpdate }) => {
                 </div>
             </div>
             {isModalOpen && <BusFormModal bus={editingBus} onSave={handleSave} onClose={() => setIsModalOpen(false)} />}
+        </div>
+    );
+};
+
+const RouteManagement = ({ routes, onUpdate }) => {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingRoute, setEditingRoute] = useState(null);
+
+    const openModal = (route = null) => {
+        setEditingRoute(route || { id: `New-${Date.now()}`, from: '', to: '', price: 0, tripsToday: 0, avgPassengers: 0 });
+        setIsModalOpen(true);
+    };
+
+    const handleSave = (route) => {
+        const newRoutes = route.id.startsWith('New-')
+            ? [...routes, route]
+            : routes.map(r => r.id === route.id ? route : r);
+        onUpdate(newRoutes);
+        setIsModalOpen(false);
+    };
+
+    const handleDelete = (id) => {
+        if (window.confirm('Are you sure you want to delete this route?')) {
+            onUpdate(routes.filter(r => r.id !== id));
+        }
+    };
+
+    return (
+        <div>
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-200">Manage Your Routes</h1>
+                <button onClick={() => openModal()} className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition">
+                    <PlusIcon className="w-5 h-5 mr-2" /> Add Route
+                </button>
+            </div>
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md">
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left">
+                        <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                            <tr>
+                                <th className="px-4 py-3">From</th>
+                                <th className="px-4 py-3">To</th>
+                                <th className="px-4 py-3">Price (RWF)</th>
+                                <th className="px-4 py-3 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {routes.map(route => (
+                                <tr key={route.id} className="border-b dark:border-gray-700">
+                                    <td className="px-4 py-2 font-medium dark:text-white">{route.from}</td>
+                                    <td className="px-4 py-2">{route.to}</td>
+                                    <td className="px-4 py-2">{new Intl.NumberFormat('fr-RW').format(route.price)}</td>
+                                    <td className="px-4 py-2 text-right">
+                                        <button onClick={() => openModal(route)} className="p-1 text-gray-500 hover:text-blue-600"><PencilSquareIcon className="w-5 h-5"/></button>
+                                        <button onClick={() => handleDelete(route.id)} className="p-1 text-gray-500 hover:text-red-600"><TrashIcon className="w-5 h-5"/></button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {isModalOpen && <RouteFormModal route={editingRoute} onSave={handleSave} onClose={() => setIsModalOpen(false)} />}
         </div>
     );
 };
@@ -306,6 +407,8 @@ const CompanyDashboard: React.FC<CompanyDashboardProps> = ({ onLogout, theme, se
                 return <ProfileManagement company={company} onUpdate={handleUpdate} />;
             case 'fleet':
                 return <FleetManagement fleet={company.fleetDetails} onUpdate={(newFleet) => handleUpdate({ fleetDetails: newFleet, fleetSize: newFleet.length })} />;
+            case 'routes':
+                return <RouteManagement routes={company.routes} onUpdate={(newRoutes) => handleUpdate({ routes: newRoutes })} />;
             case 'passengers':
                 return <PassengerManagement passengers={company.recentPassengers} />;
             default:

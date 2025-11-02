@@ -9,6 +9,8 @@ interface AdminDashboardProps {
   onLogout: () => void;
   theme: 'light' | 'dark';
   setTheme: (theme: 'light' | 'dark') => void;
+  companies: any[];
+  onUpdateCompanies: (companies: any[]) => void;
 }
 
 // MOCK DATA ENHANCED WITH WALLET INFO
@@ -34,8 +36,8 @@ export const mockCompaniesData = [
             ]
         },
         routes: [
-            { from: 'Kigali', to: 'Rubavu', price: 4500, tripsToday: 15, avgPassengers: 550 },
-            { from: 'Kigali', to: 'Musanze', price: 3500, tripsToday: 20, avgPassengers: 800 },
+            { id: 'r1', from: 'Kigali', to: 'Rubavu', price: 4500, tripsToday: 15, avgPassengers: 550 },
+            { id: 'r2', from: 'Kigali', to: 'Musanze', price: 3500, tripsToday: 20, avgPassengers: 800 },
         ],
         fleetDetails: [
             { id: 'V01', model: 'Yutong Explorer', capacity: 55, status: 'Active', assignedRoute: 'Kigali - Rubavu' },
@@ -69,8 +71,8 @@ export const mockCompaniesData = [
             ]
         },
         routes: [
-            { from: 'Kigali', to: 'Huye', price: 3000, tripsToday: 25, avgPassengers: 1200 },
-            { from: 'Kigali', to: 'Nyungwe', price: 7000, tripsToday: 5, avgPassengers: 200 },
+            { id: 'r3', from: 'Kigali', to: 'Huye', price: 3000, tripsToday: 25, avgPassengers: 1200 },
+            { id: 'r4', from: 'Kigali', to: 'Nyungwe', price: 7000, tripsToday: 5, avgPassengers: 200 },
         ],
         fleetDetails: [
              { id: 'R01', model: 'Yutong Grand', capacity: 65, status: 'Active', assignedRoute: 'Kigali - Huye' },
@@ -107,13 +109,15 @@ const StatCard = ({ title, value, icon, format = true }) => (
     </div>
 );
 
-const LiveBookingsFeed = () => {
+const LiveBookingsFeed = ({ companies }) => {
     const [bookings, setBookings] = useState([]);
     const passengerNames = ['Kalisa', 'Umutoni', 'Mugisha', 'Keza', 'Niyonsenga', 'Gatete'];
     
     useEffect(() => {
         const interval = setInterval(() => {
-            const company = mockCompaniesData[Math.floor(Math.random() * mockCompaniesData.length)];
+            if (companies.length === 0) return;
+            const company = companies[Math.floor(Math.random() * companies.length)];
+            if (!company.routes || company.routes.length === 0) return;
             const route = company.routes[Math.floor(Math.random() * company.routes.length)];
             const name = passengerNames[Math.floor(Math.random() * passengerNames.length)];
             const newBooking = {
@@ -128,7 +132,7 @@ const LiveBookingsFeed = () => {
         }, 3000 + Math.random() * 2000); // every 3-5 seconds
 
         return () => clearInterval(interval);
-    }, []);
+    }, [companies]);
 
     return (
         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
@@ -149,19 +153,19 @@ const LiveBookingsFeed = () => {
     );
 };
 
-const DashboardHome = () => (
+const DashboardHome = ({ companies }) => (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
             <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-200 mb-6">Dashboard</h1>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <StatCard title="Total Revenue" value="24,750,000,000 FRW" icon={<ChartBarIcon className="w-6 h-6 text-blue-500" />} format={false} />
-                <StatCard title="Total Passengers" value={5500000} icon={<UsersIcon className="w-6 h-6 text-blue-500" />} />
-                <StatCard title="Companies" value={mockCompaniesData.length} icon={<BuildingOfficeIcon className="w-6 h-6 text-blue-500" />} format={false}/>
-                <StatCard title="Active Routes" value={35} icon={<MapIcon className="w-6 h-6 text-blue-500" />} format={false}/>
+                <StatCard title="Total Revenue" value={companies.reduce((acc, c) => acc + c.totalRevenue, 0)} icon={<ChartBarIcon className="w-6 h-6 text-blue-500" />} />
+                <StatCard title="Total Passengers" value={companies.reduce((acc, c) => acc + c.totalPassengers, 0)} icon={<UsersIcon className="w-6 h-6 text-blue-500" />} />
+                <StatCard title="Companies" value={companies.length} icon={<BuildingOfficeIcon className="w-6 h-6 text-blue-500" />} format={false}/>
+                <StatCard title="Active Routes" value={companies.reduce((acc, c) => acc + c.routes.length, 0)} icon={<MapIcon className="w-6 h-6 text-blue-500" />} format={false}/>
             </div>
         </div>
         <div className="lg:col-span-1">
-            <LiveBookingsFeed />
+            <LiveBookingsFeed companies={companies} />
         </div>
     </div>
 );
@@ -525,9 +529,8 @@ const UserManagementPage = () => {
     );
 };
 
-const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, theme, setTheme }) => {
+const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, theme, setTheme, companies, onUpdateCompanies }) => {
   const [view, setView] = useState('dashboard');
-  const [companies, setCompanies] = useState(mockCompaniesData);
   const [selectedCompanyId, setSelectedCompanyId] = useState(null);
 
   const toggleTheme = () => {
@@ -539,12 +542,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, theme, setThe
   const renderContent = () => {
     switch (view) {
       case 'dashboard':
-        return <DashboardHome />;
+        return <DashboardHome companies={companies} />;
       case 'companies':
         return <CompanyManagement 
                     companies={companies} 
                     onSelectCompany={(id) => { setSelectedCompanyId(id); setView('companyDetails'); }}
-                    onUpdateCompanies={setCompanies}
+                    onUpdateCompanies={onUpdateCompanies}
                 />;
       case 'transactions':
         return <TransactionsPage companies={companies} />;
@@ -555,7 +558,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, theme, setThe
       case 'settings':
         return <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-200">Settings</h1>;
       default:
-        return <DashboardHome />;
+        return <DashboardHome companies={companies} />;
     }
   };
 

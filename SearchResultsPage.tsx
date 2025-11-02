@@ -1,5 +1,5 @@
-import React from 'react';
-import { ArrowRightIcon, WifiIcon, AcIcon, PowerIcon } from './components/icons';
+import React, { useState, useEffect } from 'react';
+import { ArrowRightIcon, WifiIcon, AcIcon, PowerIcon, StarIcon } from './components/icons';
 import AdBanner from './components/AdBanner';
 
 const searchResults = [
@@ -21,7 +21,7 @@ const AmenityIcon: React.FC<{ amenity: string }> = ({ amenity }) => {
     return null;
 };
 
-const SearchResultCard: React.FC<{ result: any, onSelect: () => void }> = ({ result, onSelect }) => (
+const SearchResultCard: React.FC<{ result: any, onSelect: () => void, isFavorite: boolean, onToggleFavorite: () => void }> = ({ result, onSelect, isFavorite, onToggleFavorite }) => (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col sm:flex-row items-center justify-between space-y-4 sm:space-y-0 sm:space-x-6 transform hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 relative">
         <div className="flex-shrink-0 w-full sm:w-auto text-center sm:text-left">
             {result.tag && (
@@ -53,14 +53,41 @@ const SearchResultCard: React.FC<{ result: any, onSelect: () => void }> = ({ res
             <p className="text-2xl font-bold text-green-600 dark:text-green-400">{result.price}</p>
             <p className="text-xs text-gray-500 dark:text-gray-400">hasigaye imyanya {result.availableSeats}</p>
         </div>
-        <button onClick={onSelect} className="w-full sm:w-auto flex items-center justify-center px-6 py-3 rounded-lg bg-gradient-to-r from-yellow-400 to-yellow-500 text-[#0033A0] font-bold hover:from-yellow-500 hover:to-yellow-600 transition-all duration-300 shadow-md">
-            Hitamo Imyanya <ArrowRightIcon className="w-5 h-5 ml-2" />
-        </button>
+        <div className="flex items-center space-x-2">
+            <button 
+                onClick={onToggleFavorite}
+                className="p-3 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+            >
+                <StarIcon className={`w-6 h-6 transition-colors ${isFavorite ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'}`} />
+            </button>
+            <button onClick={onSelect} className="w-full sm:w-auto flex items-center justify-center px-6 py-3 rounded-lg bg-gradient-to-r from-yellow-400 to-yellow-500 text-[#0033A0] font-bold hover:from-yellow-500 hover:to-yellow-600 transition-all duration-300 shadow-md">
+                Hitamo Imyanya <ArrowRightIcon className="w-5 h-5 ml-2" />
+            </button>
+        </div>
     </div>
 );
 
 
 const SearchResultsPage: React.FC<SearchResultsPageProps> = ({ onTripSelect }) => {
+  const [favoriteTrips, setFavoriteTrips] = useState<number[]>([]);
+
+  useEffect(() => {
+    const storedFavorites = localStorage.getItem('favoriteTrips');
+    if (storedFavorites) {
+      setFavoriteTrips(JSON.parse(storedFavorites));
+    }
+  }, []);
+
+  const toggleFavorite = (tripId: number) => {
+    const newFavorites = favoriteTrips.includes(tripId)
+      ? favoriteTrips.filter(id => id !== tripId)
+      : [...favoriteTrips, tripId];
+    
+    setFavoriteTrips(newFavorites);
+    localStorage.setItem('favoriteTrips', JSON.stringify(newFavorites));
+  };
+
   return (
     <div className="bg-gray-100/50 dark:bg-gray-900/50 min-h-full py-12">
       <div className="container mx-auto px-6">
@@ -71,7 +98,13 @@ const SearchResultsPage: React.FC<SearchResultsPageProps> = ({ onTripSelect }) =
         </div>
         <div className="space-y-6">
             {searchResults.map(result => (
-                <SearchResultCard key={result.id} result={result} onSelect={() => onTripSelect(result)} />
+                <SearchResultCard 
+                    key={result.id} 
+                    result={result} 
+                    onSelect={() => onTripSelect(result)}
+                    isFavorite={favoriteTrips.includes(result.id)}
+                    onToggleFavorite={() => toggleFavorite(result.id)}
+                />
             ))}
         </div>
       </div>
