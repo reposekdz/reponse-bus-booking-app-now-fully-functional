@@ -14,6 +14,18 @@ interface AdminDashboardProps {
   onUpdateCompanies: (companies: any[]) => void;
 }
 
+// FIX: Export mockDriversData and enhance mock data for full app functionality.
+export const mockDriversData = [
+    {
+        id: 'driver_1',
+        name: 'Gatete Jean',
+        email: 'driver@test.com',
+        password: 'driver',
+        assignedBusId: 'V01',
+        companyId: 'volcano_express',
+    }
+];
+
 // MOCK DATA ENHANCED WITH WALLET INFO
 export const mockCompaniesData = [
     {
@@ -54,13 +66,20 @@ export const mockCompaniesData = [
         promotions: [
             { id: 'VOLC01', title: 'Weekend Discount', description: 'Get 10% off on all weekend trips.', code: 'WEEKEND10', expiryDate: '2024-12-31' }
         ],
+        drivers: [
+            { id: 'driver_1', name: 'Gatete Jean' }
+        ],
         schedule: {
           'Kigali-Rubavu': [
-            { id: 'sch1', time: '07:00', busId: 'V01', price: 4500 },
-            { id: 'sch2', time: '08:30', busId: 'V01', price: 4500 },
+            { id: 'sch1', time: '07:00', busId: 'V01', price: 4500, passengers: [
+                { name: 'Kwizera A.', seat: 'A1', ticketId: 'VK-PS1' },
+                { name: 'Mutesi B.', seat: 'A2', ticketId: 'VK-PS2' },
+                { name: 'Nkubito C.', seat: 'B3', ticketId: 'VK-PS3' },
+            ] },
+            { id: 'sch2', time: '08:30', busId: 'V01', price: 4500, passengers: [] },
           ],
           'Kigali-Musanze': [
-            { id: 'sch3', time: '09:00', busId: 'V02', price: 3500 },
+            { id: 'sch3', time: '09:00', busId: 'V02', price: 3500, passengers: [] },
           ]
         },
     },
@@ -111,7 +130,7 @@ export const mockCompaniesData = [
     }
 ];
 
-const mockUsersData = [
+export const mockUsersData = [
     { id: 1, name: 'Kalisa Jean', email: 'kalisa.j@example.com', role: 'Umugenzi', joinedDate: '2023-01-15', status: 'Active', avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=2080&auto=format&fit=crop' },
     { id: 2, name: 'Umutoni Grace', email: 'grace.u@example.com', role: 'Umugenzi', joinedDate: '2023-03-22', status: 'Active', avatarUrl: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=1961&auto=format&fit=crop' },
     { id: 3, name: 'Volcano Express', email: 'contact@volcano.rw', role: 'Ikigo', joinedDate: '2022-11-01', status: 'Active', avatarUrl: 'https://seeklogo.com/images/V/volcano-express-logo-F735513A51-seeklogo.com.png' },
@@ -318,7 +337,7 @@ const CompanyCard: React.FC<{
     </div>
 );
 
-// Add missing RouteFormModal component definition
+// FIX: Add missing RouteFormModal component definition
 const RouteFormModal = ({ route, companies, onSave, onClose, companyId: defaultCompanyId }) => {
     const [formData, setFormData] = useState({
         companyId: route?.companyId || defaultCompanyId || (companies.length > 0 ? companies[0].id : ''),

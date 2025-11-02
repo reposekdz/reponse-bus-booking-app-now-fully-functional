@@ -6,7 +6,6 @@ import HowItWorks from './components/HowItWorks';
 import Footer from './components/Footer';
 import LoginPage from './LoginPage';
 import RegisterPage from './RegisterPage';
-import BookingsPage from './BookingsPage';
 import CompaniesPage from './CompaniesPage';
 import HelpPage from './HelpPage';
 import ContactPage from './ContactPage';
@@ -19,9 +18,10 @@ import ProfilePage from './ProfilePage';
 import NextTripWidget from './components/NextTripWidget';
 import AdminDashboard from './AdminDashboard';
 import CompanyDashboard from './CompanyDashboard';
+import DriverDashboard from './DriverDashboard';
 import ServicesPage from './ServicesPage';
 import LoadingSpinner from './components/LoadingSpinner';
-import { mockCompaniesData } from './AdminDashboard';
+import { mockCompaniesData, mockDriversData } from './AdminDashboard';
 import BookingSearchPage from './BookingSearchPage';
 import CompaniesAside from './components/CompaniesAside';
 import ScheduledTripsPage from './ScheduledTripsPage';
@@ -43,7 +43,7 @@ const initialUserWallet = {
 const App: React.FC = () => {
   const [page, setPage] = useState<Page>('home');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userRole, setUserRole] = useState<'passenger' | 'admin' | 'company' | null>(null);
+  const [userRole, setUserRole] = useState<'passenger' | 'admin' | 'company' | 'driver' | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [bookingData, setBookingData] = useState<any>(null);
   const [selectedCompany, setSelectedCompany] = useState<any>(null);
@@ -53,6 +53,11 @@ const App: React.FC = () => {
   const [companies, setCompanies] = useState(mockCompaniesData); // State for companies lifted up
   const [isCompaniesAsideOpen, setIsCompaniesAsideOpen] = useState(false);
   const [walletData, setWalletData] = useState(initialUserWallet);
+  const [boardingStatus, setBoardingStatus] = useState<Record<string, 'booked' | 'boarded'>>({});
+
+  const handlePassengerBoarding = (ticketId: string) => {
+    setBoardingStatus(prev => ({ ...prev, [ticketId]: 'boarded' }));
+  };
 
   const showLoader = () => setIsLoading(true);
   const hideLoader = () => setIsLoading(false);
@@ -92,7 +97,6 @@ const App: React.FC = () => {
             return;
         }
         
-        // Use the live 'companies' state for login check
         const companyUser = companies.find(
           c => c.contactEmail === credentials.email && c.password === credentials.password
         );
@@ -101,6 +105,18 @@ const App: React.FC = () => {
             setIsLoggedIn(true);
             setUserRole('company');
             setCurrentUser(companyUser);
+            hideLoader();
+            return;
+        }
+
+        const driverUser = mockDriversData.find(
+            d => d.email === credentials.email && d.password === credentials.password
+        );
+
+        if (driverUser) {
+            setIsLoggedIn(true);
+            setUserRole('driver');
+            setCurrentUser(driverUser);
             hideLoader();
             return;
         }
@@ -175,8 +191,6 @@ const App: React.FC = () => {
         return <LoginPage onLogin={handleLogin} onNavigate={navigate} />;
       case 'register':
         return <RegisterPage onNavigate={navigate} />;
-      case 'bookings':
-        return <BookingsPage />;
       case 'companies':
         return <CompaniesPage onNavigate={navigate} />;
       case 'help':
@@ -196,8 +210,7 @@ const App: React.FC = () => {
       case 'companyProfile':
         return <CompanyProfilePage company={selectedCompany} onSelectTrip={handleSearch} />;
       case 'profile':
-        // FIX: Removed onSearch prop as it is not used in the ProfilePage component.
-        return <ProfilePage walletData={walletData} onWalletUpdate={setWalletData} />;
+        return <ProfilePage walletData={walletData} onWalletUpdate={setWalletData} boardingStatus={boardingStatus} onSearch={handleSearch} />;
       case 'home':
       default:
         return (
@@ -216,6 +229,16 @@ const App: React.FC = () => {
       }
       if (userRole === 'company') {
           return <CompanyDashboard onLogout={handleLogout} theme={theme} setTheme={setTheme} companyData={currentUser} />;
+      }
+      if (userRole === 'driver') {
+          return <DriverDashboard 
+                    onLogout={handleLogout} 
+                    theme={theme} 
+                    setTheme={setTheme} 
+                    driverData={currentUser}
+                    allCompanies={companies}
+                    onPassengerBoarding={handlePassengerBoarding} 
+                />;
       }
   }
 
@@ -238,7 +261,7 @@ const App: React.FC = () => {
       </main>
       <Footer />
       {isLoggedIn && userRole === 'passenger' && showNextTripWidget && (
-          <NextTripWidget trip={upcomingTripForWidget} onDismiss={() => setShowNextTripWidget(false)} onTrack={() => navigate('bookings')} />
+          <NextTripWidget trip={upcomingTripForWidget} onDismiss={() => setShowNextTripWidget(false)} onTrack={() => navigate('profile')} />
       )}
       <BottomNavigation navigate={navigate} currentPage={page} />
       <CompaniesAside isOpen={isCompaniesAsideOpen} onClose={toggleCompaniesAside} navigate={navigate} />

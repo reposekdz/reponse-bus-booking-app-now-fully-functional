@@ -208,9 +208,12 @@ const WalletActionModal: React.FC<{
 interface ProfilePageProps {
     walletData: any;
     onWalletUpdate: (data: any) => void;
+    // FIX: Added missing props to fix type error from App.tsx
+    boardingStatus: Record<string, 'booked' | 'boarded'>;
+    onSearch: (from?: string, to?: string) => void;
 }
 
-const ProfilePage: React.FC<ProfilePageProps> = ({ walletData, onWalletUpdate }) => {
+const ProfilePage: React.FC<ProfilePageProps> = ({ walletData, onWalletUpdate, boardingStatus, onSearch }) => {
     const [activeTab, setActiveTab] = useState('analytics');
     const [searchTerm, setSearchTerm] = useState('');
     const [isWalletUnlocked, setIsWalletUnlocked] = useState(false);
