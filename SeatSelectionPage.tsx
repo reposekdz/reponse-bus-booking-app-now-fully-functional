@@ -124,17 +124,30 @@ const BoardingPass: React.FC<{
 const BookingConfirmationView: React.FC<{
     trip: any;
     selection: { selectedSeats: string[], totalPrice: string };
+    transactionDetails: { oldBalance: number; amountPaid: number; } | null;
+    newBalance: number;
     onTrack: () => void;
     onShareTicket: () => void;
     onGoToBookings: () => void;
-}> = ({ trip, selection, onTrack, onShareTicket, onGoToBookings }) => {
+}> = ({ trip, selection, transactionDetails, newBalance, onTrack, onShareTicket, onGoToBookings }) => {
     return (
         <div className="text-center max-w-2xl mx-auto py-12 animate-fade-in">
             <CheckCircleIcon className="w-20 h-20 text-green-500 mx-auto mb-4" />
-            <h2 className="text-3xl font-bold text-gray-800 dark:text-white">Byemejwe!</h2>
-            <p className="text-gray-600 dark:text-gray-400 mt-2 mb-8">Urugendo rwawe rwakozwe neza. Dore itike yawe:</p>
+            <h2 className="text-3xl font-bold text-gray-800 dark:text-white">Wishyuye neza!</h2>
+            <p className="text-gray-600 dark:text-gray-400 mt-2 mb-8">Urugendo rwawe rwemejwe. Dore itike yawe:</p>
             
             <BoardingPass trip={trip} selection={selection} />
+
+            {transactionDetails && (
+                <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg mt-8 text-left max-w-md mx-auto">
+                    <h4 className="font-bold mb-2 dark:text-white">Incāmunigo y'Ikoranabuhanga</h4>
+                    <div className="text-sm space-y-1">
+                        <div className="flex justify-between"><span>Ayariho:</span><span className="font-mono">{new Intl.NumberFormat('fr-RW').format(transactionDetails.oldBalance)} RWF</span></div>
+                        <div className="flex justify-between text-red-600 dark:text-red-400"><span>Yishyuwe:</span><span className="font-mono">-{new Intl.NumberFormat('fr-RW').format(transactionDetails.amountPaid)} RWF</span></div>
+                        <div className="flex justify-between font-bold border-t pt-1 mt-1 dark:border-gray-600"><span>Asigayeho:</span><span className="font-mono text-green-600 dark:text-green-400">{new Intl.NumberFormat('fr-RW').format(newBalance)} RWF</span></div>
+                    </div>
+                </div>
+            )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8">
                 <button onClick={onShareTicket} className="w-full flex items-center justify-center p-4 rounded-lg bg-blue-600 text-white font-bold text-lg hover:bg-blue-700 transition-all duration-300 shadow-lg">
@@ -151,6 +164,53 @@ const BookingConfirmationView: React.FC<{
     );
 };
 
+
+const PaymentModal: React.FC<{
+    totalPrice: string;
+    onClose: () => void;
+    onConfirm: (serialCode: string) => void;
+    error: string;
+}> = ({ totalPrice, onClose, onConfirm, error }) => {
+    const [serialCode, setSerialCode] = useState('');
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        onConfirm(serialCode);
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={onClose}>
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-sm w-full" onClick={e => e.stopPropagation()}>
+                <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                    <div className="flex justify-between items-center">
+                        <h3 className="text-xl font-bold dark:text-white">Emeza Kwishyura</h3>
+                        <button type="button" onClick={onClose} className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"><XIcon className="w-5 h-5 text-gray-500"/></button>
+                    </div>
+                    <div className="text-center py-4">
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Amafaranga yo kwishyura</p>
+                        <p className="text-4xl font-bold text-green-600 dark:text-green-400">{totalPrice}</p>
+                    </div>
+                    <div>
+                        <label htmlFor="serial-code" className="text-sm font-medium text-gray-700 dark:text-gray-300">Shyiramo Kode yawe</label>
+                        <input 
+                            id="serial-code"
+                            type="text" 
+                            value={serialCode} 
+                            onChange={e => setSerialCode(e.target.value.toUpperCase())} 
+                            placeholder="e.g., KJ7821"
+                            className="w-full mt-1 p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:outline-none" 
+                            required
+                        />
+                    </div>
+                    {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+                    <button type="submit" className="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition">
+                        Emeza Kwishyura
+                    </button>
+                </form>
+            </div>
+        </div>
+    );
+};
 
 interface SeatSelectionPageProps {
   tripData: any;
@@ -182,6 +242,9 @@ const SeatSelectionPage: React.FC<SeatSelectionPageProps> = ({ tripData, onConfi
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [showTrackingModal, setShowTrackingModal] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('wallet');
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [paymentError, setPaymentError] = useState('');
+  const [transactionDetails, setTransactionDetails] = useState<{ oldBalance: number; amountPaid: number; } | null>(null);
   
   const sessionId = useRef(Date.now().toString(36) + Math.random().toString(36).substring(2));
   const storageKey = `realtime_seats_trip_${tripData.id}`;
@@ -292,15 +355,32 @@ const SeatSelectionPage: React.FC<SeatSelectionPageProps> = ({ tripData, onConfi
   const isWalletSufficient = walletBalance >= totalPrice;
   
   const handleConfirmClick = () => {
-    if (paymentMethod === 'wallet' && !isWalletSufficient) {
-        alert("Amafaranga ari mu ikofi ntahagije.");
+    if (paymentMethod === 'wallet') {
+        if (!isWalletSufficient) {
+            alert("Amafaranga ari mu ikofi ntahagije.");
+            return;
+        }
+        setPaymentError('');
+        setIsPaymentModalOpen(true);
+    } else {
+        alert("Kwishyura n'ikarita/MoMo bizaza vuba!");
+    }
+  };
+  
+  const handlePaymentConfirm = (serialCode: string) => {
+    if (serialCode !== walletData.serialCode) {
+        setPaymentError('Kode watanze siyo. Ongera ugerageze.');
         return;
     }
+    
+    setTransactionDetails({ oldBalance: walletData.balance, amountPaid: totalPrice });
     onConfirm({ tripData, selectedSeats, totalPrice: formattedTotalPrice, paymentMethod });
+    
+    setIsPaymentModalOpen(false);
+
     setTimeout(() => {
         setIsConfirmed(true);
         window.scrollTo(0, 0);
-        // On confirmation, permanently remove seats from local storage
         try {
             const rawData = localStorage.getItem(storageKey);
             if (!rawData) return;
@@ -309,7 +389,7 @@ const SeatSelectionPage: React.FC<SeatSelectionPageProps> = ({ tripData, onConfi
             localStorage.setItem(storageKey, JSON.stringify(allReservations));
         } catch (e) { console.error(e) }
 
-    }, 2000);
+    }, 500);
   };
 
   const finalSelection = { selectedSeats, totalPrice: formattedTotalPrice };
@@ -322,6 +402,8 @@ const SeatSelectionPage: React.FC<SeatSelectionPageProps> = ({ tripData, onConfi
             <BookingConfirmationView 
                 trip={tripData}
                 selection={finalSelection}
+                transactionDetails={transactionDetails}
+                newBalance={walletData.balance}
                 onTrack={() => setShowTrackingModal(true)}
                 onShareTicket={() => alert('Sharing ticket...')}
                 onGoToBookings={() => navigate('bookings')}
@@ -397,6 +479,14 @@ const SeatSelectionPage: React.FC<SeatSelectionPageProps> = ({ tripData, onConfi
             </>
         )}
       </div>
+       {isPaymentModalOpen && (
+        <PaymentModal 
+            totalPrice={formattedTotalPrice}
+            onClose={() => setIsPaymentModalOpen(false)}
+            onConfirm={handlePaymentConfirm}
+            error={paymentError}
+        />
+      )}
       {showTrackingModal && <LiveTrackingModal trip={{...tripData, route: 'Kigali - Rubavu'}} onClose={() => setShowTrackingModal(false)} />}
     </div>
   );

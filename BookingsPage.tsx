@@ -3,6 +3,7 @@ import StarRating from './components/StarRating';
 import AdBanner from './components/AdBanner';
 import { QrCodeIcon, MapIcon, XIcon, ArrowRightIcon, BusIcon, ShareIcon, WalletIcon, CheckCircleIcon } from './components/icons';
 import LiveTrackingModal from './components/LiveTrackingModal';
+import { mockCompaniesData } from './AdminDashboard';
 
 const ReviewModal: React.FC<{ trip: any; onClose: () => void }> = ({ trip, onClose }) => {
   const [rating, setRating] = useState(0);
@@ -52,87 +53,119 @@ const ReviewModal: React.FC<{ trip: any; onClose: () => void }> = ({ trip, onClo
 
 const TicketModal: React.FC<{ trip: any; onClose: () => void }> = ({ trip, onClose }) => {
     const [isSaved, setIsSaved] = useState(false);
+    
+    // Find company details from mock data
+    const companyDetails = mockCompaniesData.find(c => c.name === trip.company) || { coverUrl: 'https://images.unsplash.com/photo-1616372819235-9b2e1577a2d4?q=80&w=2070&auto=format&fit=crop' };
 
     const handleSaveToWallet = () => {
-        // Simulate API call
-        setTimeout(() => {
-            setIsSaved(true);
-        }, 500);
+        setTimeout(() => { setIsSaved(true); }, 500);
     };
 
-    const InfoField: React.FC<{label: string, value: string, className?: string}> = ({label, value, className}) => (
+    const InfoField: React.FC<{label: string, value: string | React.ReactNode, className?: string}> = ({label, value, className}) => (
         <div className={className}>
-            <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">{label}</p>
-            <p className="font-bold text-gray-800 dark:text-white">{value}</p>
+            <p className="text-xs text-gray-300 uppercase tracking-wider">{label}</p>
+            <p className="font-bold text-white">{value}</p>
         </div>
     );
+    
+    let boardingTime = 'N/A';
+    if(trip.departureTime) {
+        const timeParts = trip.departureTime.match(/(\d+):(\d+)\s*(AM|PM)/);
+        if (timeParts) {
+            let [_, hours, minutes, modifier] = timeParts;
+            let hour = parseInt(hours);
+
+            if (modifier === 'PM' && hour < 12) hour += 12;
+            if (modifier === 'AM' && hour === 12) hour = 0;
+
+            const departureDate = new Date();
+            departureDate.setHours(hour, parseInt(minutes), 0, 0);
+            departureDate.setMinutes(departureDate.getMinutes() - 20); // Boarding is 20 mins before
+            boardingTime = departureDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+    }
+
 
     return (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 animate-fade-in" onClick={onClose}>
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-sm w-full relative" onClick={e => e.stopPropagation()}>
-                 <button onClick={onClose} className="absolute top-4 right-4 p-1 rounded-full text-gray-500 bg-white/50 hover:bg-white dark:bg-gray-900/50 dark:hover:bg-gray-900 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors z-20">
+            <div className="bg-gray-800 rounded-2xl shadow-2xl max-w-sm w-full relative overflow-hidden text-white" onClick={e => e.stopPropagation()}>
+                 <img src={companyDetails.coverUrl} alt="Company background" className="absolute inset-0 w-full h-full object-cover opacity-20 blur-sm"/>
+                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-blue-900/30 to-black/50"></div>
+                 
+                 <button onClick={onClose} className="absolute top-4 right-4 p-1 rounded-full bg-black/30 hover:bg-black/50 transition-colors z-20">
                     <XIcon className="w-6 h-6" />
                 </button>
-                <div className="ticket-body">
+                
+                <div className="relative z-10">
                     {/* Main Ticket Part */}
                     <div className="p-6">
                         <div className="flex items-center space-x-4 mb-4">
-                            <img src={trip.logoUrl} alt={`${trip.company} logo`} className="w-16 h-16 rounded-full object-cover border-2 border-white dark:border-gray-600 shadow-md" />
+                            <img src={trip.logoUrl} alt={`${trip.company} logo`} className="w-16 h-16 rounded-full object-cover border-2 border-white/50 shadow-md bg-white p-1"/>
                             <div>
-                                <h3 className="text-xl font-bold dark:text-white">{trip.company}</h3>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">Itike y'Urugendo</p>
+                                <h3 className="text-xl font-bold">{trip.company}</h3>
+                                <p className="text-sm text-gray-300">Itike y'Urugendo</p>
                             </div>
                         </div>
 
                         <div className="my-6 text-center">
-                            <p className="text-xl font-light text-gray-600 dark:text-gray-300">{trip.from}</p>
-                            <div className="flex items-center justify-center my-2 text-gray-400 dark:text-gray-500">
-                                <div className="w-full h-px bg-gray-200 dark:bg-gray-700"></div>
+                            <p className="text-2xl font-bold text-gray-100">{trip.from}</p>
+                            <div className="flex items-center justify-center my-2 text-gray-400">
+                                <div className="w-full h-px bg-white/20"></div>
                                 <BusIcon className="w-6 h-6 mx-4 flex-shrink-0" />
-                                <div className="w-full h-px bg-gray-200 dark:bg-gray-700"></div>
+                                <div className="w-full h-px bg-white/20"></div>
                             </div>
-                            <p className="text-2xl font-bold text-gray-800 dark:text-white">{trip.to}</p>
+                            <p className="text-2xl font-bold text-gray-100">{trip.to}</p>
                         </div>
                         
-                        <div className="grid grid-cols-2 gap-4 text-sm mb-6">
+                        <div className="grid grid-cols-3 gap-4 text-sm mb-6 text-center">
                             <InfoField label="Itariki" value={trip.date} />
-                            <InfoField label="Guhaguruka" value={trip.departureTime} />
-                            <InfoField label="Kugera" value={trip.arrivalTime} />
-                             <InfoField label="Umugenzi" value="Kalisa Jean" />
+                            <InfoField label="Guhaguruka" value={<span className="text-lg">{trip.departureTime}</span>} />
+                            <InfoField label="Kugera" value={<span className="text-lg">{trip.arrivalTime}</span>} />
+                            <InfoField label="Kwinjira" value={<span className="text-yellow-300">{boardingTime}</span>} />
+                            <InfoField label="Irembo" value={`B${Math.floor(Math.random() * 5) + 1}`} />
+                            <InfoField label="Bisi" value={trip.busPlate} />
                         </div>
                         
-                        <div className="text-center">
-                             <QrCodeIcon className="w-32 h-32 mx-auto text-gray-800 dark:text-gray-200" />
+                         <div className="text-center my-4">
+                            <p className="text-xs text-gray-300 uppercase tracking-wider">Umugenzi</p>
+                            <p className="font-bold text-lg text-white">Kalisa Jean</p>
                         </div>
                     </div>
 
                     {/* Stub Part */}
-                    <div className="border-t-2 border-dashed border-gray-300 dark:border-gray-600 relative">
+                    <div className="border-t-2 border-dashed border-gray-500 relative bg-black/20">
                         <div className="absolute -top-4 left-0 w-full flex justify-between">
-                            <div className="w-7 h-7 bg-white dark:bg-gray-800 rounded-full transform -translate-x-1/2"></div>
-                            <div className="w-7 h-7 bg-white dark:bg-gray-800 rounded-full transform translate-x-1/2"></div>
+                            <div className="w-7 h-7 bg-gray-800 rounded-full transform -translate-x-1/2"></div>
+                            <div className="w-7 h-7 bg-gray-800 rounded-full transform translate-x-1/2"></div>
                         </div>
-                        <div className="p-6 grid grid-cols-3 gap-4 text-sm">
-                            <InfoField label="Imyanya" value={trip.seats} className="col-span-1"/>
-                            <InfoField label="Ikirango cya Bisi" value={trip.busPlate} className="col-span-2"/>
-                            <InfoField label="Nomero y'Itike" value={trip.ticketId} className="col-span-3"/>
+                        <div className="p-6">
+                             <div className="grid grid-cols-2 gap-4 text-sm">
+                                <InfoField label="Imyanya" value={<span className="text-xl text-yellow-300">{trip.seats}</span>} className="col-span-1"/>
+                                <InfoField label="Nomero y'Itike" value={trip.ticketId} className="col-span-1 text-right"/>
+                            </div>
+                            {/* Barcode */}
+                            <div className="mt-4 h-12 flex items-center justify-between px-2 bg-white rounded-md">
+                                {Array.from({ length: 40 }).map((_, i) => (
+                                    <div key={i} className="bg-black h-full" style={{ width: `${Math.random() > 0.4 ? '2px' : '1px'}` }}></div>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-b-2xl flex space-x-2">
-                    <button 
+                <div className="relative z-10 p-4 bg-black/30 flex space-x-2">
+                     <button 
                         onClick={handleSaveToWallet} 
                         disabled={isSaved}
                         className={`w-full flex items-center justify-center py-3 rounded-lg font-semibold text-sm transition-colors ${
                             isSaved
-                                ? 'bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 cursor-default'
-                                : 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900'
+                                ? 'bg-green-700/50 text-green-300 cursor-default'
+                                : 'bg-blue-500/50 text-blue-200 hover:bg-blue-500/70'
                         }`}
                     >
                         {isSaved ? <CheckCircleIcon className="w-5 h-5 mr-2" /> : <WalletIcon className="w-5 h-5 mr-2" />}
                         {isSaved ? 'Bikijwe mu Ikofi' : 'Bika mu Ikofi'}
                     </button>
-                     <button className="w-full flex items-center justify-center py-3 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors font-semibold text-sm">
+                     <button className="w-full flex items-center justify-center py-3 bg-gray-500/50 text-gray-200 rounded-lg hover:bg-gray-500/70 transition-colors font-semibold text-sm">
                         <ShareIcon className="w-5 h-5 mr-2" /> Sangiza
                     </button>
                 </div>

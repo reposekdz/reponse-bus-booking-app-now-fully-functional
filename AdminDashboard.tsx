@@ -794,8 +794,8 @@ const RouteManagementPage = ({ companies, onUpdateCompanies }) => {
     )
 }
 
-// FIX: Add explicit types for props to resolve type inference issue.
-const SettingsCard = ({ title, icon: Icon, children }: { title: string; icon: React.ElementType; children: React.ReactNode }) => (
+// FIX: Correctly type the SettingsCard component props to accept children.
+const SettingsCard = ({ title, icon: Icon, children }: React.PropsWithChildren<{ title: string; icon: React.ElementType }>) => (
     <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-lg">
         <h3 className="text-xl font-bold mb-4 dark:text-white flex items-center">
             <Icon className="w-6 h-6 mr-3 text-blue-500" />

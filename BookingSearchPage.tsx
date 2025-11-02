@@ -1,15 +1,16 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import SearchForm from './components/SearchForm';
-import { ClockIcon, ArrowRightIcon, WifiIcon, AcIcon, PowerIcon, StarIcon, SparklesIcon, FilterIcon } from './components/icons';
+import { ClockIcon, ArrowRightIcon, WifiIcon, AcIcon, PowerIcon, StarIcon, SparklesIcon, FilterIcon, TruckIcon } from './components/icons';
 import SearchResultSkeleton from './components/SearchResultSkeleton';
 
 const searchResults = [
-  { id: 1, company: 'Volcano Express', departureTime: '07:00 AM', arrivalTime: '10:30 AM', duration: '3h 30m', price: 4500, availableSeats: 23, amenities: ['WiFi', 'AC'], tag: 'Ikunzwe Cyane' },
-  { id: 2, company: 'Horizon Express', departureTime: '08:30 AM', arrivalTime: '12:15 PM', duration: '3h 45m', price: 4800, availableSeats: 15, amenities: ['AC', 'Charging'] },
-  { id: 3, company: 'RITCO', departureTime: '09:00 AM', arrivalTime: '12:30 PM', duration: '3h 30m', price: 4500, availableSeats: 30, amenities: ['WiFi', 'AC', 'Charging'], tag: 'Byuzuye' },
-  { id: 4, company: 'Volcano Express', departureTime: '11:00 AM', arrivalTime: '02:30 PM', duration: '3h 30m', price: 4500, availableSeats: 5, amenities: ['AC'] },
-  { id: 5, company: 'Volcano Express', departureTime: '14:00 AM', arrivalTime: '17:30 PM', duration: '3h 30m', price: 4500, availableSeats: 18, amenities: ['AC', 'WiFi'] },
-  { id: 6, company: 'RITCO', departureTime: '16:00 AM', arrivalTime: '19:30 PM', duration: '3h 30m', price: 4500, availableSeats: 40, amenities: ['AC', 'Charging'] },
+  { id: 1, company: 'Volcano Express', departureTime: '07:00 AM', arrivalTime: '10:30 AM', duration: '3h 30m', price: 4500, availableSeats: 23, amenities: ['WiFi', 'AC'], tag: 'Ikunzwe Cyane', busType: 'Luxury' },
+  { id: 2, company: 'Horizon Express', departureTime: '08:30 AM', arrivalTime: '12:15 PM', duration: '3h 45m', price: 4800, availableSeats: 15, amenities: ['AC', 'Charging'], busType: 'Standard' },
+  { id: 3, company: 'RITCO', departureTime: '09:00 AM', arrivalTime: '12:30 PM', duration: '3h 30m', price: 4500, availableSeats: 30, amenities: ['WiFi', 'AC', 'Charging'], tag: 'Byuzuye', busType: 'Standard' },
+  { id: 4, company: 'Volcano Express', departureTime: '11:00 AM', arrivalTime: '02:30 PM', duration: '3h 30m', price: 4500, availableSeats: 5, amenities: ['AC'], busType: 'Standard' },
+  { id: 5, company: 'Volcano Express', departureTime: '14:00 AM', arrivalTime: '17:30 PM', duration: '3h 30m', price: 4500, availableSeats: 18, amenities: ['AC', 'WiFi'], busType: 'Luxury' },
+  { id: 6, company: 'RITCO', departureTime: '16:00 AM', arrivalTime: '19:30 PM', duration: '3h 30m', price: 4500, availableSeats: 40, amenities: ['AC', 'Charging'], busType: 'Standard' },
+  { id: 7, company: 'Night Cruiser', departureTime: '22:00 PM', arrivalTime: '05:30 AM', duration: '7h 30m', price: 9000, availableSeats: 12, amenities: ['WiFi', 'AC', 'Charging'], busType: 'Sleeper' },
 ];
 
 const featuredRoutes = [
@@ -86,10 +87,11 @@ const BookingSearchPage: React.FC<BookingSearchPageProps> = ({ onTripSelect }) =
     const [showResults, setShowResults] = useState(false);
     const [isSearching, setIsSearching] = useState(false);
     const [searchCriteria, setSearchCriteria] = useState<{ from?: string, to?: string }>({});
-    const [priceFilter, setPriceFilter] = useState(5000);
+    const [priceFilter, setPriceFilter] = useState(10000);
     const [timeFilter, setTimeFilter] = useState<string[]>([]);
     const [amenitiesFilter, setAmenitiesFilter] = useState<string[]>([]);
     const [companyFilter, setCompanyFilter] = useState<string[]>([]);
+    const [busTypeFilter, setBusTypeFilter] = useState<string[]>([]);
     const [favoriteTrips, setFavoriteTrips] = useState<number[]>([]);
 
     useEffect(() => {
@@ -130,7 +132,12 @@ const BookingSearchPage: React.FC<BookingSearchPageProps> = ({ onTripSelect }) =
         setCompanyFilter(prev => prev.includes(company) ? prev.filter(c => c !== company) : [...prev, company]);
     };
 
+    const handleBusTypeFilter = (busType: string) => {
+        setBusTypeFilter(prev => prev.includes(busType) ? prev.filter(bt => bt !== busType) : [...prev, busType]);
+    };
+
     const companies = useMemo(() => [...new Set(searchResults.map(r => r.company))], []);
+    const busTypes = useMemo(() => [...new Set(searchResults.map(r => r.busType))], []);
 
     const filteredResults = useMemo(() => {
         return searchResults.filter(result => {
@@ -157,9 +164,13 @@ const BookingSearchPage: React.FC<BookingSearchPageProps> = ({ onTripSelect }) =
                 if (!companyFilter.includes(result.company)) return false;
             }
 
+            if (busTypeFilter.length > 0) {
+                if (!busTypeFilter.includes(result.busType)) return false;
+            }
+
             return true;
         });
-    }, [priceFilter, timeFilter, amenitiesFilter, companyFilter]);
+    }, [priceFilter, timeFilter, amenitiesFilter, companyFilter, busTypeFilter]);
 
     return (
         <div className="min-h-full">
@@ -189,6 +200,18 @@ const BookingSearchPage: React.FC<BookingSearchPageProps> = ({ onTripSelect }) =
                                             <button key={time} onClick={() => handleTimeFilter(time)} className={`w-full py-2 text-sm rounded-md border-2 transition-colors ${timeFilter.includes(time) ? 'bg-blue-500 text-white border-blue-500' : 'bg-transparent border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
                                                 {time.charAt(0).toUpperCase() + time.slice(1)}
                                             </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                {/* Bus Type Filter */}
+                                <div className="mb-6">
+                                    <label className="font-semibold dark:text-gray-200 block mb-2">Ubwoko bwa Bisi</label>
+                                    <div className="space-y-2">
+                                        {busTypes.map(busType => (
+                                            <label key={busType} className="flex items-center space-x-3 cursor-pointer">
+                                                <input type="checkbox" checked={busTypeFilter.includes(busType)} onChange={() => handleBusTypeFilter(busType)} className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"/>
+                                                <span className="text-sm dark:text-gray-300">{busType}</span>
+                                            </label>
                                         ))}
                                     </div>
                                 </div>

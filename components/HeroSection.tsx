@@ -16,7 +16,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onSearch }) => {
         <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?q=80&w=2048&auto=format&fit=crop')" }}></div>
         <div className="absolute inset-0 bg-gradient-to-t from-blue-900/80 to-green-900/40 z-10"></div>
         <div className="relative z-20 container mx-auto px-6 text-center">
-          <h1 className="text-4xl md:text-6xl font-extrabold mb-4 text-shadow-lg tracking-tight">Tembera u Rwanda</h1>
+          <h1 className="text-4xl md:text-6xl font-extrabold mb-4 text-shadow-lg tracking-tight">Tegura Urugendo Rwawe Kare Muburyo Bworoshye</h1>
           <p className="text-lg md:text-xl font-light mb-8 max-w-2xl mx-auto">
             Kata itike ya bisi mu buryo bworoshye kandi bwizewe. Urugendo rwawe ruhebuje rutangirira hano.
           </p>

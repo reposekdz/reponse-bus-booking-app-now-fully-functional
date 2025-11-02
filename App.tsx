@@ -23,8 +23,9 @@ import LoadingSpinner from './components/LoadingSpinner';
 import { mockCompaniesData } from './AdminDashboard';
 import BookingSearchPage from './BookingSearchPage';
 import CompaniesAside from './components/CompaniesAside';
+import ScheduledTripsPage from './ScheduledTripsPage';
 
-export type Page = 'home' | 'login' | 'register' | 'bookings' | 'companies' | 'help' | 'contact' | 'searchResults' | 'seatSelection' | 'companyProfile' | 'profile' | 'services' | 'bookingSearch';
+export type Page = 'home' | 'login' | 'register' | 'bookings' | 'companies' | 'help' | 'contact' | 'searchResults' | 'seatSelection' | 'companyProfile' | 'profile' | 'services' | 'bookingSearch' | 'scheduled';
 
 const initialUserWallet = {
   balance: 75_500,
@@ -65,7 +66,7 @@ const App: React.FC = () => {
     }
   }, [theme]);
 
-  const protectedPages: Page[] = ['bookings', 'profile'];
+  const protectedPages: Page[] = ['bookings', 'profile', 'scheduled'];
 
   const navigate = (targetPage: Page, data?: any) => {
     if (protectedPages.includes(targetPage) && !isLoggedIn) {
@@ -183,6 +184,8 @@ const App: React.FC = () => {
         return <ContactPage />;
       case 'services':
         return <ServicesPage />;
+       case 'scheduled':
+        return <ScheduledTripsPage onSearch={handleSearch} />;
       case 'bookingSearch':
         return <BookingSearchPage onTripSelect={handleTripSelect} />;
       case 'searchResults':
