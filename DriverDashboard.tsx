@@ -1,5 +1,3 @@
-
-
 import React, { useState, useMemo, useEffect } from 'react';
 import {
     SunIcon, MoonIcon, CogIcon, UsersIcon, ChartBarIcon, BuildingOfficeIcon,
@@ -15,38 +13,41 @@ interface DriverDashboardProps {
     onPassengerBoarding: (ticketId: string) => void;
 }
 
+const mockPassengersData = {
+    'VB01': [
+        { name: 'Kalisa Jean', seat: 'A5', ticketId: 'VK-83AD1', status: 'booked' },
+        { name: 'Mutesi Aline', seat: 'A6', ticketId: 'VK-83AD2', status: 'booked' },
+        { name: 'Hakizimana David', seat: 'B1', ticketId: 'VK-83AD3', status: 'booked' },
+    ],
+    'RT01': [
+        { name: 'Umuhoza Grace', seat: 'C1', ticketId: 'RT-98CD3', status: 'booked' },
+        { name: 'Ndayizeye Eric', seat: 'C2', ticketId: 'RT-98CD4', status: 'booked' },
+    ]
+};
+
+const mockTrips = {
+    'VB01': { from: 'Kigali', to: 'Rubavu', time: '07:00' },
+    'RT01': { from: 'Kigali', to: 'Huye', time: '08:30' },
+}
+
 const DriverDashboard: React.FC<DriverDashboardProps> = ({ onLogout, theme, setTheme, driverData, allCompanies, onPassengerBoarding }) => {
     const [currentTrip, setCurrentTrip] = useState<any>(null);
     const [passengers, setPassengers] = useState<any[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
-        // Find the company this driver belongs to
-        const driverCompany = allCompanies.find(c => c.drivers?.some(d => d.id === driverData.id));
-        if (!driverCompany) return;
-
-        // Find the trip assigned to this driver's bus
-        // This is a simplified logic for mock data: finds the first scheduled trip for the assigned bus
-        for (const routeKey in driverCompany.schedule) {
-            const scheduledTrip = driverCompany.schedule[routeKey].find(s => s.busId === driverData.assignedBusId);
-            if (scheduledTrip) {
-                const [from, to] = routeKey.split('-');
-                setCurrentTrip({
-                    from,
-                    to,
-                    ...scheduledTrip
-                });
-                setPassengers(scheduledTrip.passengers.map(p => ({ ...p, status: 'booked' })));
-                break;
-            }
+        const tripInfo = mockTrips[driverData.assignedBusId];
+        if (tripInfo) {
+            setCurrentTrip(tripInfo);
+            setPassengers(mockPassengersData[driverData.assignedBusId] || []);
         }
-    }, [driverData, allCompanies]);
+    }, [driverData]);
 
     const toggleTheme = () => setTheme(theme === 'light' ? 'dark' : 'light');
 
     const handleConfirmBoarding = (ticketId: string) => {
         setPassengers(prev => prev.map(p => p.ticketId === ticketId ? { ...p, status: 'boarded' } : p));
-        onPassengerBoarding(ticketId);
+        onPassengerBoarding(ticketId); // Update global state
     };
 
     const filteredPassengers = useMemo(() => {

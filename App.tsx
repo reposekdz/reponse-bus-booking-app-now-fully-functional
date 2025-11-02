@@ -26,6 +26,8 @@ import CompaniesAside from './components/CompaniesAside';
 import NextTripWidget from './components/NextTripWidget';
 import LoadingSpinner from './components/LoadingSpinner';
 
+import { mockCompaniesData as initialCompanies } from './admin/AdminDashboard';
+
 export type Page =
     | 'home'
     | 'login'
@@ -45,6 +47,18 @@ export type Page =
     | 'agentDashboard'
     | 'scheduled';
 
+const initialDrivers = [
+  { id: 'drv1', name: 'James Gatete', assignedBusId: 'VB01', companyId: 'volcano', phone: '0788111111', status: 'Active' },
+  { id: 'drv2', name: 'Aline Uwase', assignedBusId: 'RT01', companyId: 'ritco', phone: '0788222222', status: 'Active' },
+  { id: 'drv3', name: 'Emmanuel Mugisha', assignedBusId: 'HZ01', companyId: 'horizon', phone: '0788333333', status: 'Inactive' },
+];
+
+const initialBuses = [
+    { id: 'VB01', plate: 'RAA 123 B', model: 'Yutong Grand', capacity: 65, driverId: 'drv1', status: 'On Route', companyId: 'volcano' },
+    { id: 'VB02', plate: 'RAA 456 C', model: 'Scania Marcopolo', capacity: 70, driverId: null, status: 'Idle', companyId: 'volcano' },
+    { id: 'RT01', plate: 'RAB 789 D', model: 'Yutong Grand', capacity: 65, driverId: 'drv2', status: 'On Route', companyId: 'ritco' },
+];
+
 const App = () => {
     const [currentPage, setCurrentPage] = useState<Page>('home');
     const [pageData, setPageData] = useState<any>(null);
@@ -54,8 +68,15 @@ const App = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [isCompaniesAsideOpen, setIsCompaniesAsideOpen] = useState(false);
     const [nextTrip, setNextTrip] = useState<any | null>(null);
+
+    // Centralized Data State
+    const [companies, setCompanies] = useState(initialCompanies);
+    const [drivers, setDrivers] = useState(initialDrivers);
+    const [buses, setBuses] = useState(initialBuses);
     
-    // Mock data for various roles
+    // Boarding Status State
+    const [boardingStatus, setBoardingStatus] = useState<Record<string, 'booked' | 'boarded'>>({});
+    
     const driverData = { id: 'drv1', name: 'James Gatete', assignedBusId: 'VB01'};
     const agentData = { id: 'agt1', name: 'Aline Uwase', location: 'Nyabugogo' };
     
@@ -63,8 +84,6 @@ const App = () => {
         { id: 1, passengerName: 'Kalisa Jean', passengerSerial: 'KJ7821', amount: 10000, commission: 200, date: new Date().toISOString() },
         { id: 2, passengerName: 'Mutesi Aline', passengerSerial: 'MA1234', amount: 5000, commission: 100, date: new Date().toISOString() },
     ]);
-    
-    const [boardingStatus, setBoardingStatus] = useState<Record<string, 'booked' | 'boarded'>>({});
 
 
     // Mock wallet data
@@ -175,7 +194,11 @@ const App = () => {
             return { success: true, passengerName: 'Kalisa Jean' };
         }
         return { success: false, message: 'Passenger serial code not found.' };
-    }
+    };
+
+    const handlePassengerBoarding = (ticketId: string) => {
+        setBoardingStatus(prev => ({ ...prev, [ticketId]: 'boarded' }));
+    };
 
     const renderPage = () => {
         switch (currentPage) {
@@ -193,7 +216,7 @@ const App = () => {
             case 'scheduled': return <ScheduledTripsPage onSearch={handleSearch} />;
             case 'adminDashboard': return <AdminLayout onLogout={handleLogout} theme={theme} setTheme={setTheme} />;
             case 'companyDashboard': return <CompanyLayout onLogout={handleLogout} theme={theme} setTheme={setTheme} />;
-            case 'driverDashboard': return <DriverDashboard onLogout={handleLogout} theme={theme} setTheme={setTheme} driverData={driverData} allCompanies={[]} onPassengerBoarding={(ticketId) => setBoardingStatus(prev => ({...prev, [ticketId]: 'boarded'}))}/>
+            case 'driverDashboard': return <DriverDashboard onLogout={handleLogout} theme={theme} setTheme={setTheme} driverData={driverData} allCompanies={companies} onPassengerBoarding={handlePassengerBoarding}/>
             case 'agentDashboard': return <AgentDashboard onLogout={handleLogout} theme={theme} setTheme={setTheme} agentData={agentData} onAgentDeposit={handleAgentDeposit} passengerSerialCode={walletData.serialCode} transactions={agentTransactions} />;
             case 'home':
             default:

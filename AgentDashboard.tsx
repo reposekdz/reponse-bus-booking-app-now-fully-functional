@@ -14,7 +14,7 @@ interface AgentDashboardProps {
     transactions: any[];
 }
 
-const StatCard = ({ title, value, icon, isCurrency = true }) => (
+const StatCard = ({ title, value, icon, format = 'currency' }) => (
     <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-lg relative overflow-hidden group">
         <div className="absolute -right-4 -bottom-4 text-gray-200/20 dark:text-gray-900/20 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500">
             {React.cloneElement(icon, { className: "w-20 h-20" })}
@@ -22,7 +22,7 @@ const StatCard = ({ title, value, icon, isCurrency = true }) => (
         <div className="relative">
             <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
             <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">
-                {isCurrency ? `${new Intl.NumberFormat('fr-RW').format(value)} RWF` : value}
+                {format === 'currency' ? `${new Intl.NumberFormat('fr-RW').format(value)} RWF` : new Intl.NumberFormat().format(value)}
             </p>
         </div>
     </div>
@@ -58,6 +58,7 @@ const DashboardView = ({ agentData, transactions }) => {
 
     const totalDeposits = transactions.reduce((sum, tx) => sum + tx.amount, 0);
     const totalCommission = transactions.reduce((sum, tx) => sum + tx.commission, 0);
+    const uniquePassengers = new Set(transactions.map(tx => tx.passengerSerial)).size;
 
     return (
         <div className="space-y-6">
@@ -65,8 +66,8 @@ const DashboardView = ({ agentData, transactions }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatCard title="Yose Yabikijwe" value={totalDeposits} icon={<ArrowDownLeftIcon/>}/>
                 <StatCard title="Komisiyo Yose" value={totalCommission} icon={<WalletIcon/>}/>
-                <StatCard title="Ibikorwa Byose" value={transactions.length} icon={<UsersIcon/>} isCurrency={false}/>
-                <StatCard title="Abagenzi Bafashijwe" value={new Set(transactions.map(tx => tx.passengerSerial)).size} icon={<UsersIcon/>} isCurrency={false}/>
+                <StatCard title="Ibikorwa Byose" value={transactions.length} icon={<ChartBarIcon/>} format="number"/>
+                <StatCard title="Abagenzi Bafashijwe" value={uniquePassengers} icon={<UsersIcon/>} format="number"/>
             </div>
              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2">
@@ -262,7 +263,7 @@ const TransactionsView = ({ transactions }) => {
                         <tbody>
                             {filteredTransactions.map(tx => (
                                 <tr key={tx.id} className="border-t dark:border-gray-700">
-                                    <td className="p-3">{tx.date}</td>
+                                    <td className="p-3">{new Date(tx.date).toLocaleDateString()}</td>
                                     <td className="font-semibold dark:text-white">{tx.passengerName}</td>
                                     <td>{tx.passengerSerial}</td>
                                     <td className="font-mono">{new Intl.NumberFormat('fr-RW').format(tx.amount)}</td>
