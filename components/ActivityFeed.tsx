@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { BuildingOfficeIcon, TagIcon } from './icons';
 
 const eventTemplates = [
-    { type: 'new_company', icon: BuildingOfficeIcon, message: (name) => `New Company: ${name} has joined the platform.` },
-    { type: 'new_promotion', icon: TagIcon, message: (name) => `Promotion Alert: ${name} launched a new promotion.` },
+    { type: 'new_company', icon: BuildingOfficeIcon, message: (name) => `Ikigo Gishya: ${name} cyiyandikishije.` },
+    { type: 'new_promotion', icon: TagIcon, message: (name) => `Promosiyo Nshya: ${name} yatangije promosiyo.` },
 ];
 const companyNames = ['Sotra', 'KBS', 'Royal Express', 'Matunda Express', 'Omega Car'];
 
@@ -19,14 +19,13 @@ const generateRandomEvent = () => {
 };
 
 const formatTimeAgo = (date: Date) => {
-    // FIX: Use getTime() for date arithmetic to satisfy TypeScript's type checker.
     const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
-    if (seconds < 5) return 'just now';
-    if (seconds < 60) return `${seconds}s ago`;
+    if (seconds < 5) return 'nonaha';
+    if (seconds < 60) return `${seconds}s ishize`;
     const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes}m ago`;
+    if (minutes < 60) return `${minutes}min ishize`;
     const hours = Math.floor(minutes / 60);
-    return `${hours}h ago`;
+    return `${hours}h ishize`;
 }
 
 const ActivityFeed = () => {
@@ -50,8 +49,8 @@ const ActivityFeed = () => {
     }, []);
 
     return (
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
-            <h3 className="font-bold mb-4 dark:text-white">Platform Activity</h3>
+        <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-lg">
+            <h3 className="font-bold mb-4 dark:text-white">Ibiri Kuberaho</h3>
             <div className="space-y-4 h-72 overflow-y-auto custom-scrollbar">
                 {activities.map(act => (
                     <div key={act.id} className="flex items-start space-x-3 animate-fade-in">
