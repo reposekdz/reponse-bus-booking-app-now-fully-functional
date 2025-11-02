@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import HeroSection from './components/HeroSection';
@@ -195,6 +196,7 @@ const App: React.FC = () => {
       case 'companyProfile':
         return <CompanyProfilePage company={selectedCompany} onSelectTrip={handleSearch} />;
       case 'profile':
+        // FIX: Removed onSearch prop as it is not used in the ProfilePage component.
         return <ProfilePage walletData={walletData} onWalletUpdate={setWalletData} />;
       case 'home':
       default:

@@ -1,5 +1,7 @@
+
 import React, { useState } from 'react';
-import { GoogleGenAI } from "@google/genai";
+// FIX: Import `Type` to use with responseSchema.
+import { GoogleGenAI, Type } from "@google/genai";
 import { XIcon, SparklesIcon, PaperAirplaneIcon } from './icons';
 
 interface AITripPlannerProps {
@@ -28,12 +30,21 @@ Based on the user's prompt, determine the most logical departure city ('from'), 
 If a city is not explicitly mentioned, infer it from landmarks (e.g., 'see gorillas' implies Musanze, 'Nyungwe forest' implies Nyungwe).
 The response MUST be a valid JSON object with the following structure and nothing else: {"from": "string", "to": "string"}. Do not add any extra text or markdown formatting.`;
 
+      // FIX: Added responseSchema for more reliable JSON output as per Gemini API guidelines.
       const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
         contents: prompt,
         config: {
             systemInstruction: systemInstruction,
-            responseMimeType: 'application/json'
+            responseMimeType: 'application/json',
+            responseSchema: {
+                type: Type.OBJECT,
+                properties: {
+                    from: { type: Type.STRING },
+                    to: { type: Type.STRING }
+                },
+                required: ['from', 'to']
+            }
         }
       });
       

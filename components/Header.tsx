@@ -47,8 +47,6 @@ const Header: React.FC<HeaderProps> = ({ navigate, isLoggedIn, onLogout, theme, 
       navItems = [
           { label: 'Ahabanza', page: 'home' },
           { label: 'Kata Itike', page: 'bookingSearch' },
-          { label: 'Amatike Yanjye', page: 'bookings' },
-          { label: 'Gerakuiteganijwe', page: 'scheduled' },
           { label: 'Umwirondoro', page: 'profile' },
           { label: 'Ibigo', page: 'companies', action: onToggleCompaniesAside },
           { label: 'Serivisi', page: 'services' },

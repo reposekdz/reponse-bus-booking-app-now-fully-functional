@@ -12,18 +12,20 @@ interface CompanyDashboardProps {
 }
 
 const StatCard = ({ title, value, icon }) => (
-    <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md flex items-center space-x-4">
-        <div className="p-3 bg-blue-100 dark:bg-gray-700 rounded-lg">
-            {icon}
+    <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-lg relative overflow-hidden group transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-100 via-transparent to-green-100 dark:from-blue-900/30 dark:via-transparent dark:to-green-900/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+        <div className="absolute -right-4 -bottom-4 text-gray-200/20 dark:text-gray-900/20 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500">
+            {React.cloneElement(icon, { className: "w-20 h-20" })}
         </div>
-        <div>
+        <div className="relative">
             <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+            <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">
                 {typeof value === 'number' ? new Intl.NumberFormat('fr-RW').format(value) : value}
             </p>
         </div>
     </div>
 );
+
 
 interface FormModalProps {
     title: string;
@@ -73,7 +75,7 @@ const ProfileManagement = ({ company, onUpdate }) => {
                     <PencilSquareIcon className="w-5 h-5 mr-2" /> Edit Profile
                 </button>
             </div>
-             <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md space-y-4">
+             <div className="bg-white dark:bg-gray-800/50 p-6 rounded-xl shadow-md space-y-4">
                 <div><strong className="text-gray-500 dark:text-gray-400">Name:</strong> {company.name}</div>
                 <div><strong className="text-gray-500 dark:text-gray-400">Email:</strong> {company.contactEmail}</div>
                 <div><strong className="text-gray-500 dark:text-gray-400">Description:</strong> {company.description}</div>
@@ -115,7 +117,7 @@ const FleetManagement = ({ fleet, onUpdate }) => {
                     <PlusIcon className="w-5 h-5 mr-2"/>Add Bus
                 </button>
             </div>
-            <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md">
+            <div className="bg-white dark:bg-gray-800/50 p-4 rounded-xl shadow-md">
                 <table className="w-full text-sm">
                     <thead><tr className="text-left text-xs text-gray-500 uppercase"><th className="p-2">Model</th><th>Capacity</th><th>Status</th><th>Actions</th></tr></thead>
                     <tbody>{fleet.map(bus => (
@@ -168,7 +170,7 @@ const RouteManagement = ({ routes, onUpdate }) => {
                 </button>
             </div>
             {/* Table and Modal similar to FleetManagement */}
-            <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md">
+            <div className="bg-white dark:bg-gray-800/50 p-4 rounded-xl shadow-md">
                  <table className="w-full text-sm">
                     <thead><tr className="text-left text-xs text-gray-500 uppercase"><th className="p-2">From</th><th>To</th><th>Price (RWF)</th><th>Actions</th></tr></thead>
                     <tbody>{routes.map(route => (
@@ -197,7 +199,7 @@ const RouteManagement = ({ routes, onUpdate }) => {
 const PassengerManagement = ({ passengers }) => (
     <div>
         <h1 className="text-3xl font-bold dark:text-gray-200 mb-6">Recent Passengers</h1>
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md">
+        <div className="bg-white dark:bg-gray-800/50 p-4 rounded-xl shadow-md">
             <table className="w-full text-sm">
                 <thead><tr className="text-left text-xs text-gray-500 uppercase"><th className="p-2">Name</th><th>Route</th><th>Ticket ID</th><th>Date</th></tr></thead>
                 <tbody>{passengers.map(p => (
@@ -215,7 +217,7 @@ const FinancialsManagement = ({ wallet }) => (
             <p className="text-sm opacity-80">Current Wallet Balance</p>
             <p className="text-4xl font-bold mt-1">{new Intl.NumberFormat('fr-RW', { style: 'currency', currency: 'RWF' }).format(wallet.balance)}</p>
         </div>
-         <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md">
+         <div className="bg-white dark:bg-gray-800/50 p-4 rounded-xl shadow-md">
             <h3 className="font-bold text-lg mb-2 dark:text-white">Transaction History</h3>
             <table className="w-full text-sm">
                  <thead><tr className="text-left text-xs text-gray-500 uppercase"><th className="p-2">Date</th><th>Description</th><th>Amount</th><th>Status</th></tr></thead>
@@ -266,7 +268,7 @@ const SchedulingManagement = ({ company, onUpdate }) => {
     return (
         <div>
             <h1 className="text-3xl font-bold dark:text-gray-200 mb-6">Manage Schedules</h1>
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
+            <div className="bg-white dark:bg-gray-800/50 p-6 rounded-xl shadow-md">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
                     <div>
                         <label htmlFor="route-select" className="text-sm font-medium text-gray-500 dark:text-gray-400">Select Route</label>
@@ -332,7 +334,7 @@ const PromotionsManagement = ({ promotions, onUpdate }) => {
                     <PlusIcon className="w-5 h-5 mr-2"/>Create Promotion
                 </button>
             </div>
-            <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md">
+            <div className="bg-white dark:bg-gray-800/50 p-4 rounded-xl shadow-md">
                  <table className="w-full text-sm">
                     <thead><tr className="text-left text-xs text-gray-500 uppercase"><th className="p-2">Title</th><th>Code</th><th>Expires</th><th>Actions</th></tr></thead>
                     <tbody>
@@ -387,7 +389,7 @@ const CompanyDashboard: React.FC<CompanyDashboardProps> = ({ onLogout, theme, se
                            <StatCard title="Fleet Size" value={company.fleetSize} icon={<BusIcon className="w-6 h-6 text-blue-500" />} />
                            <StatCard title="Active Routes" value={company.routes.length} icon={<MapIcon className="w-6 h-6 text-blue-500" />} />
                         </div>
-                        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
+                        <div className="bg-white dark:bg-gray-800/50 p-6 rounded-xl shadow-md">
                             <h3 className="font-bold mb-4 dark:text-white">Daily Tickets Sold</h3>
                              <div className="flex items-end h-40 space-x-2">
                                 {company.dailyTickets.map(data => (
@@ -421,16 +423,17 @@ const CompanyDashboard: React.FC<CompanyDashboardProps> = ({ onLogout, theme, se
     };
 
     const NavLink = ({ viewName, label, icon: Icon }) => (
-        <button onClick={() => setView(viewName)} className={`w-full flex items-center px-4 py-3 transition-colors duration-200 ${view === viewName ? 'text-white bg-gray-700' : 'text-gray-300 hover:bg-gray-700/50 hover:text-white'} rounded-md`}>
-            <Icon className="w-5 h-5 mr-3" />
-            <span>{label}</span>
-        </button>
-    );
+      <button onClick={() => setView(viewName)} className={`group w-full flex items-center px-4 py-3 transition-all duration-300 rounded-lg relative ${view === viewName ? 'text-white' : 'text-gray-400 hover:text-white'}`}>
+          <div className={`absolute left-0 top-0 h-full w-1 rounded-r-full bg-yellow-400 transition-all duration-300 ${view === viewName ? 'scale-y-100' : 'scale-y-0 group-hover:scale-y-50'}`}></div>
+          <Icon className="w-6 h-6 mr-4 transition-transform duration-300 group-hover:scale-110" />
+          <span className="font-semibold">{label}</span>
+      </button>
+  );
 
     return (
         <div className={`min-h-screen flex ${theme}`}>
-            <aside className="w-64 bg-gray-800 text-gray-300 flex-col hidden lg:flex">
-                <div className="h-16 flex items-center justify-center text-white font-bold text-xl border-b border-gray-700">
+            <aside className="w-64 bg-gradient-to-b from-gray-800 via-gray-900 to-black text-gray-300 flex-col hidden lg:flex border-r border-gray-700/50">
+                <div className="h-20 flex items-center justify-center text-white font-bold text-xl border-b border-white/10">
                     COMPANY PORTAL
                 </div>
                 <nav className="flex-1 px-4 py-6 space-y-2">
@@ -447,7 +450,7 @@ const CompanyDashboard: React.FC<CompanyDashboardProps> = ({ onLogout, theme, se
             </aside>
 
             <div className="flex-1 flex flex-col bg-gray-100 dark:bg-gray-900">
-                <header className="h-16 bg-white dark:bg-gray-800 shadow-md flex items-center justify-between px-6">
+                <header className="h-16 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-sm flex items-center justify-between px-6 border-b dark:border-gray-700/50">
                     <div className="text-gray-800 dark:text-white font-bold">{company.name}</div>
                     <div className="flex items-center space-x-4">
                         <button onClick={toggleTheme} className="text-gray-500 dark:text-gray-400">

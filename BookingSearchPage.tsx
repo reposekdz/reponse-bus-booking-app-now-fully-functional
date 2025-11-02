@@ -1,6 +1,7 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 // FIX: Corrected import to point to the existing BookingForm component
-import SearchForm from './components/BookingForm';
+import BookingForm from './components/BookingForm';
 import { ClockIcon, ArrowRightIcon, WifiIcon, AcIcon, PowerIcon, StarIcon, SparklesIcon, FilterIcon, TruckIcon } from './components/icons';
 import SearchResultSkeleton from './components/SearchResultSkeleton';
 
@@ -181,7 +182,8 @@ const BookingSearchPage: React.FC<BookingSearchPageProps> = ({ onTripSelect }) =
                     <aside className="lg:w-1/3 xl:w-1/4">
                         <div className="sticky top-24 space-y-6">
                             <div className="bg-gradient-to-br from-blue-600 to-green-600 dark:from-gray-800 dark:to-gray-900/50 p-6 rounded-2xl shadow-2xl text-white">
-                                <SearchForm onSearch={handleSearch} />
+                                {/* FIX: Corrected component usage to BookingForm */}
+                                <BookingForm onSearch={handleSearch} />
                             </div>
                             <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg">
                                 <h3 className="text-xl font-bold mb-4 dark:text-white flex items-center"><FilterIcon className="w-6 h-6 mr-2 text-blue-500"/> Filters</h3>

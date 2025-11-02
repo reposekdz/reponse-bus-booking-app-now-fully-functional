@@ -21,7 +21,7 @@ export const mockCompaniesData = [
         name: 'Volcano Express',
         password: 'password123',
         logoUrl: 'https://seeklogo.com/images/V/volcano-express-logo-F735513A51-seeklogo.com.png',
-        coverUrl: 'https://images.unsplash.com/photo-1593256398246-8853b3815c32?q=80&w=2070&auto=format&fit=crop',
+        coverUrl: 'https://images.unsplash.com/photo/1593256398246-8853b3815c32?q=80&w=2070&auto=format&fit=crop',
         description: "Volcano Express ni ikigo cy'ubwikorezi mu Rwanda, kizwiho kubahiriza igihe no gutanga serivisi nziza ku bakiriya.",
         contactEmail: 'contact@volcano.rw',
         fleetSize: 120,
@@ -318,7 +318,7 @@ const CompanyCard: React.FC<{
     </div>
 );
 
-// FIX: Add missing RouteFormModal component definition
+// Add missing RouteFormModal component definition
 const RouteFormModal = ({ route, companies, onSave, onClose, companyId: defaultCompanyId }) => {
     const [formData, setFormData] = useState({
         companyId: route?.companyId || defaultCompanyId || (companies.length > 0 ? companies[0].id : ''),
@@ -388,26 +388,52 @@ const RouteFormModal = ({ route, companies, onSave, onClose, companyId: defaultC
     );
 };
 
+const ConfirmationModal: React.FC<{ title: string; message: string; onConfirm: () => void; onCancel: () => void; }> = ({ title, message, onConfirm, onCancel }) => {
+    return (
+        <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 animate-fade-in">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl max-w-sm w-full p-6">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">{title}</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 mb-6">{message}</p>
+                <div className="flex justify-end space-x-4">
+                    <button onClick={onCancel} className="px-4 py-2 border rounded-lg dark:border-gray-600 text-sm font-semibold">
+                        Oya, Bireke
+                    </button>
+                    <button onClick={onConfirm} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-sm font-semibold">
+                        Yego, Siba
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+
 const CompanyManagement = ({ companies, onSelectCompany, onUpdateCompanies }) => {
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isFormModalOpen, setIsFormModalOpen] = useState(false);
     const [editingCompany, setEditingCompany] = useState(null);
+    const [deletingCompanyId, setDeletingCompanyId] = useState<string | null>(null);
 
     const handleAdd = () => {
         setEditingCompany(null);
-        setIsModalOpen(true);
+        setIsFormModalOpen(true);
     };
 
     const handleEdit = (company) => {
         setEditingCompany(company);
-        setIsModalOpen(true);
+        setIsFormModalOpen(true);
     };
 
-    const handleDelete = (id) => {
-        if (window.confirm("Urifuza gusiba iki kigo?")) {
-            onUpdateCompanies(companies.filter(c => c.id !== id));
-        }
+    const handleDelete = (id: string) => {
+        setDeletingCompanyId(id);
     };
     
+    const confirmDelete = () => {
+        if (deletingCompanyId) {
+            onUpdateCompanies(companies.filter(c => c.id !== deletingCompanyId));
+        }
+        setDeletingCompanyId(null);
+    };
+
     const handleSave = (companyData) => {
         const isNew = !editingCompany;
         if (isNew) {
@@ -423,7 +449,7 @@ const CompanyManagement = ({ companies, onSelectCompany, onUpdateCompanies }) =>
         } else {
             onUpdateCompanies(companies.map(c => c.id === editingCompany.id ? { ...c, ...companyData } : c));
         }
-        setIsModalOpen(false);
+        setIsFormModalOpen(false);
         setEditingCompany(null);
     };
 
@@ -448,7 +474,15 @@ const CompanyManagement = ({ companies, onSelectCompany, onUpdateCompanies }) =>
                />
            ))}
         </div>
-        {isModalOpen && <CompanyFormModal company={editingCompany} onSave={handleSave} onClose={() => setIsModalOpen(false)} />}
+        {isFormModalOpen && <CompanyFormModal company={editingCompany} onSave={handleSave} onClose={() => setIsFormModalOpen(false)} />}
+        {deletingCompanyId && (
+            <ConfirmationModal 
+                title="Siba Ikigo"
+                message="Urifuza gusiba iki kigo? Iki gikorwa ntigishobora gusubizwa inyuma."
+                onConfirm={confirmDelete}
+                onCancel={() => setDeletingCompanyId(null)}
+            />
+        )}
     </div>
     )
 };
@@ -853,7 +887,7 @@ const RouteManagementPage = ({ companies, onUpdateCompanies }) => {
                     </table>
                 </div>
             </div>
-            {isModalOpen && <RouteFormModal route={editingRoute} companies={companies} onSave={handleSave} onClose={() => setIsModalOpen(false)} />}
+            {isModalOpen && <RouteFormModal route={editingRoute} companies={companies} onSave={handleSave} onClose={() => setIsModalOpen(false)} companyId={undefined} />}
         </div>
     )
 }

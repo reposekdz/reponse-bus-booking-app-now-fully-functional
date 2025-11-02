@@ -1,5 +1,5 @@
 import React from 'react';
-import { HomeIcon, TicketIcon, BuildingOfficeIcon, QuestionMarkCircleIcon, EnvelopeIcon } from './icons';
+import { HomeIcon, TicketIcon, BuildingOfficeIcon, QuestionMarkCircleIcon, EnvelopeIcon, UserCircleIcon } from './icons';
 import type { Page } from '../App';
 
 interface BottomNavigationProps {
@@ -9,9 +9,9 @@ interface BottomNavigationProps {
 
 const navItems: { label: string; page: Page; icon: React.FC<{className?: string}> }[] = [
     { label: 'Ahabanza', page: 'home', icon: HomeIcon },
-    { label: 'Amatike', page: 'bookings', icon: TicketIcon },
+    { label: 'Kata Itike', page: 'bookingSearch', icon: TicketIcon },
     { label: 'Ibigo', page: 'companies', icon: BuildingOfficeIcon },
-    { label: 'Ubufasha', page: 'help', icon: QuestionMarkCircleIcon },
+    { label: 'Umwirondoro', page: 'profile', icon: UserCircleIcon },
     { label: 'Twandikire', page: 'contact', icon: EnvelopeIcon },
 ];
 
@@ -24,6 +24,14 @@ const NavItem: React.FC<{ item: typeof navItems[0]; isActive: boolean; onClick: 
 );
 
 const BottomNavigation: React.FC<BottomNavigationProps> = ({ navigate, currentPage }) => {
+    // A bit of a hack to make the profile icon active for its sub-pages
+    const isProfileActive = ['profile', 'bookings', 'scheduled'].includes(currentPage);
+    
+    const activePage = (page: Page) => {
+        if (page === 'profile' && isProfileActive) return true;
+        return currentPage === page;
+    }
+
     return (
         <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-r from-[#0033A0] to-[#0c2461] dark:from-gray-900 dark:to-black shadow-[0_-5px_15px_-5px_rgba(0,0,0,0.2)]">
             <div className="container mx-auto px-2 h-20 flex justify-around items-center">
@@ -31,7 +39,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ navigate, currentPa
                     <NavItem 
                         key={item.page} 
                         item={item} 
-                        isActive={currentPage === item.page} 
+                        isActive={activePage(item.page)} 
                         onClick={() => navigate(item.page)} 
                     />
                 ))}
