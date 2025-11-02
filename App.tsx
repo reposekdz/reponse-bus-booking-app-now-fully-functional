@@ -50,9 +50,9 @@ export type Page =
     | 'driverProfile'; // New page type
 
 const initialDrivers = [
-  { id: 'drv1', name: 'James Gatete', assignedBusId: 'VB01', companyId: 'volcano', phone: '0788111111', status: 'Active', avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=2080&auto=format&fit=crop', coverUrl: 'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?q=80&w=2070&auto=format&fit=crop' },
-  { id: 'drv2', name: 'Aline Uwase', assignedBusId: 'RT01', companyId: 'ritco', phone: '0788222222', status: 'Active', avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1974&auto=format&fit=crop', coverUrl: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2070&auto=format&fit=crop' },
-  { id: 'drv3', name: 'Emmanuel Mugisha', assignedBusId: 'HZ01', companyId: 'horizon', phone: '0788333333', status: 'Inactive', avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1974&auto=format&fit=crop', coverUrl: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=2070&auto=format&fit=crop' },
+  { id: 'drv1', name: 'James Gatete', assignedBusId: 'VB01', companyId: 'volcano', phone: '0788111111', email: 'james.g@example.com', status: 'Active', avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=2080&auto=format&fit=crop', coverUrl: 'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?q=80&w=2070&auto=format&fit=crop', joinDate: '2020-05-15', totalTrips: 1240, safetyScore: 4.9 },
+  { id: 'drv2', name: 'Aline Uwase', assignedBusId: 'RT01', companyId: 'ritco', phone: '0788222222', email: 'aline.u@example.com', status: 'Active', avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1974&auto=format&fit=crop', coverUrl: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2070&auto=format&fit=crop', joinDate: '2019-11-20', totalTrips: 1580, safetyScore: 4.8 },
+  { id: 'drv3', name: 'Emmanuel Mugisha', assignedBusId: 'HZ01', companyId: 'horizon', phone: '0788333333', email: 'emmanuel.m@example.com', status: 'Inactive', avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1974&auto=format&fit=crop', coverUrl: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=2070&auto=format&fit=crop', joinDate: '2022-01-10', totalTrips: 450, safetyScore: 4.7 },
 ];
 
 const initialBuses = [
