@@ -161,7 +161,7 @@ const DashboardHome = ({ companies }) => (
                 <StatCard title="Total Revenue" value={companies.reduce((acc, c) => acc + c.totalRevenue, 0)} icon={<ChartBarIcon className="w-6 h-6 text-blue-500" />} />
                 <StatCard title="Total Passengers" value={companies.reduce((acc, c) => acc + c.totalPassengers, 0)} icon={<UsersIcon className="w-6 h-6 text-blue-500" />} />
                 <StatCard title="Companies" value={companies.length} icon={<BuildingOfficeIcon className="w-6 h-6 text-blue-500" />} format={false}/>
-                <StatCard title="Active Routes" value={companies.reduce((acc, c) => acc + c.routes.length, 0)} icon={<MapIcon className="w-6 h-6 text-blue-500" />} format={false}/>
+                <StatCard title="Active Routes" value={companies.reduce((acc, c) => acc + (c.routes?.length || 0), 0)} icon={<MapIcon className="w-6 h-6 text-blue-500" />} format={false}/>
             </div>
         </div>
         <div className="lg:col-span-1">
@@ -278,8 +278,8 @@ const CompanyCard: React.FC<{
                     <p className="font-bold text-blue-600 dark:text-blue-400 text-sm">{(company.totalPassengers / 1_000_000).toFixed(1)}M</p>
                 </div>
                 <div className="flex items-center space-x-1">
-                     <button onClick={() => onEdit(company)} className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"><PencilSquareIcon className="w-5 h-5"/></button>
-                     <button onClick={() => onDelete(company.id)} className="p-2 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-500 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"><TrashIcon className="w-5 h-5"/></button>
+                     <button onClick={(e) => { e.stopPropagation(); onEdit(company); }} className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"><PencilSquareIcon className="w-5 h-5"/></button>
+                     <button onClick={(e) => { e.stopPropagation(); onDelete(company.id); }} className="p-2 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-500 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"><TrashIcon className="w-5 h-5"/></button>
                 </div>
             </div>
             <button onClick={() => onSelect(company.id)} className="mt-4 w-full text-center py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-all text-sm">
@@ -316,7 +316,7 @@ const CompanyManagement = ({ companies, onSelectCompany, onUpdateCompanies }) =>
             const newCompany = { 
                 ...companyData, 
                 id: companyData.name.toLowerCase().replace(/\s+/g, '_') + Date.now(), 
-                totalPassengers: 0, totalRevenue: 0, fleetSize: 0, weeklyIncome: [], dailyTickets: [], routes: [], fleetDetails: [], recentPassengers: [],
+                totalPassengers: 0, totalRevenue: 0, fleetSize: 0, weeklyIncome: Array(7).fill({income:0}).map((d,i)=> ({...d, day: 'MTWTFSS'[i]})), dailyTickets: Array(7).fill({tickets:0}).map((d,i)=> ({...d, day: 'MTWTFSS'[i]})), routes: [], fleetDetails: [], recentPassengers: [],
                 wallet: { balance: 0, currency: 'RWF', transactions: [] }
             };
             onUpdateCompanies([...companies, newCompany]);
@@ -430,7 +430,7 @@ const CompanyDetails = ({ company, onBack }) => {
                     {activeTab === 'routes' && (
                         <table className="w-full text-sm text-left">
                             <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400"><tr><th className="px-4 py-2">From</th><th className="px-4 py-2">To</th><th className="px-4 py-2">Price</th><th className="px-4 py-2">Trips Today</th><th className="px-4 py-2">Avg. Passengers</th></tr></thead>
-                            <tbody>{company.routes.map(r => <tr key={`${r.from}-${r.to}`} className="border-b dark:border-gray-700"><td className="px-4 py-2 font-medium dark:text-white">{r.from}</td><td className="px-4 py-2">{r.to}</td><td className="px-4 py-2">{r.price}</td><td className="px-4 py-2">{r.tripsToday}</td><td className="px-4 py-2">{r.avgPassengers}</td></tr>)}</tbody>
+                            <tbody>{company.routes.map(r => <tr key={r.id} className="border-b dark:border-gray-700"><td className="px-4 py-2 font-medium dark:text-white">{r.from}</td><td className="px-4 py-2">{r.to}</td><td className="px-4 py-2">{r.price}</td><td className="px-4 py-2">{r.tripsToday}</td><td className="px-4 py-2">{r.avgPassengers}</td></tr>)}</tbody>
                         </table>
                     )}
                     {activeTab === 'fleet' && (
@@ -454,7 +454,7 @@ const CompanyDetails = ({ company, onBack }) => {
 const TransactionsPage = ({ companies }) => {
     const allTransactions = useMemo(() => {
         return companies.flatMap(c => 
-            c.wallet.transactions.map(t => ({ ...t, companyName: c.name, logoUrl: c.logoUrl }))
+            (c.wallet?.transactions || []).map(t => ({ ...t, companyName: c.name, logoUrl: c.logoUrl }))
         ).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     }, [companies]);
 

@@ -1,7 +1,7 @@
 import React, { useState, useMemo, ChangeEvent, FormEvent } from 'react';
 import {
     SunIcon, MoonIcon, CogIcon, UsersIcon, ChartBarIcon, BuildingOfficeIcon,
-    BusIcon, MapIcon, PencilSquareIcon, TrashIcon, PlusIcon, ArrowUpTrayIcon, WalletIcon, ClockIcon, TagIcon
+    BusIcon, MapIcon, PencilSquareIcon, TrashIcon, PlusIcon, ArrowUpTrayIcon, WalletIcon, ClockIcon, TagIcon, XIcon
 } from './components/icons';
 
 interface CompanyDashboardProps {
@@ -25,15 +25,20 @@ const StatCard = ({ title, value, icon }) => (
     </div>
 );
 
-const FormModal = ({ title, children, onClose, onSave }) => (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-6 max-w-md w-full">
-            <h3 className="text-lg font-bold mb-4 dark:text-white">{title}</h3>
+const FormModal = ({ title, children, onClose, onSave, isSaving = false }) => (
+    <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-bold dark:text-white">{title}</h3>
+                <button onClick={onClose} className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"><XIcon className="w-5 h-5"/></button>
+            </div>
             <form onSubmit={(e) => { e.preventDefault(); onSave(e); }} className="space-y-4">
                 {children}
                 <div className="flex justify-end space-x-4 pt-4 border-t dark:border-gray-700">
                     <button type="button" onClick={onClose} className="px-4 py-2 border rounded-lg dark:border-gray-600">Cancel</button>
-                    <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Save</button>
+                    <button type="submit" disabled={isSaving} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50">
+                        {isSaving ? 'Saving...' : 'Save Changes'}
+                    </button>
                 </div>
             </form>
         </div>
@@ -41,39 +46,186 @@ const FormModal = ({ title, children, onClose, onSave }) => (
 );
 
 // Management Components
-const ProfileManagement = ({ company, onUpdate }) => { /* Unchanged from previous state */ };
-const FleetManagement = ({ fleet, onUpdate }) => { /* Unchanged from previous state */ };
-const RouteManagement = ({ routes, onUpdate }) => { /* Unchanged from previous state */ };
-const PassengerManagement = ({ passengers }) => { /* Unchanged from previous state */ };
-const FinancialsManagement = ({ wallet }) => { /* Unchanged from previous state */ };
+const ProfileManagement = ({ company, onUpdate }) => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [formData, setFormData] = useState({ ...company });
 
-const SchedulingManagement = ({ company, onUpdate }) => {
-    // Placeholder - in a real app, this would be a full-featured scheduler
+    // FIX: Add types to event handler
+    const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    
+    // FIX: Add types to event handler to match other usages
+    const handleSave = (e: FormEvent) => {
+        onUpdate(formData);
+        setIsEditing(false);
+    }
+
     return (
         <div>
-             <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-200 mb-6">Manage Schedules</h1>
-             <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md text-center">
-                <ClockIcon className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-                <h3 className="text-xl font-bold dark:text-white">Coming Soon</h3>
-                <p className="text-gray-500 dark:text-gray-400 mt-2">A powerful scheduling tool to manage departure times for all your routes is under construction.</p>
-             </div>
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-200">Manage Profile</h1>
+                <button onClick={() => setIsEditing(true)} className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition">
+                    <PencilSquareIcon className="w-5 h-5 mr-2" /> Edit Profile
+                </button>
+            </div>
+             <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md space-y-4">
+                <div><strong className="text-gray-500 dark:text-gray-400">Name:</strong> {company.name}</div>
+                <div><strong className="text-gray-500 dark:text-gray-400">Email:</strong> {company.contactEmail}</div>
+                <div><strong className="text-gray-500 dark:text-gray-400">Description:</strong> {company.description}</div>
+            </div>
+            {isEditing && (
+                <FormModal title="Edit Profile" onClose={() => setIsEditing(false)} onSave={handleSave}>
+                    <input name="name" value={formData.name} onChange={handleChange} placeholder="Company Name" className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"/>
+                    <textarea name="description" value={formData.description} onChange={handleChange} placeholder="Description" className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"/>
+                </FormModal>
+            )}
         </div>
-    )
+    );
 };
+const FleetManagement = ({ fleet, onUpdate }) => {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingBus, setEditingBus] = useState(null);
 
-const PromotionsManagement = ({ company, onUpdate }) => {
-    // Placeholder
-     return (
+    const handleSave = (e) => {
+        const formData = new FormData(e.target);
+        const busData = Object.fromEntries(formData.entries());
+        if (editingBus) {
+            onUpdate(fleet.map(b => b.id === editingBus.id ? {...b, ...busData} : b));
+        } else {
+            onUpdate([...fleet, { ...busData, id: `bus_${Date.now()}` }]);
+        }
+        setIsModalOpen(false);
+        setEditingBus(null);
+    };
+
+    const handleDelete = (id) => {
+        if (window.confirm('Are you sure?')) onUpdate(fleet.filter(b => b.id !== id));
+    };
+
+    return (
         <div>
-             <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-200 mb-6">Manage Promotions</h1>
-             <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md text-center">
-                <TagIcon className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-                <h3 className="text-xl font-bold dark:text-white">Coming Soon</h3>
-                <p className="text-gray-500 dark:text-gray-400 mt-2">Create and manage special offers and discount codes to attract more passengers.</p>
-             </div>
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="text-3xl font-bold dark:text-gray-200">Manage Fleet</h1>
+                <button onClick={() => { setEditingBus(null); setIsModalOpen(true); }} className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">
+                    <PlusIcon className="w-5 h-5 mr-2"/>Add Bus
+                </button>
+            </div>
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md">
+                <table className="w-full text-sm">
+                    <thead><tr className="text-left text-xs text-gray-500 uppercase"><th className="p-2">Model</th><th>Capacity</th><th>Status</th><th>Actions</th></tr></thead>
+                    <tbody>{fleet.map(bus => (
+                        <tr key={bus.id} className="border-t dark:border-gray-700">
+                            <td className="p-2 font-semibold dark:text-white">{bus.model}</td>
+                            <td>{bus.capacity}</td>
+                            <td>{bus.status}</td>
+                            <td className="flex space-x-2 py-2">
+                                <button onClick={() => { setEditingBus(bus); setIsModalOpen(true); }}><PencilSquareIcon className="w-5 h-5 text-gray-500 hover:text-blue-600"/></button>
+                                <button onClick={() => handleDelete(bus.id)}><TrashIcon className="w-5 h-5 text-gray-500 hover:text-red-600"/></button>
+                            </td>
+                        </tr>
+                    ))}</tbody>
+                </table>
+            </div>
+            {isModalOpen && (
+                <FormModal title={editingBus ? 'Edit Bus' : 'Add Bus'} onClose={() => setIsModalOpen(false)} onSave={handleSave}>
+                    <input name="model" defaultValue={editingBus?.model} placeholder="Bus Model" className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600" required/>
+                    <input name="capacity" type="number" defaultValue={editingBus?.capacity} placeholder="Capacity" className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600" required/>
+                    <select name="status" defaultValue={editingBus?.status} className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600">
+                        <option>Active</option><option>Maintenance</option>
+                    </select>
+                </FormModal>
+            )}
         </div>
-    )
-}
+    );
+};
+const RouteManagement = ({ routes, onUpdate }) => {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingRoute, setEditingRoute] = useState(null);
+
+    const handleSave = (e) => {
+        const formData = new FormData(e.target);
+        const routeData = Object.fromEntries(formData.entries());
+        if (editingRoute) {
+            onUpdate(routes.map(r => r.id === editingRoute.id ? { ...r, ...routeData } : r));
+        } else {
+            onUpdate([...routes, { ...routeData, id: `route_${Date.now()}` }]);
+        }
+        setIsModalOpen(false);
+    };
+
+    return (
+        <div>
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="text-3xl font-bold dark:text-gray-200">Manage Routes</h1>
+                <button onClick={() => { setEditingRoute(null); setIsModalOpen(true); }} className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">
+                    <PlusIcon className="w-5 h-5 mr-2"/>Add Route
+                </button>
+            </div>
+            {/* Table and Modal similar to FleetManagement */}
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md">
+                 <table className="w-full text-sm">
+                    <thead><tr className="text-left text-xs text-gray-500 uppercase"><th className="p-2">From</th><th>To</th><th>Price (RWF)</th><th>Actions</th></tr></thead>
+                    <tbody>{routes.map(route => (
+                        <tr key={route.id} className="border-t dark:border-gray-700">
+                            <td className="p-2 font-semibold dark:text-white">{route.from}</td>
+                            <td>{route.to}</td>
+                            <td>{new Intl.NumberFormat('fr-RW').format(route.price)}</td>
+                            <td className="flex space-x-2 py-2">
+                                <button onClick={() => { setEditingRoute(route); setIsModalOpen(true); }}><PencilSquareIcon className="w-5 h-5 text-gray-500 hover:text-blue-600"/></button>
+                                <button onClick={() => onUpdate(routes.filter(r => r.id !== route.id))}><TrashIcon className="w-5 h-5 text-gray-500 hover:text-red-600"/></button>
+                            </td>
+                        </tr>
+                    ))}</tbody>
+                </table>
+            </div>
+            {isModalOpen && (
+                <FormModal title={editingRoute ? 'Edit Route' : 'Add Route'} onClose={() => setIsModalOpen(false)} onSave={handleSave}>
+                    <input name="from" defaultValue={editingRoute?.from} placeholder="From" className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600" required/>
+                    <input name="to" defaultValue={editingRoute?.to} placeholder="To" className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600" required/>
+                    <input name="price" type="number" defaultValue={editingRoute?.price} placeholder="Price" className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600" required/>
+                </FormModal>
+            )}
+        </div>
+    );
+};
+const PassengerManagement = ({ passengers }) => (
+    <div>
+        <h1 className="text-3xl font-bold dark:text-gray-200 mb-6">Recent Passengers</h1>
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md">
+            <table className="w-full text-sm">
+                <thead><tr className="text-left text-xs text-gray-500 uppercase"><th className="p-2">Name</th><th>Route</th><th>Ticket ID</th><th>Date</th></tr></thead>
+                <tbody>{passengers.map(p => (
+                    <tr key={p.ticketId} className="border-t dark:border-gray-700"><td className="p-2 font-semibold dark:text-white">{p.name}</td><td>{p.route}</td><td>{p.ticketId}</td><td>{p.date}</td></tr>
+                ))}</tbody>
+            </table>
+        </div>
+    </div>
+);
+
+const FinancialsManagement = ({ wallet }) => (
+    <div>
+        <h1 className="text-3xl font-bold dark:text-gray-200 mb-6">Financials</h1>
+        <div className="bg-gradient-to-br from-blue-600 to-blue-800 text-white p-6 rounded-xl shadow-lg mb-6">
+            <p className="text-sm opacity-80">Current Wallet Balance</p>
+            <p className="text-4xl font-bold mt-1">{new Intl.NumberFormat('fr-RW', { style: 'currency', currency: 'RWF' }).format(wallet.balance)}</p>
+        </div>
+         <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md">
+            <h3 className="font-bold text-lg mb-2 dark:text-white">Transaction History</h3>
+            <table className="w-full text-sm">
+                 <thead><tr className="text-left text-xs text-gray-500 uppercase"><th className="p-2">Date</th><th>Description</th><th>Amount</th><th>Status</th></tr></thead>
+                 <tbody>{wallet.transactions.map(tx => (
+                     <tr key={tx.id} className="border-t dark:border-gray-700">
+                        <td className="p-2">{tx.date}</td>
+                        <td className="font-semibold dark:text-white">{tx.description}</td>
+                        <td className={`font-bold ${tx.amount < 0 ? 'text-red-500' : 'text-green-500'}`}>{new Intl.NumberFormat('fr-RW').format(tx.amount)}</td>
+                        <td>{tx.status}</td>
+                    </tr>
+                 ))}</tbody>
+            </table>
+        </div>
+    </div>
+);
+const SchedulingManagement = ({ company, onUpdate }) => { return (<div> <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-200 mb-6">Manage Schedules</h1> <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md text-center"> <ClockIcon className="w-16 h-16 mx-auto text-gray-400 mb-4" /> <h3 className="text-xl font-bold dark:text-white">Coming Soon</h3> <p className="text-gray-500 dark:text-gray-400 mt-2">A powerful scheduling tool to manage departure times for all your routes is under construction.</p> </div> </div> ) };
+const PromotionsManagement = ({ company, onUpdate }) => { return (<div> <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-200 mb-6">Manage Promotions</h1> <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md text-center"> <TagIcon className="w-16 h-16 mx-auto text-gray-400 mb-4" /> <h3 className="text-xl font-bold dark:text-white">Coming Soon</h3> <p className="text-gray-500 dark:text-gray-400 mt-2">Create and manage special offers and discount codes to attract more passengers.</p> </div> </div> ) }
 
 const CompanyDashboard: React.FC<CompanyDashboardProps> = ({ onLogout, theme, setTheme, companyData }) => {
     const [view, setView] = useState('dashboard');

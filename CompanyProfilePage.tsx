@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { ClockIcon, MapPinIcon, ChevronRightIcon, BusIcon, WifiIcon, AcIcon, PowerIcon, StarIcon, UsersIcon, MapIcon, BriefcaseIcon, TvIcon, ShieldCheckIcon, ArrowRightIcon, CameraIcon, EnvelopeIcon, XIcon, PaperAirplaneIcon, TagIcon } from './components/icons';
+import { ClockIcon, MapPinIcon, ChevronRightIcon, BusIcon, WifiIcon, AcIcon, PowerIcon, StarIcon, UsersIcon, MapIcon, BriefcaseIcon, TvIcon, ShieldCheckIcon, ArrowRightIcon, CameraIcon, EnvelopeIcon, XIcon, PaperAirplaneIcon, TagIcon, ArchiveBoxIcon } from './components/icons';
 import FleetDetailModal from './components/FleetDetailModal';
 import StarRating from './components/StarRating';
 
@@ -16,7 +16,10 @@ const mockCompanyData: { [key: string]: any } = {
       { id: 'ritco-2', name: 'Scania Marcopolo', capacity: 70, image: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?q=80&w=2048&auto=format&fit=crop', amenities: ['AC'], images360: [], specs: { engine: 'Scania DC13', power: '410 HP', features: 'On-board restroom, Extra legroom' } },
     ],
     routes: [ { from: 'Kigali', to: 'Huye', price: '3,000 FRW' }, { from: 'Kigali', to: 'Nyungwe', price: '7,000 FRW' }, { from: 'Kigali', to: 'Rusizi', price: '8,000 FRW' }, { from: 'Huye', to: 'Kigali', price: '3,000 FRW' } ],
-    services: ['Air Conditioning', 'On-board Restroom', 'Extra Legroom', 'Luggage Allowance', 'Safety Briefing'],
+    services: [
+        { name: 'Gutwara Ibintu', description: 'Ohereza imizigo mu gihugu hose.', icon: ArchiveBoxIcon },
+        { name: 'Kodesha Imodoka', description: 'Imodoka zihariye ku matsinda n\'ibirori.', icon: BriefcaseIcon }
+    ],
     schedule: {
       'Kigali-Huye': [
         { time: '06:00', arrival: '08:30', bus: 'Yutong Grand', price: '3,000 FRW' },
@@ -54,7 +57,11 @@ const mockCompanyData: { [key: string]: any } = {
       { id: 'volcano-2', name: 'Yutong Explorer', capacity: 55, image: 'https://images.pexels.com/photos/2418491/pexels-photo-2418491.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2', amenities: ['AC', 'Charging'], images360: [], specs: { engine: 'Weichai WP10', power: '336 HP', features: 'USB charging at every seat' } },
     ],
     routes: [ { from: 'Kigali', to: 'Rubavu', price: '4,500 FRW' }, { from: 'Kigali', to: 'Musanze', price: '3,500 FRW' }, { from: 'Rubavu', to: 'Kigali', price: '4,500 FRW' } ],
-    services: ['WiFi', 'Air Conditioning', 'Charging Ports', 'On-board Entertainment', 'Snacks for Purchase'],
+    services: [
+        { name: 'Gutwara Ibintu Byihuse', description: 'Serivisi yo gutwara ibintu mu masaha make.', icon: ArchiveBoxIcon },
+        { name: 'Ingendo z\'Ubukerarugendo', description: 'Gutegura ingendo zikwereka ibyiza by\'i Musanze na Rubavu.', icon: MapIcon },
+        { name: 'WiFi Yihuta', description: 'Komeza ukoreshe interineti mu rugendo.', icon: WifiIcon }
+    ],
     schedule: {
       'Kigali-Rubavu': [
         { time: '07:00', arrival: '10:30', bus: 'Yutong Explorer', price: '4,500 FRW' },
@@ -241,6 +248,7 @@ const CompanyProfilePage: React.FC<CompanyProfilePageProps> = ({ company, onSele
                 <nav className="flex space-x-4">
                     <TabButton tabName="about" label="Abo Turi Bo" />
                     <TabButton tabName="schedule" label="Jadwali y'Ingendo" />
+                    <TabButton tabName="services" label="Serivisi" />
                     <TabButton tabName="promotions" label="Amashya" />
                     <TabButton tabName="reviews" label="Ibisubizo" />
                     <TabButton tabName="gallery" label="Amashusho" />
@@ -390,6 +398,26 @@ const CompanyProfilePage: React.FC<CompanyProfilePageProps> = ({ company, onSele
                             ))}
                         </div>
                     ) : <p className="text-gray-500 dark:text-gray-400">Nta mashusho ahari muri iki cyiciro.</p>}
+                </div>
+              )}
+              {activeTab === 'services' && (
+                <div>
+                    <h3 className="text-2xl font-bold mb-4 text-gray-800 dark:text-white">Serivisi Zindi</h3>
+                    {data.services.length > 0 ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            {data.services.map((service: any) => (
+                                <div key={service.name} className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-lg border dark:border-gray-700/50 flex items-center space-x-4">
+                                    <div className="p-3 bg-blue-100 dark:bg-blue-900/50 rounded-lg">
+                                        <service.icon className="w-8 h-8 text-blue-600" />
+                                    </div>
+                                    <div>
+                                        <h4 className="font-bold text-lg dark:text-white">{service.name}</h4>
+                                        <p className="text-sm text-gray-600 dark:text-gray-400">{service.description}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : <p className="text-gray-500 dark:text-gray-400">Iki kigo ntigifite izindi serivisi zizwi.</p>}
                 </div>
               )}
                {activeTab === 'contact' && (

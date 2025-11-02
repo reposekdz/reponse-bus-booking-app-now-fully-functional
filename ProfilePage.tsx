@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { UserCircleIcon, CogIcon, ArrowRightIcon, WalletIcon, ArrowUpRightIcon, ArrowDownLeftIcon, ChatBubbleLeftRightIcon, BellAlertIcon, ChartBarIcon, SearchIcon, BusIcon, BuildingOfficeIcon, MapPinIcon, BriefcaseIcon } from './components/icons';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { UserCircleIcon, CogIcon, ArrowRightIcon, WalletIcon, ArrowUpRightIcon, ArrowDownLeftIcon, ChatBubbleLeftRightIcon, BellAlertIcon, ChartBarIcon, SearchIcon, BusIcon, BuildingOfficeIcon, MapPinIcon, BriefcaseIcon, LockClosedIcon } from './components/icons';
 import StarRating from './components/StarRating';
 
 
@@ -7,6 +7,7 @@ const user = {
     name: 'Kalisa Jean',
     email: 'kalisa.j@example.com',
     memberSince: 'Mutarama 2023',
+    walletPin: '12345' // Hardcoded for simulation
 };
 
 const userWallet = {
@@ -81,10 +82,74 @@ const SettingToggle: React.FC<{ label: string; description: string; enabled: boo
     </div>
 );
 
+const WalletPinScreen: React.FC<{ onUnlock: () => void; pinToMatch: string }> = ({ onUnlock, pinToMatch }) => {
+    const [pin, setPin] = useState<string[]>(Array(5).fill(''));
+    const [error, setError] = useState('');
+    const inputsRef = useRef<(HTMLInputElement | null)[]>([]);
+
+    useEffect(() => {
+        inputsRef.current[0]?.focus();
+    }, []);
+
+    const handlePinChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+        const { value } = e.target;
+        if (/^[0-9]$/.test(value) || value === '') {
+            const newPin = [...pin];
+            newPin[index] = value;
+            setPin(newPin);
+
+            if (value && index < 4) {
+                inputsRef.current[index + 1]?.focus();
+            }
+        }
+    };
+    
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+        if (e.key === 'Backspace' && !pin[index] && index > 0) {
+            inputsRef.current[index - 1]?.focus();
+        }
+    }
+
+    const handleSubmit = () => {
+        if (pin.join('') === pinToMatch) {
+            onUnlock();
+        } else {
+            setError('PIN itariyo. Ongera ugerageze.');
+            setPin(Array(5).fill(''));
+            inputsRef.current[0]?.focus();
+        }
+    }
+
+    return (
+        <div className="text-center max-w-sm mx-auto py-8">
+            <LockClosedIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-xl font-bold dark:text-white">Fungura Ikofi Yawe</h3>
+            <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">Shyiramo PIN yawe y'imibare 5 kugira ngo urebe amafaranga yawe.</p>
+            <div className="flex justify-center space-x-3 mb-4">
+                {pin.map((digit, index) => (
+                    <input
+                        key={index}
+                        ref={el => inputsRef.current[index] = el}
+                        type="password"
+                        maxLength={1}
+                        value={digit}
+                        onChange={(e) => handlePinChange(e, index)}
+                        onKeyDown={(e) => handleKeyDown(e, index)}
+                        className="w-12 h-14 text-center text-2xl font-bold bg-gray-100 dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                ))}
+            </div>
+             {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+            <button onClick={handleSubmit} className="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition">Fungura</button>
+        </div>
+    );
+};
+
 
 const ProfilePage: React.FC = () => {
     const [activeTab, setActiveTab] = useState('analytics');
     const [searchTerm, setSearchTerm] = useState('');
+    const [isWalletUnlocked, setIsWalletUnlocked] = useState(false);
     const [notificationSettings, setNotificationSettings] = useState({
         promotions: true,
         tripReminders: true,
@@ -92,33 +157,29 @@ const ProfilePage: React.FC = () => {
     });
     
     const analytics = useMemo(() => {
-        // FIX: Explicitly type accumulator in reduce to ensure correct type inference.
         const companyCounts = travelHistory.reduce((acc: Record<string, number>, trip) => {
             acc[trip.company] = (acc[trip.company] || 0) + 1;
             return acc;
         }, {});
-
         const favoriteCompany = Object.keys(companyCounts).length > 0 ? Object.keys(companyCounts).reduce((a, b) => companyCounts[a] > companyCounts[b] ? a : b) : 'N/A';
 
-        // FIX: Explicitly type accumulator in reduce to ensure correct type inference.
         const destinationCounts = travelHistory.reduce((acc: Record<string, number>, trip) => {
             acc[trip.to] = (acc[trip.to] || 0) + 1;
             return acc;
         }, {});
-        
         const mostVisitedCity = Object.keys(destinationCounts).length > 0 ? Object.keys(destinationCounts).reduce((a, b) => destinationCounts[a] > destinationCounts[b] ? a : b) : 'N/A';
 
-        // FIX: Explicitly type accumulator in reduce to ensure correct type inference.
         const monthlySpending = travelHistory.reduce((acc: Record<string, number>, trip) => {
             const month = new Date(trip.date).toLocaleString('default', { month: 'short', year: '2-digit' });
             acc[month] = (acc[month] || 0) + trip.price;
             return acc;
-        }, {});
+// FIX: Explicitly type the initial value for reduce to ensure correct type inference for monthlySpending.
+        }, {} as Record<string, number>);
 
         return { favoriteCompany, mostVisitedCity, monthlySpending };
     }, []);
 
-    const maxSpending = Math.max(...Object.values(analytics.monthlySpending), 0);
+    const maxSpending = Math.max(0, ...Object.values(analytics.monthlySpending));
     
     const filteredHistory = useMemo(() => {
         if (!searchTerm) return travelHistory;
@@ -301,40 +362,49 @@ const ProfilePage: React.FC = () => {
 
                     {activeTab === 'wallet' && (
                         <div className="animate-fade-in">
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                                <div className="md:col-span-2 bg-gradient-to-br from-blue-600 to-blue-800 text-white p-6 rounded-xl shadow-lg">
-                                    <p className="text-sm opacity-80">Amafaranga asigaye</p>
-                                    <p className="text-4xl font-bold mt-1 mb-4">{new Intl.NumberFormat('fr-RW').format(userWallet.balance)} <span className="text-2xl font-normal opacity-80">{userWallet.currency}</span></p>
-                                    <div className="flex space-x-2">
-                                        <button className="w-full py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-semibold transition">Bitsa</button>
-                                        <button className="w-full py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-semibold transition">Ohereza</button>
-                                        <button className="w-full py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-semibold transition">Bikuza</button>
+                        {!isWalletUnlocked ? (
+                            <WalletPinScreen onUnlock={() => setIsWalletUnlocked(true)} pinToMatch={user.walletPin} />
+                        ) : (
+                            <div>
+                                <div className="flex justify-end mb-2">
+                                    <button onClick={() => setIsWalletUnlocked(false)} className="text-xs font-semibold text-red-500 hover:underline">Funga Ikofi</button>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                                    <div className="md:col-span-2 bg-gradient-to-br from-blue-600 to-blue-800 text-white p-6 rounded-xl shadow-lg">
+                                        <p className="text-sm opacity-80">Amafaranga asigaye</p>
+                                        <p className="text-4xl font-bold mt-1 mb-4">{new Intl.NumberFormat('fr-RW').format(userWallet.balance)} <span className="text-2xl font-normal opacity-80">{userWallet.currency}</span></p>
+                                        <div className="flex space-x-2">
+                                            <button className="w-full py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-semibold transition">Bitsa</button>
+                                            <button className="w-full py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-semibold transition">Ohereza</button>
+                                            <button className="w-full py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-semibold transition">Bikuza</button>
+                                        </div>
+                                    </div>
+                                    <div className="bg-yellow-100 dark:bg-yellow-900/50 p-6 rounded-xl text-center flex flex-col justify-center">
+                                        <p className="text-sm text-yellow-800 dark:text-yellow-300 font-semibold">Kode yawe y'umugenzi</p>
+                                        <p className="text-3xl font-bold text-yellow-900 dark:text-yellow-200 tracking-widest my-2">{userWallet.serialCode}</p>
+                                        <p className="text-xs text-yellow-700 dark:text-yellow-400">Koresha iyi kode kubitsa amafaranga kuri Agent wemewe.</p>
                                     </div>
                                 </div>
-                                <div className="bg-yellow-100 dark:bg-yellow-900/50 p-6 rounded-xl text-center flex flex-col justify-center">
-                                    <p className="text-sm text-yellow-800 dark:text-yellow-300 font-semibold">Kode yawe y'umugenzi</p>
-                                    <p className="text-3xl font-bold text-yellow-900 dark:text-yellow-200 tracking-widest my-2">{userWallet.serialCode}</p>
-                                    <p className="text-xs text-yellow-700 dark:text-yellow-400">Koresha iyi kode kubitsa amafaranga kuri Agent wemewe.</p>
-                                </div>
-                            </div>
 
-                            <h3 className="text-xl font-bold mb-4 dark:text-white">Ibikorwa bya Vuba</h3>
-                            <ul className="space-y-4">
-                               {userWallet.transactions.map((tx) => (
-                                    <li key={tx.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                                        <div className="flex items-center">
-                                            <TransactionIcon type={tx.type} />
-                                            <div>
-                                                <p className="font-semibold text-gray-800 dark:text-gray-200">{tx.description}</p>
-                                                <p className="text-xs text-gray-500 dark:text-gray-400">{tx.date}</p>
+                                <h3 className="text-xl font-bold mb-4 dark:text-white">Ibikorwa bya Vuba</h3>
+                                <ul className="space-y-4">
+                                {userWallet.transactions.map((tx) => (
+                                        <li key={tx.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                            <div className="flex items-center">
+                                                <TransactionIcon type={tx.type} />
+                                                <div>
+                                                    <p className="font-semibold text-gray-800 dark:text-gray-200">{tx.description}</p>
+                                                    <p className="text-xs text-gray-500 dark:text-gray-400">{tx.date}</p>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <p className={`font-bold text-sm ${tx.amount > 0 ? 'text-green-600 dark:text-green-400' : 'text-gray-800 dark:text-gray-200'}`}>
-                                            {tx.amount > 0 ? '+' : ''}{new Intl.NumberFormat('fr-RW').format(tx.amount)}
-                                        </p>
-                                    </li>
-                                ))}
-                            </ul>
+                                            <p className={`font-bold text-sm ${tx.amount > 0 ? 'text-green-600 dark:text-green-400' : 'text-gray-800 dark:text-gray-200'}`}>
+                                                {tx.amount > 0 ? '+' : ''}{new Intl.NumberFormat('fr-RW').format(tx.amount)}
+                                            </p>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
                         </div>
                     )}
 
