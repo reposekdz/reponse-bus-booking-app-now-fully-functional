@@ -1,16 +1,15 @@
+
 import React, { useState } from 'react';
 import { BusIcon, SearchIcon, PlusIcon, PencilSquareIcon, TrashIcon } from '../components/icons';
 
-// FIX: Define props interface
 interface CompanyBusesProps {
     buses: any[];
     crudHandlers: any;
 }
 
-// FIX: Use props for data and handlers, remove local state for bus list
 const CompanyBuses: React.FC<CompanyBusesProps> = ({ buses, crudHandlers }) => {
     const [searchTerm, setSearchTerm] = useState('');
-    
+
     return (
         <div>
             <h1 className="text-3xl font-bold dark:text-gray-200 mb-6">Manage Buses</h1>
@@ -35,10 +34,9 @@ const CompanyBuses: React.FC<CompanyBusesProps> = ({ buses, crudHandlers }) => {
                     <table className="w-full text-sm text-left">
                         <thead className="text-xs text-gray-500 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                             <tr>
-                                <th className="p-3">Plate No.</th>
+                                <th className="p-3">Plate Number</th>
                                 <th className="p-3">Model</th>
                                 <th className="p-3">Capacity</th>
-                                <th className="p-3">Assigned Driver</th>
                                 <th className="p-3">Status</th>
                                 <th className="p-3">Actions</th>
                             </tr>
@@ -48,14 +46,9 @@ const CompanyBuses: React.FC<CompanyBusesProps> = ({ buses, crudHandlers }) => {
                                 <tr key={bus.id} className="border-t dark:border-gray-700">
                                     <td className="p-3 font-semibold dark:text-white">{bus.plate}</td>
                                     <td>{bus.model}</td>
-                                    <td>{bus.capacity}</td>
-                                    <td>{bus.driverId || 'N/A'}</td>
+                                    <td>{bus.capacity} seats</td>
                                     <td>
-                                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                                            bus.status === 'On Route' ? 'bg-green-100 text-green-800' :
-                                            bus.status === 'Idle' ? 'bg-blue-100 text-blue-800' :
-                                            'bg-yellow-100 text-yellow-800'
-                                        }`}>
+                                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${bus.status === 'On Route' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
                                             {bus.status}
                                         </span>
                                     </td>
