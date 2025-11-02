@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useRef, useEffect, FormEvent } from 'react';
 import { UserCircleIcon, CogIcon, ArrowRightIcon, WalletIcon, ArrowUpRightIcon, ArrowDownLeftIcon, ChatBubbleLeftRightIcon, BellAlertIcon, ChartBarIcon, SearchIcon, BusIcon, BuildingOfficeIcon, MapPinIcon, BriefcaseIcon, LockClosedIcon, CameraIcon, XIcon, PaperAirplaneIcon } from './components/icons';
 import StarRating from './components/StarRating';
@@ -119,7 +120,6 @@ const WalletPinScreen: React.FC<{ onUnlock: () => void; pinToMatch: string }> = 
                 {pin.map((digit, index) => (
                     <input
                         key={index}
-                        // FIX: Corrected ref assignment to avoid returning a value.
                         ref={el => { inputsRef.current[index] = el; }}
                         type="password"
                         maxLength={1}
