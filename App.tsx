@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import HeroSection from './components/HeroSection';
@@ -19,9 +18,10 @@ import NextTripWidget from './components/NextTripWidget';
 import AdminDashboard from './AdminDashboard';
 import CompanyDashboard from './CompanyDashboard';
 import DriverDashboard from './DriverDashboard';
+import AgentDashboard from './AgentDashboard';
 import ServicesPage from './ServicesPage';
 import LoadingSpinner from './components/LoadingSpinner';
-import { mockCompaniesData, mockDriversData } from './AdminDashboard';
+import { mockCompaniesData, mockDriversData, mockAgentsData } from './AdminDashboard';
 import BookingSearchPage from './BookingSearchPage';
 import CompaniesAside from './components/CompaniesAside';
 import ScheduledTripsPage from './ScheduledTripsPage';
@@ -43,7 +43,7 @@ const initialUserWallet = {
 const App: React.FC = () => {
   const [page, setPage] = useState<Page>('home');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userRole, setUserRole] = useState<'passenger' | 'admin' | 'company' | 'driver' | null>(null);
+  const [userRole, setUserRole] = useState<'passenger' | 'admin' | 'company' | 'driver' | 'agent' | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [bookingData, setBookingData] = useState<any>(null);
   const [selectedCompany, setSelectedCompany] = useState<any>(null);
@@ -54,9 +54,31 @@ const App: React.FC = () => {
   const [isCompaniesAsideOpen, setIsCompaniesAsideOpen] = useState(false);
   const [walletData, setWalletData] = useState(initialUserWallet);
   const [boardingStatus, setBoardingStatus] = useState<Record<string, 'booked' | 'boarded'>>({});
+  const [agents, setAgents] = useState(mockAgentsData);
+
 
   const handlePassengerBoarding = (ticketId: string) => {
     setBoardingStatus(prev => ({ ...prev, [ticketId]: 'boarded' }));
+  };
+  
+  const handleAgentDeposit = (serialCode: string, amount: number) => {
+    if (serialCode.toUpperCase() === walletData.serialCode) {
+        const newTransaction = {
+            id: Date.now(),
+            type: 'deposit' as const,
+            description: 'Agent Deposit',
+            amount: amount,
+            date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric'}),
+            status: 'completed'
+        };
+        setWalletData(prev => ({
+            ...prev,
+            balance: prev.balance + amount,
+            transactions: [newTransaction, ...prev.transactions]
+        }));
+        return { success: true, passengerName: 'Kalisa Jean' };
+    }
+    return { success: false, message: 'Umugenzi ufite iyi kode ntago aboneka.' };
   };
 
   const showLoader = () => setIsLoading(true);
@@ -117,6 +139,18 @@ const App: React.FC = () => {
             setIsLoggedIn(true);
             setUserRole('driver');
             setCurrentUser(driverUser);
+            hideLoader();
+            return;
+        }
+        
+        const agentUser = agents.find(
+            a => a.email === credentials.email && a.password === credentials.password
+        );
+
+        if (agentUser) {
+            setIsLoggedIn(true);
+            setUserRole('agent');
+            setCurrentUser(agentUser);
             hideLoader();
             return;
         }
@@ -238,6 +272,16 @@ const App: React.FC = () => {
                     driverData={currentUser}
                     allCompanies={companies}
                     onPassengerBoarding={handlePassengerBoarding} 
+                />;
+      }
+      if (userRole === 'agent') {
+          return <AgentDashboard 
+                    onLogout={handleLogout} 
+                    theme={theme} 
+                    setTheme={setTheme} 
+                    agentData={currentUser}
+                    onAgentDeposit={handleAgentDeposit}
+                    passengerSerialCode={walletData.serialCode}
                 />;
       }
   }

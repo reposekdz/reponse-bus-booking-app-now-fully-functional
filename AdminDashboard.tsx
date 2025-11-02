@@ -2,7 +2,7 @@ import React, { useState, useMemo, ChangeEvent, FormEvent, useEffect } from 'rea
 import { 
     SunIcon, MoonIcon, BellIcon, CogIcon, UsersIcon, ChartBarIcon, BuildingOfficeIcon, 
     ArrowLeftIcon, PlusIcon, PencilSquareIcon, TrashIcon, ArrowUpTrayIcon, SearchIcon, MapIcon, BusIcon, XIcon,
-    WalletIcon, CreditCardIcon, TagIcon, ShieldCheckIcon, PaintBrushIcon, LanguageIcon, LockClosedIcon, ClockIcon
+    WalletIcon, CreditCardIcon, TagIcon, ShieldCheckIcon, PaintBrushIcon, LanguageIcon, LockClosedIcon, ClockIcon, BriefcaseIcon
 } from './components/icons';
 import ActivityFeed from './components/ActivityFeed';
 
@@ -14,7 +14,45 @@ interface AdminDashboardProps {
   onUpdateCompanies: (companies: any[]) => void;
 }
 
-// FIX: Export mockDriversData and enhance mock data for full app functionality.
+export const mockAgentsData = [
+    { 
+        id: 1, 
+        name: 'Mugabo Peter', 
+        email: 'agent@test.com', 
+        password: 'agent', 
+        location: 'Nyabugogo', 
+        status: 'Active', 
+        totalDeposits: 1250000, 
+        commission: 62500, 
+        joinDate: '2024-08-01', 
+        avatarUrl: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=2070&auto=format&fit=crop' 
+    },
+    { 
+        id: 2, 
+        name: 'Ineza Alice', 
+        email: 'alice.a@agent.rw', 
+        password: 'password123', 
+        location: 'Remera', 
+        status: 'Active', 
+        totalDeposits: 875000, 
+        commission: 43750, 
+        joinDate: '2024-07-15', 
+        avatarUrl: 'https://images.unsplash.com/photo-1544725176-7c40e5a71c3e?q=80&w=1974&auto=format&fit=crop'
+    },
+    { 
+        id: 3, 
+        name: 'Hakizimana Emmanuel', 
+        email: 'emma.h@agent.rw', 
+        password: 'password123', 
+        location: 'Kimironko', 
+        status: 'Inactive', 
+        totalDeposits: 250000, 
+        commission: 12500, 
+        joinDate: '2024-09-01', 
+        avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=1974&auto=format&fit=crop'
+    },
+];
+
 export const mockDriversData = [
     {
         id: 'driver_1',
@@ -337,7 +375,6 @@ const CompanyCard: React.FC<{
     </div>
 );
 
-// FIX: Add missing RouteFormModal component definition
 const RouteFormModal = ({ route, companies, onSave, onClose, companyId: defaultCompanyId }) => {
     const [formData, setFormData] = useState({
         companyId: route?.companyId || defaultCompanyId || (companies.length > 0 ? companies[0].id : ''),
@@ -781,6 +818,132 @@ const UserManagementPage = () => {
     );
 };
 
+const AgentFormModal: React.FC<{ agent: any | null; onSave: (agent: any) => void; onClose: () => void }> = ({ agent, onSave, onClose }) => {
+    const [formData, setFormData] = useState(agent || {
+        name: '', email: '', password: '', location: '', status: 'Active',
+    });
+    const isNew = !agent;
+
+    const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+    
+    const handleSubmit = (e: FormEvent) => {
+        e.preventDefault();
+        onSave(formData);
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl max-w-lg w-full">
+                <form onSubmit={handleSubmit} className="p-8 space-y-4">
+                    <h2 className="text-xl font-bold dark:text-white">{isNew ? 'Ongeramo Umukozi Mushya' : 'Hindura Amakuru y\'Umukozi'}</h2>
+                    <input name="name" type="text" value={formData.name} onChange={handleChange} placeholder="Amazina yose" className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" required/>
+                    <input name="email" type="email" value={formData.email} onChange={handleChange} placeholder="Imeri" className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" required/>
+                    <input name="password" type="password" placeholder={isNew ? "Ijambobanga" : "Shyiramo rishya (bishyirwamo)"} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" required={isNew}/>
+                    <input name="location" type="text" value={formData.location} onChange={handleChange} placeholder="Aho akorera" className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" required/>
+                    <select name="status" value={formData.status} onChange={handleChange} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600">
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+                     <div className="flex justify-end space-x-4 pt-4">
+                        <button type="button" onClick={onClose} className="px-4 py-2 border rounded-lg">Bireke</button>
+                        <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg">Bika</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+};
+
+const AgentManagementPage: React.FC<{ agents: any[]; onUpdateAgents: (agents: any[]) => void }> = ({ agents, onUpdateAgents }) => {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingAgent, setEditingAgent] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const filteredAgents = useMemo(() => {
+        return agents.filter(agent =>
+            agent.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            agent.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            agent.location.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }, [agents, searchTerm]);
+
+    const handleSave = (agentData: any) => {
+        const isNew = !editingAgent;
+        if (isNew) {
+            onUpdateAgents([...agents, { ...agentData, id: Date.now(), totalDeposits: 0, commission: 0, joinDate: new Date().toISOString().split('T')[0] }]);
+        } else {
+            onUpdateAgents(agents.map(a => a.id === editingAgent.id ? { ...a, ...agentData } : a));
+        }
+        setIsModalOpen(false);
+        setEditingAgent(null);
+    };
+    
+    const handleDelete = (id: number) => {
+        if (window.confirm("Urifuza gusiba uyu mukozi?")) {
+            onUpdateAgents(agents.filter(a => a.id !== id));
+        }
+    };
+
+    const StatusBadge = ({ status }) => (
+        <span className={`px-2 py-1 text-xs rounded-full font-semibold ${
+            status === 'Active' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' 
+            : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+        }`}>
+            {status}
+        </span>
+    );
+
+    return (
+        <div>
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="text-3xl font-bold dark:text-gray-200">Gucunga Abakozi</h1>
+                <button onClick={() => { setEditingAgent(null); setIsModalOpen(true); }} className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">
+                    <PlusIcon className="w-5 h-5 mr-2" />Ongeramo Umukozi
+                </button>
+            </div>
+            <div className="bg-white dark:bg-gray-800/50 p-4 sm:p-6 rounded-xl shadow-md">
+                 <div className="relative mb-4">
+                    <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input type="text" placeholder="Shakisha umukozi..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"/>
+                </div>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                        <thead className="text-left text-xs text-gray-500 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400"><tr>
+                            <th className="p-3">Umukozi</th><th>Aho akorera</th><th>Amafaranga Yakiriye</th><th>Uko Ahagaze</th><th>Ibyo gukora</th>
+                        </tr></thead>
+                        <tbody>
+                            {filteredAgents.map(agent => (
+                                <tr key={agent.id} className="border-t dark:border-gray-700">
+                                    <td className="p-3">
+                                        <div className="flex items-center space-x-3">
+                                            <img src={agent.avatarUrl} alt={agent.name} className="w-10 h-10 rounded-full object-cover"/>
+                                            <div>
+                                                <p className="font-semibold dark:text-white">{agent.name}</p>
+                                                <p className="text-xs text-gray-500">{agent.email}</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{agent.location}</td>
+                                    <td className="font-mono">{new Intl.NumberFormat('fr-RW').format(agent.totalDeposits)} RWF</td>
+                                    <td><StatusBadge status={agent.status} /></td>
+                                    <td className="flex space-x-2 py-5">
+                                        <button onClick={() => { setEditingAgent(agent); setIsModalOpen(true); }} className="p-1 text-gray-500 hover:text-blue-600"><PencilSquareIcon className="w-5 h-5"/></button>
+                                        <button onClick={() => handleDelete(agent.id)} className="p-1 text-gray-500 hover:text-red-600"><TrashIcon className="w-5 h-5"/></button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+             {isModalOpen && <AgentFormModal agent={editingAgent} onSave={handleSave} onClose={() => setIsModalOpen(false)} />}
+        </div>
+    );
+};
+
 const RouteManagementPage = ({ companies, onUpdateCompanies }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingRoute, setEditingRoute] = useState(null);
@@ -1021,6 +1184,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, theme, setThe
   const [view, setView] = useState('dashboard');
   const [selectedCompanyId, setSelectedCompanyId] = useState(null);
   const [modal, setModal] = useState({ type: null, data: null });
+  const [agents, setAgents] = useState(mockAgentsData);
 
   const toggleTheme = () => {
     setTheme(theme === 'light' ? 'dark' : 'light');
@@ -1102,6 +1266,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, theme, setThe
         return <RouteManagementPage companies={companies} onUpdateCompanies={onUpdateCompanies} />;
       case 'users':
         return <UserManagementPage />;
+       case 'agents':
+        return <AgentManagementPage agents={agents} onUpdateAgents={setAgents} />;
       case 'settings':
         return <SettingsPage theme={theme} setTheme={setTheme} />;
       default:
@@ -1129,6 +1295,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, theme, setThe
             <NavLink viewName="routes" label="Ingendo" icon={MapIcon} />
             <NavLink viewName="transactions" label="Ibikorwa by'Imari" icon={CreditCardIcon} />
             <NavLink viewName="users" label="Abakoresha" icon={UsersIcon} />
+            <NavLink viewName="agents" label="Abakozi" icon={BriefcaseIcon} />
             <NavLink viewName="settings" label="Iboneza" icon={CogIcon} />
         </nav>
       </aside>
