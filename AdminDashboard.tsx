@@ -353,9 +353,27 @@ const CompanyManagement = ({ companies, onSelectCompany, onUpdateCompanies }) =>
     )
 };
 
+const BarChart = ({ data, dataKey, labelKey, title, colorClass }) => {
+    const maxValue = Math.max(...(data?.map(d => d[dataKey]) || [0]));
+    return (
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
+            <h3 className="font-bold mb-4 dark:text-white">{title}</h3>
+            <div className="flex items-end h-40 space-x-2">
+                {data.map(item => (
+                    <div key={item[labelKey]} className="flex-1 flex flex-col items-center justify-end group">
+                        <div className="text-xs font-bold text-gray-800 dark:text-white bg-white/50 dark:bg-black/20 px-2 py-1 rounded-md mb-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            {new Intl.NumberFormat('fr-RW').format(item[dataKey])}
+                        </div>
+                        <div className={`w-full ${colorClass} rounded-t-lg hover:opacity-80 transition-opacity`} style={{height: `${(item[dataKey] / (maxValue || 1)) * 100}%`}}></div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{item[labelKey]}</div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
+
 const CompanyDetails = ({ company, onBack }) => {
-    const maxIncome = Math.max(...(company.weeklyIncome?.map(d => d.income) || [0]));
-    const maxTickets = Math.max(...(company.dailyTickets?.map(d => d.tickets) || [0]));
     const [activeTab, setActiveTab] = useState('routes');
 
     return (
@@ -373,17 +391,11 @@ const CompanyDetails = ({ company, onBack }) => {
                 <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
                     <StatCard title="Total Revenue" value={company.totalRevenue} icon={<ChartBarIcon className="w-6 h-6 text-blue-500" />} />
                     <StatCard title="Total Passengers" value={company.totalPassengers} icon={<UsersIcon className="w-6 h-6 text-blue-500" />} />
-                    <div className="md:col-span-2 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
-                        <h3 className="font-bold mb-4 dark:text-white">Weekly Income (FRW)</h3>
-                        <div className="flex items-end h-40 space-x-2">
-                            {company.weeklyIncome.map(data => (
-                                <div key={data.day} className="flex-1 flex flex-col items-center justify-end group">
-                                    <div className="text-xs font-bold text-gray-800 dark:text-white bg-white/50 dark:bg-black/20 px-2 py-1 rounded-md mb-1 opacity-0 group-hover:opacity-100 transition-opacity">{(data.income / 1000000).toFixed(1)}M</div>
-                                    <div className="w-full bg-green-200 dark:bg-green-800/80 rounded-t-lg hover:bg-green-300 dark:hover:bg-green-700 transition-colors" style={{height: `${(data.income / (maxIncome || 1)) * 100}%`}}></div>
-                                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{data.day}</div>
-                                </div>
-                            ))}
-                        </div>
+                    <div className="md:col-span-2">
+                         <BarChart data={company.weeklyIncome} dataKey="income" labelKey="day" title="Weekly Income (RWF)" colorClass="bg-green-200 dark:bg-green-800/80" />
+                    </div>
+                     <div className="md:col-span-2">
+                         <BarChart data={company.dailyTickets} dataKey="tickets" labelKey="day" title="Daily Tickets Sold" colorClass="bg-yellow-200 dark:bg-yellow-800/80" />
                     </div>
                 </div>
                  <div className="space-y-6">

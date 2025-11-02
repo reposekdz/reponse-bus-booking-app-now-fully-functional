@@ -91,23 +91,25 @@ const ProfilePage: React.FC = () => {
         accountUpdates: false
     });
     
-    // Analytics calculations
     const analytics = useMemo(() => {
-        const companyCounts = travelHistory.reduce<Record<string, number>>((acc, trip) => {
+        // FIX: Explicitly type accumulator in reduce to ensure correct type inference.
+        const companyCounts = travelHistory.reduce((acc: Record<string, number>, trip) => {
             acc[trip.company] = (acc[trip.company] || 0) + 1;
             return acc;
         }, {});
 
         const favoriteCompany = Object.keys(companyCounts).length > 0 ? Object.keys(companyCounts).reduce((a, b) => companyCounts[a] > companyCounts[b] ? a : b) : 'N/A';
 
-        const destinationCounts = travelHistory.reduce<Record<string, number>>((acc, trip) => {
+        // FIX: Explicitly type accumulator in reduce to ensure correct type inference.
+        const destinationCounts = travelHistory.reduce((acc: Record<string, number>, trip) => {
             acc[trip.to] = (acc[trip.to] || 0) + 1;
             return acc;
         }, {});
         
         const mostVisitedCity = Object.keys(destinationCounts).length > 0 ? Object.keys(destinationCounts).reduce((a, b) => destinationCounts[a] > destinationCounts[b] ? a : b) : 'N/A';
 
-        const monthlySpending = travelHistory.reduce<Record<string, number>>((acc, trip) => {
+        // FIX: Explicitly type accumulator in reduce to ensure correct type inference.
+        const monthlySpending = travelHistory.reduce((acc: Record<string, number>, trip) => {
             const month = new Date(trip.date).toLocaleString('default', { month: 'short', year: '2-digit' });
             acc[month] = (acc[month] || 0) + trip.price;
             return acc;
@@ -116,8 +118,7 @@ const ProfilePage: React.FC = () => {
         return { favoriteCompany, mostVisitedCity, monthlySpending };
     }, []);
 
-    // FIX: Cast `Object.values` to `number[]` to fix type error with `Math.max`.
-    const maxSpending = Math.max(...(Object.values(analytics.monthlySpending) as number[]), 0);
+    const maxSpending = Math.max(...Object.values(analytics.monthlySpending), 0);
     
     const filteredHistory = useMemo(() => {
         if (!searchTerm) return travelHistory;
@@ -171,7 +172,6 @@ const ProfilePage: React.FC = () => {
     return (
         <div className="bg-gray-100/50 dark:bg-gray-900/50 min-h-full py-12">
             <div className="container mx-auto px-6">
-                {/* Profile Header */}
                 <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-6 mb-8">
                     <div className="w-24 h-24 bg-gradient-to-br from-blue-400 to-green-400 rounded-full flex items-center justify-center text-white text-4xl font-bold shadow-lg flex-shrink-0">
                         KJ
@@ -182,7 +182,6 @@ const ProfilePage: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Main Content */}
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
                     <div className="border-b border-gray-200 dark:border-gray-700 pb-4 mb-6">
                         <div className="flex items-center space-x-2 overflow-x-auto custom-scrollbar pb-2">
@@ -208,8 +207,7 @@ const ProfilePage: React.FC = () => {
                                 <h3 className="text-xl font-bold mb-4 dark:text-white">Amafaranga Wakoresheje</h3>
                                 <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-xl">
                                     <div className="flex items-end h-48 space-x-2">
-                                        {/* FIX: Add type `[string, number]` to destructuring to ensure `amount` is a number. */}
-                                        {Object.entries(analytics.monthlySpending).map(([month, amount]: [string, number]) => (
+                                        {Object.entries(analytics.monthlySpending).map(([month, amount]) => (
                                             <div key={month} className="flex-1 flex flex-col items-center justify-end group">
                                                 <div className="text-xs font-bold text-gray-800 dark:text-white bg-white/50 dark:bg-black/20 px-2 py-1 rounded-md mb-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                                     {new Intl.NumberFormat('fr-RW').format(amount)}
@@ -221,6 +219,11 @@ const ProfilePage: React.FC = () => {
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    )}
+                    
+                    {activeTab === 'history' && (
+                        <div className="animate-fade-in space-y-8">
                              <div>
                                 <h3 className="text-xl font-bold mb-4 dark:text-white">Amateka y'Ingendo (byose)</h3>
                                 <div className="relative mb-4">
@@ -259,43 +262,40 @@ const ProfilePage: React.FC = () => {
                                     </table>
                                 </div>
                             </div>
-                        </div>
-                    )}
-                    
-                    {activeTab === 'history' && (
-                        <div className="animate-fade-in space-y-8">
-                             <div>
-                                <h3 className="text-xl font-bold mb-4 dark:text-white">Incāmunigo ku Kigo</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {summaryByCompany.map(company => (
-                                        <div key={company.name} className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
-                                            <div className="flex items-center space-x-3 mb-3">
-                                                {company.logoUrl ? <img src={company.logoUrl} alt={company.name} className="w-8 h-8 object-contain"/> : <div className="w-8 h-8 bg-gray-200 dark:bg-gray-600 rounded-full"></div>}
-                                                <h4 className="font-bold text-gray-800 dark:text-white">{company.name}</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <h3 className="text-xl font-bold mb-4 dark:text-white">Incāmunigo ku Kigo</h3>
+                                    <div className="space-y-3">
+                                        {summaryByCompany.map(company => (
+                                            <div key={company.name} className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
+                                                <div className="flex items-center space-x-3 mb-3">
+                                                    {company.logoUrl ? <img src={company.logoUrl} alt={company.name} className="w-8 h-8 object-contain"/> : <div className="w-8 h-8 bg-gray-200 dark:bg-gray-600 rounded-full"></div>}
+                                                    <h4 className="font-bold text-gray-800 dark:text-white">{company.name}</h4>
+                                                </div>
+                                                <div className="flex justify-between text-sm">
+                                                    <span className="text-gray-500 dark:text-gray-400">Ingendo: <span className="font-semibold text-gray-700 dark:text-gray-300">{company.count}</span></span>
+                                                    <span className="text-gray-500 dark:text-gray-400">Yose: <span className="font-semibold text-green-600 dark:text-green-400">{new Intl.NumberFormat('fr-RW').format(company.totalSpent)}</span></span>
+                                                </div>
                                             </div>
-                                            <div className="flex justify-between text-sm">
-                                                <span className="text-gray-500 dark:text-gray-400">Ingendo: <span className="font-semibold text-gray-700 dark:text-gray-300">{company.count}</span></span>
-                                                <span className="text-gray-500 dark:text-gray-400">Yose: <span className="font-semibold text-green-600 dark:text-green-400">{new Intl.NumberFormat('fr-RW').format(company.totalSpent)}</span></span>
-                                            </div>
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
-                             <div>
-                                <h3 className="text-xl font-bold mb-4 dark:text-white">Incāmunigo ku Cyerekezo</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {summaryByDestination.map(dest => (
-                                        <div key={dest.name} className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
-                                            <div className="flex items-center space-x-3 mb-2">
-                                                 <MapPinIcon className="w-6 h-6 text-blue-500"/>
-                                                <h4 className="font-bold text-gray-800 dark:text-white">{dest.name}</h4>
+                                <div>
+                                    <h3 className="text-xl font-bold mb-4 dark:text-white">Incāmunigo ku Cyerekezo</h3>
+                                    <div className="space-y-3">
+                                        {summaryByDestination.map(dest => (
+                                            <div key={dest.name} className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
+                                                <div className="flex items-center space-x-3 mb-2">
+                                                    <MapPinIcon className="w-6 h-6 text-blue-500"/>
+                                                    <h4 className="font-bold text-gray-800 dark:text-white">{dest.name}</h4>
+                                                </div>
+                                                <p className="text-sm text-gray-500 dark:text-gray-400">Ingendo <span className="font-semibold text-gray-700 dark:text-gray-300">{dest.count}</span> wakozeyo</p>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Via: {dest.companies.join(', ')}</p>
                                             </div>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400">Ingendo <span className="font-semibold text-gray-700 dark:text-gray-300">{dest.count}</span> wakozeyo</p>
-                                             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Via: {dest.companies.join(', ')}</p>
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
+                             </div>
                         </div>
                     )}
 

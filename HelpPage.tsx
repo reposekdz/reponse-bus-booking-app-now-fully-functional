@@ -37,13 +37,15 @@ const faqData = [
 const FAQItem: React.FC<{ faq: typeof faqData[0]; isOpen: boolean; onClick: () => void }> = ({ faq, isOpen, onClick }) => (
     <div className="border-b dark:border-gray-700">
         <h2>
-            <button type="button" onClick={onClick} className="flex justify-between items-center w-full p-5 font-medium text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+            <button type="button" onClick={onClick} className="flex justify-between items-center w-full p-5 font-medium text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                 <span>{faq.question}</span>
-                <ChevronRightIcon className={`w-6 h-6 shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-90' : ''}`} />
+                <ChevronRightIcon className={`w-6 h-6 shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-90' : ''}`} />
             </button>
         </h2>
-        <div className={`p-5 border-t-0 border-gray-200 dark:border-gray-700 ${isOpen ? 'block' : 'hidden'}`}>
-            <p className="text-gray-500 dark:text-gray-400">{faq.answer}</p>
+        <div className={`transition-[max-height] duration-500 ease-in-out overflow-hidden ${isOpen ? 'max-h-96' : 'max-h-0'}`}>
+             <div className="p-5 pt-0 border-t-0 border-gray-200 dark:border-gray-700">
+                <p className="text-gray-500 dark:text-gray-400">{faq.answer}</p>
+            </div>
         </div>
     </div>
 );
