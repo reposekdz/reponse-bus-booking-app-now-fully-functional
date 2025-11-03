@@ -8,7 +8,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 // import MapView, { Marker, Polyline } from 'react-native-maps';
 
 // Mock placeholder since we can't import the real MapView
-// FIX: Update mock components to accept all props to resolve type errors.
 const MapView = (props: any) => <View {...props} style={[styles.map, props.style]}>{props.children}</View>;
 const Marker = (props: any) => <View {...props}><Text>{props.title}</Text>{props.children}</View>;
 const Polyline = (props: any) => <View {...props} />;

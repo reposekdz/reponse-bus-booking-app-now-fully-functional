@@ -25,6 +25,18 @@ const ProfileOption = ({ icon, label, onPress }) => (
 );
 
 export default function ProfileScreen({ navigation }) {
+    
+    const handleNavigation = (screen: string) => {
+        // In a real app, you would navigate. For this demo, we'll alert.
+        // navigation.navigate(screen);
+        alert(`Would navigate to ${screen} screen`);
+    }
+
+    const handleLogout = () => {
+        // Logic to clear user session and navigate to Auth flow
+        alert('Logging out...');
+    }
+
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView>
@@ -37,24 +49,24 @@ export default function ProfileScreen({ navigation }) {
                 <View style={styles.walletCard}>
                     <Text style={styles.walletLabel}>Wallet Balance</Text>
                     <Text style={styles.walletBalance}>{new Intl.NumberFormat('fr-RW').format(user.walletBalance)} RWF</Text>
-                    <TouchableOpacity style={styles.walletButton}>
+                    <TouchableOpacity style={styles.walletButton} onPress={() => handleNavigation('Wallet')}>
                         <Text style={styles.walletButtonText}>Manage Wallet</Text>
                     </TouchableOpacity>
                 </View>
                 
                 <View style={styles.menu}>
-                    <ProfileOption icon="User" label="Edit Profile" onPress={() => alert('Navigate to Edit Profile')} />
-                    <ProfileOption icon="Bell" label="Notifications" onPress={() => alert('Navigate to Notifications')} />
-                    <ProfileOption icon="Shield" label="Security" onPress={() => alert('Navigate to Security')} />
-                    <ProfileOption icon="Globe" label="Language" onPress={() => alert('Navigate to Language')} />
+                    <ProfileOption icon="User" label="Edit Profile" onPress={() => handleNavigation('EditProfile')} />
+                    <ProfileOption icon="Bell" label="Notifications" onPress={() => handleNavigation('Notifications')} />
+                    <ProfileOption icon="Shield" label="Security" onPress={() => handleNavigation('Security')} />
+                    <ProfileOption icon="Globe" label="Language" onPress={() => handleNavigation('Language')} />
                 </View>
 
                 <View style={styles.menu}>
-                     <ProfileOption icon="Help" label="Help Center" onPress={() => alert('Navigate to Help Center')} />
-                     <ProfileOption icon="Info" label="About Us" onPress={() => alert('Navigate to About Us')} />
+                     <ProfileOption icon="Help" label="Help Center" onPress={() => handleNavigation('HelpCenter')} />
+                     <ProfileOption icon="Info" label="About Us" onPress={() => handleNavigation('AboutUs')} />
                 </View>
                 
-                <TouchableOpacity style={styles.logoutButton}>
+                <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
                     <Text style={styles.logoutText}>Log Out</Text>
                 </TouchableOpacity>
             </ScrollView>

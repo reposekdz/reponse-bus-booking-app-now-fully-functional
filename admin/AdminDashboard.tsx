@@ -2,7 +2,6 @@ import React from 'react';
 import { ChartBarIcon, UsersIcon, BusIcon, BriefcaseIcon } from '../components/icons';
 import ActivityFeed from '../components/ActivityFeed';
 
-// FIX: Added mock company data to be imported by other components.
 export const mockCompaniesData = [
   { 
     id: 'volcano', 

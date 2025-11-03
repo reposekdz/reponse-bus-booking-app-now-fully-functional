@@ -33,6 +33,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ onSearch }) => {
 
   const handlePassengerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
+    // Allow empty string for intermediate input, but enforce numbers
     if (value === '' || /^[1-9]\d*$/.test(value)) {
       setPassengers(value);
     }

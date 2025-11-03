@@ -58,28 +58,33 @@ export default function MyTicketsScreen({ navigation }) {
     const loadTickets = async () => {
       setIsLoading(true);
       
-      // For upcoming tickets, try to load from storage first for offline capability
+      // Step 1: For upcoming tickets, try to load from storage first for offline capability.
+      // This provides an instant view of tickets even without internet.
       if (activeTab === 'Upcoming') {
         try {
-          const storedTickets = await AsyncStorage.getItem(TICKETS_STORAGE_KEY);
-          if (storedTickets) {
-            setTickets(JSON.parse(storedTickets));
+          const storedTicketsJSON = await AsyncStorage.getItem(TICKETS_STORAGE_KEY);
+          if (storedTicketsJSON) {
+            console.log("Loaded upcoming tickets from local storage.");
+            setTickets(JSON.parse(storedTicketsJSON));
           }
         } catch (e) {
           console.warn('Error reading tickets from storage', e);
         }
       }
 
-      // Fetch fresh data from API
+      // Step 2: Fetch fresh data from API to update the list.
       try {
         const fetchedTickets = await fetchTicketsAPI(activeTab);
         setTickets(fetchedTickets as any);
-        // If upcoming, save to storage for next time
+        
+        // Step 3: If viewing upcoming tickets, save the fresh data to storage for the next offline view.
         if (activeTab === 'Upcoming') {
+          console.log("Saving fresh upcoming tickets to local storage.");
           await AsyncStorage.setItem(TICKETS_STORAGE_KEY, JSON.stringify(fetchedTickets));
         }
       } catch (e) {
         console.warn('Failed to fetch tickets from API. Displaying stored data.', e);
+        // If API fails, the view will gracefully keep showing the stored data.
       } finally {
         setIsLoading(false);
       }
@@ -89,7 +94,8 @@ export default function MyTicketsScreen({ navigation }) {
   }, [activeTab]);
   
   const handleTicketPress = (ticket) => {
-      navigation.navigate('TicketDetails', { ticket });
+      // navigation.navigate('TicketDetails', { ticket });
+      alert(`Navigating to details for ticket: ${ticket.qrValue}`);
   }
 
   return (

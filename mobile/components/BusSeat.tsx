@@ -3,7 +3,6 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 
-// FIX: Add explicit props type to resolve type error in SeatSelectionScreen.
 type SeatStatus = 'available' | 'occupied' | 'selected' | 'aisle';
 
 interface BusSeatProps {
@@ -18,7 +17,7 @@ const BusSeat: React.FC<BusSeatProps> = ({ seatId, status, onPress }) => {
     }
 
     const handlePress = () => {
-        if (status === 'available' && onPress) {
+        if (status === 'available' || status === 'selected') {
             onPress(seatId);
         }
     };

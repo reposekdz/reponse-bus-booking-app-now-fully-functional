@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-// FIX: Import `Type` to use with responseSchema.
 import { GoogleGenAI, Type } from "@google/genai";
 import { XIcon, SparklesIcon, PaperAirplaneIcon } from './icons';
 
