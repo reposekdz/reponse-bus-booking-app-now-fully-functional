@@ -38,8 +38,7 @@ export default function ServicesScreen({ navigation }) {
                 data={services}
                 keyExtractor={item => item.id}
                 renderItem={({ item }) => <ServiceCard item={item} onPress={() => handlePress(item)} />}
-                // @ts-ignore - FIX: contentContainerStyle is a valid prop for FlatList, but is not being recognized by TypeScript in this environment.
-                contentContainerStyle={styles.list}
+                contentContainerStyle={styles.list as any}
             />
         </SafeAreaView>
     );

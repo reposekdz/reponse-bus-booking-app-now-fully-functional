@@ -1,25 +1,39 @@
-
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Switch } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Switch, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { RouteProp } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../../navigation/types';
+
+type AddEditBusScreenRouteProp = RouteProp<RootStackParamList, 'App'>;
+// @ts-ignore
+type AddEditBusScreenNavigationProp = StackNavigationProp<RootStackParamList, 'App'>;
+
+type Props = {
+  route: AddEditBusScreenRouteProp;
+  navigation: AddEditBusScreenNavigationProp;
+};
 
 export default function AddEditBusScreen({ route, navigation }) {
-    // const { bus } = route.params || {}; // Get bus data if editing
-    const bus = null; // Mocking for now
+    const { bus } = route.params || {};
     const isEditing = !!bus;
 
     const [plate, setPlate] = useState(bus?.plate || '');
     const [model, setModel] = useState(bus?.model || '');
     const [capacity, setCapacity] = useState(bus?.capacity?.toString() || '');
-    const [amenities, setAmenities] = useState({ wifi: false, ac: true, charging: true });
+    const [amenities, setAmenities] = useState(bus?.amenities || { wifi: false, ac: true, charging: true });
 
     const handleSave = () => {
+        if (!plate || !model || !capacity) {
+            Alert.alert("Missing Fields", "Please fill in all required fields.");
+            return;
+        }
         // Save logic here
-        alert(`Bus ${isEditing ? 'updated' : 'added'} successfully!`);
+        Alert.alert("Success", `Bus ${isEditing ? 'updated' : 'added'} successfully!`);
         navigation.goBack();
     };
     
-    const toggleAmenity = (amenity) => {
+    const toggleAmenity = (amenity: keyof typeof amenities) => {
         setAmenities(prev => ({...prev, [amenity]: !prev[amenity]}));
     };
 
@@ -40,14 +54,16 @@ export default function AddEditBusScreen({ route, navigation }) {
                 <TextInput style={styles.input} value={capacity} onChangeText={setCapacity} keyboardType="number-pad" placeholder="e.g., 55" />
 
                 <Text style={styles.label}>Amenities</Text>
-                <View style={styles.amenityRow}>
-                    <Text>WiFi</Text><Switch value={amenities.wifi} onValueChange={() => toggleAmenity('wifi')} />
-                </View>
-                 <View style={styles.amenityRow}>
-                    <Text>Air Conditioning</Text><Switch value={amenities.ac} onValueChange={() => toggleAmenity('ac')} />
-                </View>
-                 <View style={styles.amenityRow}>
-                    <Text>Charging Ports</Text><Switch value={amenities.charging} onValueChange={() => toggleAmenity('charging')} />
+                <View style={styles.amenitiesContainer}>
+                    <View style={styles.amenityRow}>
+                        <Text style={styles.amenityLabel}>WiFi</Text><Switch value={amenities.wifi} onValueChange={() => toggleAmenity('wifi')} />
+                    </View>
+                    <View style={styles.amenityRow}>
+                        <Text style={styles.amenityLabel}>Air Conditioning</Text><Switch value={amenities.ac} onValueChange={() => toggleAmenity('ac')} />
+                    </View>
+                    <View style={styles.amenityRow}>
+                        <Text style={styles.amenityLabel}>Charging Ports</Text><Switch value={amenities.charging} onValueChange={() => toggleAmenity('charging')} />
+                    </View>
                 </View>
 
                 <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
@@ -71,7 +87,9 @@ const styles = StyleSheet.create({
     content: { padding: 20 },
     label: { fontSize: 14, fontWeight: '500', color: '#374151', marginBottom: 8, marginTop: 12 },
     input: { backgroundColor: 'white', padding: 14, borderRadius: 8, borderWidth: 1, borderColor: '#D1D5DB' },
-    amenityRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'white', padding: 14, borderRadius: 8, borderWidth: 1, borderColor: '#D1D5DB', marginBottom: 8 },
+    amenitiesContainer: { backgroundColor: 'white', borderRadius: 8, borderWidth: 1, borderColor: '#D1D5DB' },
+    amenityRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 14, borderBottomWidth: 1, borderBottomColor: '#E5E7EB' },
+    amenityLabel: { fontSize: 16 },
     saveButton: { backgroundColor: '#0033A0', padding: 16, borderRadius: 8, alignItems: 'center', marginTop: 24 },
     saveButtonText: { color: 'white', fontWeight: 'bold', fontSize: 16 },
     deleteButton: { backgroundColor: '#FEE2E2', padding: 16, borderRadius: 8, alignItems: 'center', marginTop: 16 },

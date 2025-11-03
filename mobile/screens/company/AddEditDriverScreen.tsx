@@ -1,11 +1,21 @@
-
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Image, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { RouteProp } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../../navigation/types';
+
+type AddEditDriverScreenRouteProp = RouteProp<RootStackParamList, 'App'>;
+// @ts-ignore
+type AddEditDriverScreenNavigationProp = StackNavigationProp<RootStackParamList, 'App'>;
+
+type Props = {
+  route: AddEditDriverScreenRouteProp;
+  navigation: AddEditDriverScreenNavigationProp;
+};
 
 export default function AddEditDriverScreen({ route, navigation }) {
-    // const { driver } = route.params || {};
-    const driver = null; // Mocking for now
+    const { driver } = route.params || {};
     const isEditing = !!driver;
 
     const [name, setName] = useState(driver?.name || '');
@@ -14,7 +24,11 @@ export default function AddEditDriverScreen({ route, navigation }) {
     const [avatar, setAvatar] = useState(driver?.avatarUrl || null);
 
     const handleSave = () => {
-        alert(`Driver ${isEditing ? 'updated' : 'added'} successfully!`);
+         if (!name || !phone) {
+            Alert.alert("Missing Fields", "Please enter the driver's name and phone number.");
+            return;
+        }
+        Alert.alert("Success", `Driver ${isEditing ? 'updated' : 'added'} successfully!`);
         navigation.goBack();
     };
 
@@ -27,7 +41,7 @@ export default function AddEditDriverScreen({ route, navigation }) {
             <ScrollView style={styles.content}>
                  <View style={styles.avatarContainer}>
                     <Image source={{ uri: avatar || 'https://via.placeholder.com/100' }} style={styles.avatar} />
-                    <TouchableOpacity>
+                    <TouchableOpacity onPress={() => Alert.alert("Image Picker", "Image picker would open here.")}>
                         <Text style={styles.changeText}>Upload Photo</Text>
                     </TouchableOpacity>
                 </View>
@@ -39,11 +53,16 @@ export default function AddEditDriverScreen({ route, navigation }) {
                 <TextInput style={styles.input} value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
 
                 <Text style={styles.label}>Assigned Bus Plate</Text>
-                <TextInput style={styles.input} value={assignedBus} onChangeText={setAssignedBus} />
+                <TextInput style={styles.input} value={assignedBus} onChangeText={setAssignedBus} placeholder="e.g., RAD 123 B"/>
 
                 <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
                     <Text style={styles.saveButtonText}>Save Driver</Text>
                 </TouchableOpacity>
+                 {isEditing && (
+                    <TouchableOpacity style={styles.deleteButton}>
+                        <Text style={styles.deleteButtonText}>Delete Driver</Text>
+                    </TouchableOpacity>
+                )}
             </ScrollView>
         </SafeAreaView>
     );
@@ -62,4 +81,6 @@ const styles = StyleSheet.create({
     input: { backgroundColor: 'white', padding: 14, borderRadius: 8, borderWidth: 1, borderColor: '#D1D5DB' },
     saveButton: { backgroundColor: '#0033A0', padding: 16, borderRadius: 8, alignItems: 'center', marginTop: 24 },
     saveButtonText: { color: 'white', fontWeight: 'bold', fontSize: 16 },
+    deleteButton: { backgroundColor: '#FEE2E2', padding: 16, borderRadius: 8, alignItems: 'center', marginTop: 16 },
+    deleteButtonText: { color: '#DC2626', fontWeight: 'bold', fontSize: 16 },
 });

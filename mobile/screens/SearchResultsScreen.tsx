@@ -51,8 +51,7 @@ export default function SearchResultsScreen({ route, navigation }) {
                 data={searchResults}
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => <TripCard trip={item} onPress={() => handleSelectTrip(item)} />}
-                // @ts-ignore - FIX: contentContainerStyle is a valid prop for FlatList, but is not being recognized by TypeScript in this environment.
-                contentContainerStyle={styles.list}
+                contentContainerStyle={styles.list as any}
             />
         </SafeAreaView>
     );

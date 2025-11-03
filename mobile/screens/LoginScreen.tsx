@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, ActivityIndicator } from 'react-native';
-import { useAuth } from '../hooks/useAuth';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, ActivityIndicator, Alert } from 'react-native';
+import { useAuth, User } from '../hooks/useAuth';
 
-// FIX: Use 'as const' to prevent TypeScript from widening the 'role' property to a generic 'string'.
-const userProfiles = {
-    passenger: { name: 'Kalisa Jean', email: 'passenger@test.com', role: 'passenger' as const, avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=2080&auto=format&fit=crop' },
-    agent: { name: 'Jane Smith', email: 'agent@test.com', role: 'agent' as const, avatarUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=2070&auto=format&fit=crop' },
-    driver: { name: 'Peter Jones', email: 'driver@test.com', role: 'driver' as const, avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1974&auto=format&fit=crop' },
+const userProfiles: { [key: string]: Omit<User, 'email'> } = {
+    passenger: { name: 'Kalisa Jean', role: 'passenger' as const, avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=2080&auto=format&fit=crop', walletBalance: 25000 },
+    agent: { name: 'Jane Smith', role: 'agent' as const, avatarUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=2070&auto=format&fit=crop' },
+    driver: { name: 'Peter Jones', role: 'driver' as const, avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1974&auto=format&fit=crop', company: 'Volcano Express', assignedBus: 'RAD 123 B' },
+    company: { name: 'John Manager', role: 'company' as const, avatarUrl: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=1974&auto=format&fit=crop', company: 'Volcano Express' },
 };
+
 
 export default function LoginScreen({ navigation }) {
     const { setUser } = useAuth();
@@ -16,18 +17,27 @@ export default function LoginScreen({ navigation }) {
     const [isLoading, setIsLoading] = useState(false);
 
     const handleLogin = () => {
+        if (!email || !password) {
+            Alert.alert("Missing Fields", "Please enter both email and password.");
+            return;
+        }
         setIsLoading(true);
-        // Mock login with role detection
+        // Mock login with role detection from email
         setTimeout(() => {
-            let userToSet = userProfiles.passenger;
             const emailLower = email.toLowerCase();
+            let userToSet: User;
+
             if (emailLower.includes('driver')) {
-                userToSet = userProfiles.driver;
+                userToSet = { ...userProfiles.driver, email };
             } else if (emailLower.includes('agent')) {
-                userToSet = userProfiles.agent;
+                 userToSet = { ...userProfiles.agent, email };
+            } else if (emailLower.includes('company')) {
+                 userToSet = { ...userProfiles.company, email };
+            } else {
+                 userToSet = { ...userProfiles.passenger, email };
             }
             
-            setUser({ ...userToSet, email });
+            setUser(userToSet);
             setIsLoading(false);
         }, 1000);
     };
@@ -59,7 +69,7 @@ export default function LoginScreen({ navigation }) {
             <TouchableOpacity onPress={() => navigation.navigate('Register')}>
                 <Text style={styles.linkText}>Don't have an account? <Text style={styles.linkTextBold}>Register</Text></Text>
             </TouchableOpacity>
-             <Text style={styles.demoText}>Demo: use 'driver@test.com' or 'agent@test.com' to see other roles.</Text>
+             <Text style={styles.demoText}>Demo: use 'driver@test.com' or 'company@test.com' to see other roles.</Text>
         </SafeAreaView>
     );
 }

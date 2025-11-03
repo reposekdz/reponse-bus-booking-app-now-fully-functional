@@ -27,9 +27,10 @@ const AITripPlanner: React.FC<AITripPlannerProps> = ({ onClose, onPlanTrip }) =>
       
       const systemInstruction = `You are an expert travel itinerary planner for a bus booking platform in Rwanda. 
       Your task is to analyze a user's free-form text about their travel plans and generate a structured itinerary.
-      - Infer departure and destination cities from landmarks (e.g., 'see gorillas' implies Musanze, 'Nyungwe forest' implies a nearby town like Gisakura).
-      - If the user mentions a return trip (e.g., 'weekend trip', 'come back on Sunday'), you must provide both a departure and a return trip suggestion.
-      - Provide a brief, encouraging justification for your suggestion.
+      - Infer departure and destination cities from landmarks, activities, or regions (e.g., 'see gorillas' implies Musanze, 'Nyungwe forest' implies a nearby town like Gisakura, 'the lake' implies Rubavu/Kivu).
+      - If the user mentions a return trip (e.g., 'weekend trip', 'come back on Sunday', '3-day trip'), you must provide both a departure and a return trip suggestion.
+      - Provide a brief, encouraging justification for your suggestion, explaining your reasoning if you had to infer a location.
+      - The main cities in Rwanda are: Kigali, Musanze, Rubavu, Huye, Rusizi, Nyagatare, Muhanga, Gisakura. Always map user input to one of these.
       - The final output MUST be a valid JSON object.`;
 
       const response = await ai.models.generateContent({
@@ -138,9 +139,9 @@ const AITripPlanner: React.FC<AITripPlannerProps> = ({ onClose, onPlanTrip }) =>
           ) : (
             <div>
                 <h3 className="font-bold text-lg dark:text-white mb-2">Here's what I found:</h3>
-                <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
+                <div className="space-y-4 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
                     {tripSuggestions.map((suggestion, index) => (
-                        <div key={index} className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
+                        <div key={index} className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg border dark:border-gray-700/50">
                             <p className="text-sm italic text-gray-600 dark:text-gray-300 mb-3">"{suggestion.justification}"</p>
                             <div className="space-y-2">
                                 <div className="flex items-center space-x-2">
@@ -160,8 +161,8 @@ const AITripPlanner: React.FC<AITripPlannerProps> = ({ onClose, onPlanTrip }) =>
                         </div>
                     ))}
                 </div>
-                 <button onClick={() => setTripSuggestions(null)} className="mt-4 text-sm text-center w-full text-gray-500 hover:underline">
-                    Try a different plan
+                 <button onClick={() => { setTripSuggestions(null); setPrompt(''); }} className="mt-4 text-sm text-center w-full text-gray-500 hover:underline">
+                    Plan another trip
                 </button>
             </div>
           )}

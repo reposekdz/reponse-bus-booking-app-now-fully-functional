@@ -23,13 +23,11 @@ const BusCard = ({ bus, onPress }) => (
 
 export default function ManageFleetScreen({ navigation }) {
     const handleAddBus = () => {
-        // navigation.navigate('AddEditBus');
-        alert('Navigate to Add Bus screen');
+        navigation.navigate('AddEditBus');
     };
 
     const handleEditBus = (bus) => {
-        // navigation.navigate('AddEditBus', { bus });
-        alert(`Navigate to Edit screen for ${bus.plate}`);
+        navigation.navigate('AddEditBus', { bus });
     };
 
     return (
@@ -44,8 +42,7 @@ export default function ManageFleetScreen({ navigation }) {
                 data={mockBuses}
                 keyExtractor={item => item.id}
                 renderItem={({ item }) => <BusCard bus={item} onPress={() => handleEditBus(item)} />}
-                // @ts-ignore - FIX: contentContainerStyle is a valid prop for FlatList, but is not being recognized by TypeScript in this environment.
-                contentContainerStyle={styles.list}
+                contentContainerStyle={styles.list as any}
             />
         </SafeAreaView>
     );

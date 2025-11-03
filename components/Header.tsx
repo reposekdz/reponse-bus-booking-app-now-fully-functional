@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BusIcon, SunIcon, MoonIcon, BellIcon, MenuIcon, XIcon, UserCircleIcon, ChevronDownIcon } from './icons';
+import { BusIcon, SunIcon, MoonIcon, BellIcon, MenuIcon, XIcon, UserCircleIcon, ChevronDownIcon, LanguageIcon } from './icons';
 import type { Page } from '../App';
 
 interface NavItem {
@@ -23,6 +23,8 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ navigate, isLoggedIn, onLogout, theme, setTheme, currentPage, onToggleCompaniesAside, onToggleServicesAside }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showLanguageMenu, setShowLanguageMenu] = useState(false);
+  const [currentLanguage, setCurrentLanguage] = useState('KIN');
 
   useEffect(() => {
     const handleResize = () => {
@@ -67,6 +69,8 @@ const Header: React.FC<HeaderProps> = ({ navigate, isLoggedIn, onLogout, theme, 
     }
     setIsMenuOpen(false);
   };
+  
+  const languages = ['KIN', 'ENG', 'FRA'];
 
   return (
     <>
@@ -81,41 +85,39 @@ const Header: React.FC<HeaderProps> = ({ navigate, isLoggedIn, onLogout, theme, 
           
           <nav className="hidden lg:flex items-center space-x-8">
             {navItems.map((item) => (
-                item.children ? (
-                    <div key={item.page} className="relative group">
-                        <button
-                            onClick={() => handleNavClick(item)}
-                            className={`flex items-center relative transition-colors duration-300 ${currentPage === item.page ? 'text-yellow-300' : 'text-gray-200 hover:text-yellow-300'}`}
-                        >
-                            {item.label}
-                            <ChevronDownIcon className="w-4 h-4 ml-1 transition-transform duration-300 group-hover:rotate-180" />
-                        </button>
-                        <div className="absolute top-full mt-2 w-64 bg-white dark:bg-gray-800 rounded-md shadow-lg py-2 opacity-0 group-hover:opacity-100 transform -translate-y-2 group-hover:translate-y-0 transition-all duration-300 pointer-events-none group-hover:pointer-events-auto z-10">
-                            {item.children.map(child => (
-                                <button 
-                                key={child.label}
-                                onClick={() => handleNavClick(child)}
-                                className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                                >
-                                {child.label}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                ) : (
-                    <button
-                        key={item.page}
-                        onClick={() => handleNavClick(item)}
-                        className={`relative group transition-colors duration-300 ${currentPage === item.page ? 'text-yellow-300' : 'text-gray-200 hover:text-yellow-300'}`}
-                    >
-                        {item.label}
-                        <span className={`absolute bottom-0 left-0 h-0.5 bg-yellow-300 transition-all duration-300 ${currentPage === item.page ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
-                    </button>
-                )
+                <button
+                    key={item.page}
+                    onClick={() => handleNavClick(item)}
+                    className={`relative group transition-colors duration-300 ${currentPage === item.page ? 'text-yellow-300' : 'text-gray-200 hover:text-yellow-300'}`}
+                >
+                    {item.label}
+                    <span className={`absolute bottom-0 left-0 h-0.5 bg-yellow-300 transition-all duration-300 ${currentPage === item.page ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
+                </button>
             ))}
           </nav>
 
           <div className="flex items-center space-x-4">
+            <div className="relative">
+                <button onClick={() => setShowLanguageMenu(!showLanguageMenu)} className="flex items-center text-gray-200 hover:text-yellow-300 transition-colors duration-300">
+                    <LanguageIcon className="w-6 h-6" />
+                    <span className="text-sm font-semibold ml-1">{currentLanguage}</span>
+                    <ChevronDownIcon className="w-4 h-4" />
+                </button>
+                 {showLanguageMenu && (
+                    <div className="absolute right-0 mt-2 w-24 bg-white dark:bg-gray-800 rounded-lg shadow-xl py-1 text-gray-800 dark:text-gray-200">
+                        {languages.map(lang => (
+                             <button 
+                                key={lang}
+                                onClick={() => { setCurrentLanguage(lang); setShowLanguageMenu(false); }}
+                                className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
+                            >
+                                {lang}
+                            </button>
+                        ))}
+                    </div>
+                )}
+            </div>
+
             <button onClick={toggleTheme} className="text-gray-200 hover:text-yellow-300 transition-colors duration-300">
               {theme === 'light' ? <MoonIcon className="w-6 h-6" /> : <SunIcon className="w-6 h-6" />}
             </button>

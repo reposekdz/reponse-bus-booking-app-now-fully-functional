@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, ActivityIndicator, Alert } from 'react-native';
 
 export default function RegisterScreen({ navigation }) {
     const [name, setName] = useState('');
@@ -9,11 +8,15 @@ export default function RegisterScreen({ navigation }) {
     const [isLoading, setIsLoading] = useState(false);
 
     const handleRegister = () => {
+        if (!name || !email || !password) {
+            Alert.alert("Missing Fields", "Please fill in all fields.");
+            return;
+        }
         setIsLoading(true);
         // Mock register logic
         setTimeout(() => {
             setIsLoading(false);
-            alert('Registration successful! Please log in.');
+            Alert.alert('Registration Successful!', 'You can now log in with your new account.');
             navigation.goBack();
         }, 1500);
     };

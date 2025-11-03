@@ -76,8 +76,7 @@ export default function BoardingScreen() {
                 data={passengers}
                 keyExtractor={item => item.id.toString()}
                 renderItem={({ item }) => <PassengerRow item={item} onBoard={boardPassenger} />}
-                // @ts-ignore - FIX: contentContainerStyle is a valid prop for FlatList, but is not being recognized by TypeScript in this environment.
-                contentContainerStyle={styles.list}
+                contentContainerStyle={styles.list as any}
             />
         </SafeAreaView>
     );

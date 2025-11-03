@@ -20,13 +20,11 @@ const DriverCard = ({ driver, onPress }) => (
 
 export default function ManageDriversScreen({ navigation }) {
      const handleAddDriver = () => {
-        // navigation.navigate('AddEditDriver');
-        alert('Navigate to Add Driver screen');
+        navigation.navigate('AddEditDriver');
     };
 
     const handleEditDriver = (driver) => {
-        // navigation.navigate('AddEditDriver', { driver });
-        alert(`Navigate to Edit screen for ${driver.name}`);
+        navigation.navigate('AddEditDriver', { driver });
     };
 
     return (
@@ -41,8 +39,7 @@ export default function ManageDriversScreen({ navigation }) {
                 data={mockDrivers}
                 keyExtractor={item => item.id}
                 renderItem={({ item }) => <DriverCard driver={item} onPress={() => handleEditDriver(item)} />}
-                // @ts-ignore - FIX: contentContainerStyle is a valid prop for FlatList, but is not being recognized by TypeScript in this environment.
-                contentContainerStyle={styles.list}
+                contentContainerStyle={styles.list as any}
             />
         </SafeAreaView>
     );
