@@ -34,6 +34,7 @@ import DriverProfilePage from './DriverProfilePage';
 import AgentProfilePage from './AgentProfilePage';
 import PackageDeliveryPage from './PackageDeliveryPage';
 import BusCharterPage from './BusCharterPage';
+import DriverSettingsPage from './DriverSettingsPage';
 
 // Data
 import { mockCompaniesData } from './admin/AdminDashboard';
@@ -59,7 +60,8 @@ export type Page =
   | 'driverProfile'
   | 'agentProfile'
   | 'packageDelivery'
-  | 'busCharter';
+  | 'busCharter'
+  | 'driverSettings';
 
 
 const user = {
@@ -247,6 +249,7 @@ const App: React.FC = () => {
       case 'agentProfile': return <AgentProfilePage agent={pageData} allTransactions={agentTransactions} />;
       case 'packageDelivery': return <PackageDeliveryPage onNavigate={navigate} />;
       case 'busCharter': return <BusCharterPage onNavigate={navigate} />;
+      case 'driverSettings': return <DriverSettingsPage driverData={{ id: 1, name: 'John Doe', avatarUrl: user.avatarUrl, assignedBusId: 'VB01' }} companyData={mockCompaniesData[0]} theme={theme} setTheme={setTheme} />;
       case 'admin': return <AdminLayout onLogout={handleLogout} theme={theme} setTheme={setTheme} navigate={navigate} />;
       case 'company': return <CompanyLayout onLogout={handleLogout} theme={theme} setTheme={setTheme} companyData={{...mockCompaniesData[0], pin: '5678'}} />;
       case 'driver': return <DriverDashboard onLogout={handleLogout} theme={theme} setTheme={setTheme} driverData={{ id: 1, name: 'John Doe', avatarUrl: user.avatarUrl, assignedBusId: 'VB01' }} allCompanies={mockCompaniesData} onPassengerBoarding={handlePassengerBoarding} navigate={(page, data) => navigate(page, data)} />;

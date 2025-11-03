@@ -1,6 +1,7 @@
 
+
 import React, { useState } from 'react';
-import { SunIcon, MoonIcon, CogIcon, UsersIcon, ChartBarIcon, BusIcon, BriefcaseIcon, TagIcon, ArchiveBoxIcon, BuildingOfficeIcon } from '../components/icons';
+import { SunIcon, MoonIcon, CogIcon, UsersIcon, ChartBarIcon, BusIcon, BriefcaseIcon, TagIcon, ArchiveBoxIcon, BuildingOfficeIcon, CurrencyDollarIcon, MegaphoneIcon } from '../components/icons';
 import { Page } from '../App';
 import AdminDashboard, { mockCompaniesData } from './AdminDashboard';
 import ManageCompanies from './ManageCompanies';
@@ -9,6 +10,9 @@ import ManageAgents from './ManageAgents';
 import ManagePassengers from './ManagePassengers';
 import ManageAds from './ManageAds';
 import ManagePromotions from './ManagePromotions';
+import ManageUsers from './ManageUsers';
+import AdminFinancials from './AdminFinancials';
+import PlatformAnnouncements from './PlatformAnnouncements';
 
 interface AdminLayoutProps {
     onLogout: () => void;
@@ -67,6 +71,9 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ onLogout, theme, setTheme, na
             case 'drivers': return <ManageDrivers drivers={drivers} companies={companies} crudHandlers={crudHandlers} navigate={navigate} />;
             case 'agents': return <ManageAgents agents={agents} crudHandlers={crudHandlers} navigate={navigate} />;
             case 'passengers': return <ManagePassengers />;
+            case 'users': return <ManageUsers />;
+            case 'financials': return <AdminFinancials />;
+            case 'announcements': return <PlatformAnnouncements />;
             case 'ads': return <ManageAds />;
             case 'promotions': return <ManagePromotions />;
             case 'dashboard':
@@ -81,12 +88,13 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ onLogout, theme, setTheme, na
                 <div className="h-16 flex items-center justify-center text-white font-bold text-xl border-b border-white/10">ADMIN</div>
                 <nav className="flex-1 px-4 py-6 space-y-2">
                     <NavLink viewName="dashboard" label="Dashboard" icon={ChartBarIcon} />
+                    <NavLink viewName="financials" label="Financials" icon={CurrencyDollarIcon} />
+                    <NavLink viewName="users" label="User Management" icon={UsersIcon} />
                     <NavLink viewName="companies" label="Manage Companies" icon={BuildingOfficeIcon} />
                     <NavLink viewName="drivers" label="Manage Drivers" icon={BusIcon} />
                     <NavLink viewName="agents" label="Manage Agents" icon={BriefcaseIcon} />
-                    <NavLink viewName="passengers" label="Passengers" icon={UsersIcon} />
                     <NavLink viewName="promotions" label="Promotions" icon={TagIcon} />
-                    <NavLink viewName="ads" label="Advertisements" icon={ArchiveBoxIcon} />
+                    <NavLink viewName="announcements" label="Announcements" icon={MegaphoneIcon} />
                 </nav>
             </aside>
             <div className="flex-1 flex flex-col bg-gray-100 dark:bg-gray-900">

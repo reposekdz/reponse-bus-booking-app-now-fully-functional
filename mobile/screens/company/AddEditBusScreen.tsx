@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function AddEditBusScreen({ route, navigation }) {
@@ -11,11 +11,16 @@ export default function AddEditBusScreen({ route, navigation }) {
     const [plate, setPlate] = useState(bus?.plate || '');
     const [model, setModel] = useState(bus?.model || '');
     const [capacity, setCapacity] = useState(bus?.capacity?.toString() || '');
+    const [amenities, setAmenities] = useState({ wifi: false, ac: true, charging: true });
 
     const handleSave = () => {
         // Save logic here
         alert(`Bus ${isEditing ? 'updated' : 'added'} successfully!`);
         navigation.goBack();
+    };
+    
+    const toggleAmenity = (amenity) => {
+        setAmenities(prev => ({...prev, [amenity]: !prev[amenity]}));
     };
 
     return (
@@ -34,9 +39,25 @@ export default function AddEditBusScreen({ route, navigation }) {
                 <Text style={styles.label}>Capacity</Text>
                 <TextInput style={styles.input} value={capacity} onChangeText={setCapacity} keyboardType="number-pad" placeholder="e.g., 55" />
 
+                <Text style={styles.label}>Amenities</Text>
+                <View style={styles.amenityRow}>
+                    <Text>WiFi</Text><Switch value={amenities.wifi} onValueChange={() => toggleAmenity('wifi')} />
+                </View>
+                 <View style={styles.amenityRow}>
+                    <Text>Air Conditioning</Text><Switch value={amenities.ac} onValueChange={() => toggleAmenity('ac')} />
+                </View>
+                 <View style={styles.amenityRow}>
+                    <Text>Charging Ports</Text><Switch value={amenities.charging} onValueChange={() => toggleAmenity('charging')} />
+                </View>
+
                 <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
                     <Text style={styles.saveButtonText}>Save Bus</Text>
                 </TouchableOpacity>
+                 {isEditing && (
+                    <TouchableOpacity style={styles.deleteButton}>
+                        <Text style={styles.deleteButtonText}>Delete Bus</Text>
+                    </TouchableOpacity>
+                )}
             </ScrollView>
         </SafeAreaView>
     );
@@ -50,6 +71,9 @@ const styles = StyleSheet.create({
     content: { padding: 20 },
     label: { fontSize: 14, fontWeight: '500', color: '#374151', marginBottom: 8, marginTop: 12 },
     input: { backgroundColor: 'white', padding: 14, borderRadius: 8, borderWidth: 1, borderColor: '#D1D5DB' },
+    amenityRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'white', padding: 14, borderRadius: 8, borderWidth: 1, borderColor: '#D1D5DB', marginBottom: 8 },
     saveButton: { backgroundColor: '#0033A0', padding: 16, borderRadius: 8, alignItems: 'center', marginTop: 24 },
     saveButtonText: { color: 'white', fontWeight: 'bold', fontSize: 16 },
+    deleteButton: { backgroundColor: '#FEE2E2', padding: 16, borderRadius: 8, alignItems: 'center', marginTop: 16 },
+    deleteButtonText: { color: '#DC2626', fontWeight: 'bold', fontSize: 16 },
 });

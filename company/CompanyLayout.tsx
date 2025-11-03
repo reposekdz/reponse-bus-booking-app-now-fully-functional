@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import { SunIcon, MoonIcon, CogIcon, UsersIcon, ChartBarIcon, BusIcon, MapIcon, WalletIcon } from '../components/icons';
 import CompanyDashboard from './CompanyDashboard';
@@ -8,6 +9,7 @@ import CompanyRoutes from './CompanyRoutes';
 import CompanyPassengers from './CompanyPassengers';
 import CompanyFinancials from './CompanyFinancials';
 import CompanySettings from './CompanySettings';
+import FleetMonitoring from './FleetMonitoring';
 
 interface CompanyLayoutProps {
     onLogout: () => void;
@@ -65,6 +67,7 @@ const CompanyLayout: React.FC<CompanyLayoutProps> = ({ onLogout, theme, setTheme
             case 'buses': return <CompanyBuses buses={buses} crudHandlers={crudHandlers} companyId={companyData.id}/>;
             case 'drivers': return <CompanyDrivers drivers={drivers} crudHandlers={crudHandlers} companyId={companyData.id}/>;
             case 'routes': return <CompanyRoutes routes={routes} crudHandlers={crudHandlers} companyId={companyData.id}/>;
+            case 'fleet': return <FleetMonitoring buses={buses} />;
             case 'passengers': return <CompanyPassengers />;
             case 'financials': return <CompanyFinancials />;
             case 'settings': return <CompanySettings companyData={companyData} />;
@@ -83,9 +86,10 @@ const CompanyLayout: React.FC<CompanyLayoutProps> = ({ onLogout, theme, setTheme
                 </div>
                 <nav className="flex-1 px-4 py-6 space-y-2">
                     <NavLink viewName="dashboard" label="Dashboard" icon={ChartBarIcon} />
+                    <NavLink viewName="routes" label="Routes & Schedules" icon={MapIcon} />
+                    <NavLink viewName="fleet" label="Fleet Monitoring" icon={BusIcon} />
                     <NavLink viewName="buses" label="Manage Buses" icon={BusIcon} />
                     <NavLink viewName="drivers" label="Manage Drivers" icon={UsersIcon} />
-                    <NavLink viewName="routes" label="Routes & Schedules" icon={MapIcon} />
                     <NavLink viewName="passengers" label="Passenger History" icon={UsersIcon} />
                     <NavLink viewName="financials" label="Financials" icon={WalletIcon} />
                     <NavLink viewName="settings" label="Settings" icon={CogIcon} />

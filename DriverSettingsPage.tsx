@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { CameraIcon, SunIcon, MoonIcon, BellIcon, ShieldCheckIcon, UserCircleIcon, BriefcaseIcon } from './components/icons';
 
@@ -43,7 +44,7 @@ const DriverSettingsPage = ({ driverData, companyData, theme, setTheme }) => {
     }
 
     return (
-        <div className="animate-fade-in">
+        <div className="animate-fade-in container mx-auto px-6 py-8">
             <h1 className="text-3xl font-bold dark:text-gray-200 mb-6">Settings</h1>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left side with various settings */}
@@ -66,13 +67,13 @@ const DriverSettingsPage = ({ driverData, companyData, theme, setTheme }) => {
                                 </div>
                                 <div>
                                     <label className="text-xs font-semibold text-gray-500">Phone</label>
-                                    <input type="text" name="phone" value={driverInfo.phone} onChange={handleInfoChange} className="w-full p-2 border-b-2 dark:bg-transparent dark:border-gray-600 focus:outline-none focus:border-blue-500"/>
+                                    <input type="text" name="phone" value={driverInfo.phone || '0788111222'} onChange={handleInfoChange} className="w-full p-2 border-b-2 dark:bg-transparent dark:border-gray-600 focus:outline-none focus:border-blue-500"/>
                                 </div>
                             </div>
                         </div>
                         <div>
                              <label className="text-xs font-semibold text-gray-500">Bio</label>
-                             <textarea name="bio" value={driverInfo.bio} onChange={handleInfoChange} rows={3} className="w-full mt-1 p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                             <textarea name="bio" value={driverInfo.bio || ''} onChange={handleInfoChange} rows={3} className="w-full mt-1 p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500" />
                         </div>
                         <div className="text-right mt-4">
                             <button onClick={() => alert("Profile Saved!")} className="px-5 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition">Save Changes</button>
@@ -98,7 +99,7 @@ const DriverSettingsPage = ({ driverData, companyData, theme, setTheme }) => {
                             <img src={companyData.logoUrl} alt={companyData.name} className="w-16 h-16 object-contain bg-gray-100 dark:bg-gray-700 rounded-full p-1"/>
                             <div>
                                 <p className="font-bold text-lg dark:text-white">{companyData.name}</p>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">Status: {driverData.status}</p>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">Status: {driverData.status || 'Active'}</p>
                             </div>
                         </div>
                         <p className="text-xs text-gray-600 dark:text-gray-300 mt-4 italic">"{companyData.description}"</p>

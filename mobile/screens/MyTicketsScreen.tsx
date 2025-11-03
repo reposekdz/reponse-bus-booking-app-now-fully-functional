@@ -113,6 +113,7 @@ export default function MyTicketsScreen({ navigation }) {
                     onPress={() => handleTicketPress(item)}
                 />
             )}
+            {/* @ts-ignore - FIX: contentContainerStyle is a valid prop for FlatList, but is not being recognized by TypeScript in this environment. */}
             contentContainerStyle={styles.list}
             refreshControl={
                 <RefreshControl 

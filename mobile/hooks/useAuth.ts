@@ -1,4 +1,5 @@
 
+
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 interface User {
@@ -7,7 +8,6 @@ interface User {
   role: 'passenger' | 'company' | 'admin' | 'agent' | 'driver';
   avatarUrl: string;
   walletBalance?: number;
-  // FIX: Add optional properties used for driver roles to resolve type errors.
   company?: string;
   assignedBus?: string;
 }
@@ -22,8 +22,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
 
-  // FIX: Replaced JSX with React.createElement to support .ts file extension
-  // and resolve parsing errors.
   return React.createElement(AuthContext.Provider, { value: { user, setUser } }, children);
 };
 

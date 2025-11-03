@@ -1,7 +1,9 @@
 
-import React from 'react';
-import { ChartBarIcon, UsersIcon, BusIcon, BriefcaseIcon } from '../components/icons';
+
+import React, { useState } from 'react';
+import { ChartBarIcon, UsersIcon, BusIcon, BriefcaseIcon, CurrencyDollarIcon } from '../components/icons';
 import ActivityFeed from '../components/ActivityFeed';
+import DateRangePicker from '../components/DateRangePicker';
 
 export const mockCompaniesData = [
   { 
@@ -66,7 +68,6 @@ const StatCard = ({ title, value, icon, format = 'number' }) => {
     );
 };
 
-// FIX: Explicitly type the 'format' prop to match allowed values for Intl.NumberFormatOptions.notation.
 const BarChart = ({ data, title, dataKey, labelKey, colorClass, format = 'compact' }: { data: any[], title: string, dataKey: string, labelKey: string, colorClass: string, format?: 'compact' | 'standard' | 'scientific' | 'engineering' }) => {
     const maxValue = Math.max(...data.map(d => d[dataKey]));
     return (
@@ -95,26 +96,31 @@ interface AdminDashboardProps {
 }
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ companies, drivers, agents, buses }) => {
-    const totalRevenue = companies.reduce((acc, c) => acc + c.totalRevenue, 0);
-    const totalPassengers = companies.reduce((acc, c) => acc + c.totalPassengers, 0);
+    const [dateRange, setDateRange] = useState('30 Days');
+    
+    // Mock data based on date range
+    const multiplier = dateRange === 'Today' ? 0.03 : dateRange === '7 Days' ? 0.2 : 1;
+    const totalRevenue = companies.reduce((acc, c) => acc + c.totalRevenue, 0) * multiplier;
+    const totalPassengers = companies.reduce((acc, c) => acc + c.totalPassengers, 0) * multiplier;
 
-    const passengerGrowthData = [
-        { month: 'May', passengers: 180000 },
-        { month: 'Jun', passengers: 250000 },
-        { month: 'Jul', passengers: 220000 },
-        { month: 'Aug', passengers: 310000 },
-        { month: 'Sep', passengers: 280000 },
-        { month: 'Oct', passengers: 450000 },
+    const topRoutes = [
+        { name: 'KGL-RBV', revenue: 580000000 * multiplier },
+        { name: 'KGL-HYE', revenue: 420000000 * multiplier },
+        { name: 'KGL-MSZ', revenue: 350000000 * multiplier },
+        { name: 'KGL-RSZ', revenue: 310000000 * multiplier },
     ];
 
     return (
         <div className="space-y-8">
-            <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-green-500 dark:from-blue-400 dark:to-green-300">Platform Overview</h1>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-green-500 dark:from-blue-400 dark:to-green-300">Platform Overview</h1>
+                <DateRangePicker activeRange={dateRange} onRangeChange={setDateRange} />
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatCard title="Total Revenue" value={totalRevenue} icon={<ChartBarIcon />} format="currency" />
+                <StatCard title="Total Revenue" value={totalRevenue} icon={<CurrencyDollarIcon />} format="currency" />
                 <StatCard title="Total Passengers" value={totalPassengers} icon={<UsersIcon />} />
-                <StatCard title="Active Buses" value={buses.length} icon={<BusIcon />} />
-                <StatCard title="Registered Agents" value={agents.length} icon={<BriefcaseIcon />} />
+                <StatCard title="Avg. Occupancy" value={`${(78.5 * (1 + (Math.random() - 0.5) * 0.1)).toFixed(1)}%`} icon={<BusIcon />} format="string"/>
+                <StatCard title="Active Users" value={8650 * multiplier} icon={<BriefcaseIcon />} />
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2">
@@ -132,17 +138,22 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ companies, drivers, age
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2">
                      <BarChart 
-                        data={passengerGrowthData}
-                        title="Monthly Passenger Growth"
-                        dataKey="passengers"
-                        labelKey="month"
+                        data={topRoutes}
+                        title="Top Routes by Revenue"
+                        dataKey="revenue"
+                        labelKey="name"
                         colorClass="bg-green-300 dark:bg-green-800/80"
                         format="compact"
                     />
                 </div>
                  <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-lg">
                      <h2 className="text-xl font-bold dark:text-white">Quick Stats</h2>
-                     <p className="text-gray-500 dark:text-gray-400 mt-4">More platform statistics will be displayed here...</p>
+                     <div className="space-y-3 mt-4 text-sm">
+                         <div className="flex justify-between"><span className="text-gray-500">Companies</span><span className="font-bold dark:text-white">{companies.length}</span></div>
+                         <div className="flex justify-between"><span className="text-gray-500">Drivers</span><span className="font-bold dark:text-white">{drivers.length}</span></div>
+                         <div className="flex justify-between"><span className="text-gray-500">Agents</span><span className="font-bold dark:text-white">{agents.length}</span></div>
+                         <div className="flex justify-between"><span className="text-gray-500">Buses</span><span className="font-bold dark:text-white">{buses.length}</span></div>
+                     </div>
                 </div>
             </div>
         </div>
