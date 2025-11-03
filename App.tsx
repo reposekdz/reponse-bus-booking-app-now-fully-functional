@@ -224,7 +224,7 @@ const App: React.FC = () => {
       case 'login': return <LoginPage onLogin={handleLogin} onNavigate={navigate} />;
       case 'register': return <RegisterPage onNavigate={navigate} />;
       case 'bookingSearch': return <BookingSearchPage onTripSelect={handleTripSelect} initialSearch={pageData} />;
-      case 'seatSelection': return <SeatSelectionPage tripData={pageData} onConfirm={handleBookingConfirm} navigate={navigate} walletData={walletData} />;
+      case 'seatSelection': return <SeatSelectionPage tripData={pageData} onConfirm={handleBookingConfirm} navigate={navigate} walletData={walletData} user={user} />;
       case 'bookings': return <BookingsPage />;
       case 'companies': return <CompaniesPage onNavigate={navigate} />;
       case 'companyProfile': return <CompanyProfilePage company={pageData} onSelectTrip={handleSearch} />;
