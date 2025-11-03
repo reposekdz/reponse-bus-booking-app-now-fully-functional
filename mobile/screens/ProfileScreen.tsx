@@ -1,20 +1,33 @@
-// Placeholder for ProfileScreen.tsx.
-// This screen is the user's hub for account management, settings, and wallet.
-
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../hooks/useAuth';
 
 // Mock Icon
-const Icon = ({ name }) => <Text style={{ color: '#6B7280', marginRight: 16 }}>{name}</Text>;
-const Arrow = () => <Text style={{ color: '#9CA3AF' }}>></Text>;
+const Icon = ({ name }) => <Text style={{ color: '#6B7280', marginRight: 16, width: 20 }}>{name.substring(0,2)}</Text>;
+const Arrow = () => <Text style={{ color: '#9CA3AF' }}>{'>'}</Text>;
 
-const user = {
-    name: 'Kalisa Jean',
-    email: 'kalisa.j@example.com',
-    avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=2080&auto=format&fit=crop',
-    walletBalance: 25000,
+const userProfiles = {
+    passenger: {
+        name: 'Kalisa Jean', email: 'passenger@test.com', role: 'passenger',
+        avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=2080&auto=format&fit=crop', walletBalance: 25000
+    },
+    agent: {
+        name: 'Jane Smith', email: 'agent@test.com', role: 'agent',
+        avatarUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=2070&auto=format&fit=crop'
+    },
+    company: {
+        name: 'John Manager', email: 'manager@volcano.rw', role: 'company',
+        avatarUrl: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=1974&auto=format&fit=crop'
+    },
+    driver: {
+        name: 'Peter Jones', email: 'driver@volcano.rw', role: 'driver',
+        avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1974&auto=format&fit=crop'
+    },
+    admin: {
+        name: 'Admin User', email: 'admin@rwandabus.rw', role: 'admin',
+        avatarUrl: 'https://images.unsplash.com/photo-1639149888905-fb39731f2e6c?q=80&w=1964&auto=format&fit=crop'
+    }
 };
 
 const ProfileOption = ({ icon, label, onPress }) => (
@@ -29,31 +42,19 @@ export default function ProfileScreen({ navigation }) {
     const { user, setUser } = useAuth();
     
     const handleNavigation = (screen: string) => {
-        // In a real app, you would navigate. For this demo, we'll alert.
-        // navigation.navigate(screen);
-        alert(`Would navigate to ${screen} screen`);
+        navigation.navigate(screen);
     }
 
     const handleLogout = () => {
         setUser(null);
-        alert('Logging out...');
     }
 
     const switchRole = (role) => {
-        setUser({ ...user, role });
+        setUser(userProfiles[role]);
     }
 
     if (!user) {
-        return (
-             <SafeAreaView style={styles.container}>
-                <View style={styles.loginContainer}>
-                    <Text style={styles.name}>You are logged out</Text>
-                    <TouchableOpacity style={styles.walletButton} onPress={() => setUser({ name: 'Kalisa Jean', email: 'kalisa.j@example.com', role: 'passenger', avatarUrl: user.avatarUrl })}>
-                        <Text style={styles.walletButtonText}>Log In as Passenger</Text>
-                    </TouchableOpacity>
-                </View>
-            </SafeAreaView>
-        );
+        return null; // Should be handled by AppNavigator
     }
 
     return (
@@ -69,8 +70,8 @@ export default function ProfileScreen({ navigation }) {
                 {user.role === 'passenger' && (
                     <View style={styles.walletCard}>
                         <Text style={styles.walletLabel}>Wallet Balance</Text>
-                        <Text style={styles.walletBalance}>{new Intl.NumberFormat('fr-RW').format(user.walletBalance)} RWF</Text>
-                        <TouchableOpacity style={styles.walletButton} onPress={() => handleNavigation('Wallet')}>
+                        <Text style={styles.walletBalance}>{new Intl.NumberFormat('fr-RW').format(user.walletBalance || 0)} RWF</Text>
+                        <TouchableOpacity style={styles.walletButton} onPress={() => alert('Manage Wallet')}>
                             <Text style={styles.walletButtonText}>Manage Wallet</Text>
                         </TouchableOpacity>
                     </View>
@@ -78,21 +79,23 @@ export default function ProfileScreen({ navigation }) {
                 
                 <View style={styles.menu}>
                     <ProfileOption icon="User" label="Edit Profile" onPress={() => handleNavigation('EditProfile')} />
-                    <ProfileOption icon="Bell" label="Notifications" onPress={() => handleNavigation('Notifications')} />
-                    <ProfileOption icon="Shield" label="Security" onPress={() => handleNavigation('Security')} />
+                    <ProfileOption icon="Bell" label="Notifications" onPress={() => alert('Notifications')} />
+                    <ProfileOption icon="Shield" label="Security" onPress={() => alert('Security')} />
                 </View>
 
                 <View style={styles.menu}>
-                     <ProfileOption icon="Help" label="Help Center" onPress={() => handleNavigation('HelpCenter')} />
-                     <ProfileOption icon="Info" label="About Us" onPress={() => handleNavigation('AboutUs')} />
+                     <ProfileOption icon="Help" label="Help Center" onPress={() => alert('Help Center')} />
+                     <ProfileOption icon="Info" label="About Us" onPress={() => alert('About Us')} />
                 </View>
 
                 {/* Developer Role Switcher */}
                 <View style={styles.menu}>
                     <Text style={styles.devTitle}>Developer: Switch Role</Text>
-                    <ProfileOption icon="Dev" label="Switch to Passenger" onPress={() => switchRole('passenger')} />
-                    <ProfileOption icon="Dev" label="Switch to Company" onPress={() => switchRole('company')} />
-                    <ProfileOption icon="Dev" label="Switch to Admin" onPress={() => switchRole('admin')} />
+                    <ProfileOption icon="Ps" label="Switch to Passenger" onPress={() => switchRole('passenger')} />
+                    <ProfileOption icon="Ag" label="Switch to Agent" onPress={() => switchRole('agent')} />
+                    <ProfileOption icon="Co" label="Switch to Company" onPress={() => switchRole('company')} />
+                    <ProfileOption icon="Dr" label="Switch to Driver" onPress={() => switchRole('driver')} />
+                    <ProfileOption icon="Ad" label="Switch to Admin" onPress={() => switchRole('admin')} />
                 </View>
                 
                 <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
@@ -105,7 +108,6 @@ export default function ProfileScreen({ navigation }) {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#F3F4F6' },
-    loginContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
     profileHeader: {
         alignItems: 'center',
         padding: 24,
@@ -135,6 +137,7 @@ const styles = StyleSheet.create({
         fontSize: 12,
         fontWeight: '600',
         textTransform: 'uppercase',
+        overflow: 'hidden'
     },
     walletCard: {
         margin: 20,

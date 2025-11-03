@@ -1,10 +1,9 @@
-// FIX: Implemented useAuth hook to fix module not found error.
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 interface User {
   name: string;
   email: string;
-  role: 'passenger' | 'company' | 'admin' | 'agent';
+  role: 'passenger' | 'company' | 'admin' | 'agent' | 'driver';
   avatarUrl: string;
   walletBalance?: number;
 }
@@ -17,19 +16,11 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>({
-    name: 'Kalisa Jean',
-    email: 'kalisa.j@example.com',
-    role: 'passenger',
-    avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=2080&auto=format&fit=crop',
-    walletBalance: 25000,
-  });
+  const [user, setUser] = useState<User | null>(null);
 
-  return (
-    <AuthContext.Provider value={{ user, setUser }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  // FIX: Replaced JSX with React.createElement to support .ts file extension
+  // and resolve parsing errors.
+  return React.createElement(AuthContext.Provider, { value: { user, setUser } }, children);
 };
 
 export const useAuth = (): AuthContextType => {
