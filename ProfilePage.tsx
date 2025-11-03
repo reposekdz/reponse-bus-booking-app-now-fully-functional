@@ -1,9 +1,5 @@
-
-
-
-
 import React, { useState, useMemo, useRef, useEffect, FormEvent } from 'react';
-import { UserCircleIcon, CogIcon, ArrowRightIcon, WalletIcon, ArrowUpRightIcon, ArrowDownLeftIcon, ChatBubbleLeftRightIcon, BellAlertIcon, ChartBarIcon, SearchIcon, BusIcon, BuildingOfficeIcon, MapPinIcon, BriefcaseIcon, LockClosedIcon, CameraIcon, XIcon, PaperAirplaneIcon } from './components/icons';
+import { UserCircleIcon, CogIcon, ArrowRightIcon, WalletIcon, ArrowUpRightIcon, ArrowDownLeftIcon, ChatBubbleLeftRightIcon, BellAlertIcon, ChartBarIcon, SearchIcon, BusIcon, BuildingOfficeIcon, MapPinIcon, BriefcaseIcon, LockClosedIcon, CameraIcon, XIcon, PaperAirplaneIcon, StarIcon } from './components/icons';
 import StarRating from './components/StarRating';
 
 
@@ -241,17 +237,36 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, walletData, onWalletUpd
             return acc;
         }, {});
         const mostVisitedCity = Object.keys(destinationCounts).length > 0 ? Object.keys(destinationCounts).reduce((a, b) => destinationCounts[a] > destinationCounts[b] ? a : b) : 'N/A';
+        
+        const totalKilometers = travelHistory.length * 150; // Approximation
+        const travelPoints = travelHistory.length * 100 + Math.floor(totalKilometers / 10);
 
-        const monthlySpending = travelHistory.reduce<Record<string, number>>((acc, trip) => {
-            const month = new Date(trip.date).toLocaleString('default', { month: 'short', year: '2-digit' });
-            acc[month] = (acc[month] || 0) + trip.price;
-            return acc;
-        }, {});
-
-        return { favoriteCompany, mostVisitedCity, monthlySpending };
+        return { favoriteCompany, mostVisitedCity, totalKilometers, travelPoints };
     }, []);
 
-    const maxSpending = Math.max(0, ...Object.values(analytics.monthlySpending).map(Number));
+    const loyalty = useMemo(() => {
+        const points = analytics.travelPoints;
+        let tier = 'Bronze';
+        let progress = 0;
+        let nextTier = 'Silver';
+        let nextTierPoints = 2500;
+
+        if (points >= 5000) {
+            tier = 'Gold';
+            nextTier = 'Gold';
+            nextTierPoints = 5000;
+            progress = 100;
+        } else if (points >= 2500) {
+            tier = 'Silver';
+            nextTier = 'Gold';
+            nextTierPoints = 5000;
+            progress = ((points - 2500) / (5000 - 2500)) * 100;
+        } else {
+            progress = (points / 2500) * 100;
+        }
+
+        return { points, tier, progress, nextTier, nextTierPoints };
+    }, [analytics.travelPoints]);
     
     const filteredHistory = useMemo(() => {
         if (!searchTerm) return travelHistory;
@@ -261,42 +276,6 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, walletData, onWalletUpd
             trip.to.toLowerCase().includes(searchTerm.toLowerCase())
         );
     }, [searchTerm]);
-
-    const summaryByCompany = useMemo(() => {
-        const summary = travelHistory.reduce<Record<string, { count: number; totalSpent: number; destinations: Set<string>, logoUrl: string | null }>>((acc, trip) => {
-            if (!acc[trip.company]) {
-                acc[trip.company] = { count: 0, totalSpent: 0, destinations: new Set(), logoUrl: trip.logoUrl };
-            }
-            acc[trip.company].count += 1;
-            acc[trip.company].totalSpent += trip.price;
-            acc[trip.company].destinations.add(trip.to);
-            return acc;
-        }, {});
-
-        return Object.entries(summary).map(([name, data]) => ({
-            name,
-            ...data,
-            destinations: Array.from(data.destinations)
-        })).sort((a,b) => b.count - a.count);
-    }, []);
-
-     const summaryByDestination = useMemo(() => {
-        const summary = travelHistory.reduce<Record<string, { count: number; companies: Set<string> }>>((acc, trip) => {
-            if (!acc[trip.to]) {
-                acc[trip.to] = { count: 0, companies: new Set() };
-            }
-            acc[trip.to].count += 1;
-            acc[trip.to].companies.add(trip.company);
-            return acc;
-        }, {});
-
-        return Object.entries(summary).map(([name, data]) => ({
-            name,
-            ...data,
-            companies: Array.from(data.companies)
-        })).sort((a,b) => b.count - a.count);
-    }, []);
-
 
     const handleToggle = (setting: keyof typeof notificationSettings) => {
         setNotificationSettings(prev => ({...prev, [setting]: !prev[setting]}));
@@ -390,26 +369,31 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, walletData, onWalletUpd
                     {activeTab === 'analytics' && (
                         <div className="animate-fade-in space-y-8">
                             <div>
-                                <h3 className="text-xl font-bold mb-4 dark:text-white">Imibare y'Ingendo</h3>
+                                <h3 className="text-xl font-bold mb-4 dark:text-white">Travel Analytics</h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                    <StatCard title="Ingendo Zose" value={travelHistory.length.toString()} icon={<BusIcon className="w-6 h-6 text-blue-600" />} />
-                                    <StatCard title="Ikigo Ukunda" value={analytics.favoriteCompany} icon={<BuildingOfficeIcon className="w-6 h-6 text-blue-600" />} />
-                                    <StatCard title="Aho Ujya Cyane" value={analytics.mostVisitedCity} icon={<MapPinIcon className="w-6 h-6 text-blue-600" />} />
+                                    <StatCard title="Favorite Bus Company" value={analytics.favoriteCompany} icon={<BuildingOfficeIcon className="w-6 h-6 text-blue-600" />} />
+                                    <StatCard title="Most Visited City" value={analytics.mostVisitedCity} icon={<MapPinIcon className="w-6 h-6 text-blue-600" />} />
+                                    <StatCard title="Total Kilometers" value={`${new Intl.NumberFormat().format(analytics.totalKilometers)} km`} icon={<BusIcon className="w-6 h-6 text-blue-600" />} />
                                 </div>
                             </div>
                             <div>
-                                <h3 className="text-xl font-bold mb-4 dark:text-white">Amafaranga Wakoresheje</h3>
-                                <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-xl">
-                                    <div className="flex items-end h-48 space-x-2">
-                                        {Object.entries(analytics.monthlySpending).map(([month, amount]) => (
-                                            <div key={month} className="flex-1 flex flex-col items-center justify-end group">
-                                                <div className="text-xs font-bold text-gray-800 dark:text-white bg-white/50 dark:bg-black/20 px-2 py-1 rounded-md mb-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    {new Intl.NumberFormat('fr-RW').format(amount as number)}
-                                                </div>
-                                                <div className="w-full bg-blue-200 dark:bg-blue-800/80 rounded-t-lg hover:bg-blue-300 dark:hover:bg-blue-700 transition-colors" style={{height: `${((amount as number) / (maxSpending || 1)) * 100}%`}}></div>
-                                                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{month}</div>
-                                            </div>
-                                        ))}
+                                <h3 className="text-xl font-bold mb-4 dark:text-white">Travel Rewards</h3>
+                                <div className="bg-gradient-to-r from-yellow-400 to-orange-500 p-6 rounded-xl text-white shadow-lg">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <p className="text-sm font-bold uppercase tracking-wider">{loyalty.tier} Member</p>
+                                            <p className="text-4xl font-bold">{new Intl.NumberFormat().format(loyalty.points)} pts</p>
+                                        </div>
+                                        <StarIcon className="w-10 h-10 text-white/50" />
+                                    </div>
+                                    <div className="mt-4">
+                                        <div className="flex justify-between text-xs font-semibold mb-1">
+                                            <span>Progress to {loyalty.nextTier}</span>
+                                            <span>{new Intl.NumberFormat().format(loyalty.nextTierPoints)} pts</span>
+                                        </div>
+                                        <div className="w-full bg-white/30 rounded-full h-2.5">
+                                            <div className="bg-white h-2.5 rounded-full" style={{width: `${loyalty.progress}%`}}></div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -419,12 +403,12 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, walletData, onWalletUpd
                     {activeTab === 'history' && (
                         <div className="animate-fade-in space-y-8">
                              <div>
-                                <h3 className="text-xl font-bold mb-4 dark:text-white">Amateka y'Ingendo (byose)</h3>
+                                <h3 className="text-xl font-bold mb-4 dark:text-white">Travel History</h3>
                                 <div className="relative mb-4">
                                      <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                                     <input 
                                         type="text"
-                                        placeholder="Shakisha ikigo, aho wavuye, cyangwa aho wagiye..."
+                                        placeholder="Search by company, departure, or arrival..."
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                         className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:ring-2 focus:ring-yellow-500"
@@ -434,10 +418,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, walletData, onWalletUpd
                                     <table className="w-full text-sm text-left">
                                         <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                                             <tr>
-                                                <th className="px-4 py-3">Ikigo</th>
-                                                <th className="px-4 py-3">Urugendo</th>
-                                                <th className="px-4 py-3">Itariki</th>
-                                                <th className="px-4 py-3 text-right">Igiciro</th>
+                                                <th className="px-4 py-3">Company</th>
+                                                <th className="px-4 py-3">Trip</th>
+                                                <th className="px-4 py-3">Date</th>
+                                                <th className="px-4 py-3 text-right">Price</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -456,40 +440,6 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, walletData, onWalletUpd
                                     </table>
                                 </div>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <h3 className="text-xl font-bold mb-4 dark:text-white">Incāmunigo ku Kigo</h3>
-                                    <div className="space-y-3">
-                                        {summaryByCompany.map(company => (
-                                            <div key={company.name} className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
-                                                <div className="flex items-center space-x-3 mb-3">
-                                                    {company.logoUrl ? <img src={company.logoUrl} alt={company.name} className="w-8 h-8 object-contain"/> : <div className="w-8 h-8 bg-gray-200 dark:bg-gray-600 rounded-full"></div>}
-                                                    <h4 className="font-bold text-gray-800 dark:text-white">{company.name}</h4>
-                                                </div>
-                                                <div className="flex justify-between text-sm">
-                                                    <span className="text-gray-500 dark:text-gray-400">Ingendo: <span className="font-semibold text-gray-700 dark:text-gray-300">{company.count}</span></span>
-                                                    <span className="text-gray-500 dark:text-gray-400">Yose: <span className="font-semibold text-green-600 dark:text-green-400">{new Intl.NumberFormat('fr-RW').format(company.totalSpent)}</span></span>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                                <div>
-                                    <h3 className="text-xl font-bold mb-4 dark:text-white">Incāmunigo ku Cyerekezo</h3>
-                                    <div className="space-y-3">
-                                        {summaryByDestination.map(dest => (
-                                            <div key={dest.name} className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
-                                                <div className="flex items-center space-x-3 mb-2">
-                                                    <MapPinIcon className="w-6 h-6 text-blue-500"/>
-                                                    <h4 className="font-bold text-gray-800 dark:text-white">{dest.name}</h4>
-                                                </div>
-                                                <p className="text-sm text-gray-500 dark:text-gray-400">Ingendo <span className="font-semibold text-gray-700 dark:text-gray-300">{dest.count}</span> wakozeyo</p>
-                                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Via: {dest.companies.join(', ')}</p>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                             </div>
                         </div>
                     )}
 

@@ -3,7 +3,7 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 
-type SeatStatus = 'available' | 'occupied' | 'selected' | 'aisle';
+export type SeatStatus = 'available' | 'occupied' | 'selected' | 'aisle';
 
 interface BusSeatProps {
     seatId: string;

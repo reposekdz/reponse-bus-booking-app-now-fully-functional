@@ -1,15 +1,12 @@
-// Placeholder for MyTicketsScreen.tsx in a React Native app.
-// This screen would fetch tickets and store them for offline use via AsyncStorage.
-
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-// In a real app, you would use this:
-// import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
 
 import BookingCard from '../components/BookingCard';
 
-// Mock AsyncStorage for demonstration in a web environment
+// In a real app, you would use this:
+// import AsyncStorage from '@react-native-async-storage/async-storage';
 const mockAsyncStorage = {
     _data: {},
     setItem: async (key, value) => {
@@ -23,25 +20,20 @@ const mockAsyncStorage = {
 const AsyncStorage = mockAsyncStorage;
 const TICKETS_STORAGE_KEY = '@RwandaBus:tickets';
 
-
 const mockUpcomingTickets = [
-  { id: '1', company: 'Volcano Express', from: 'Kigali', to: 'Rubavu', date: '28 Oct, 2024', time: '07:00 AM', seats: 'A5, A6', qrValue: 'VK-83AD1' },
+  { id: '1', company: 'Volcano Express', from: 'Kigali', to: 'Rubavu', date: '28 Oct, 2024', time: '07:00 AM', seats: 'A5, A6', qrValue: 'VK-83AD1', logoUrl: 'https://seeklogo.com/images/V/volcano-express-logo-F735513A51-seeklogo.com.png' },
 ];
 
 const mockPastTickets = [
-  { id: '2', company: 'RITCO', from: 'Kigali', to: 'Huye', date: '15 Sep, 2024', time: '09:30 AM', seats: 'C1', qrValue: 'RT-98CD3' },
+  { id: '2', company: 'RITCO', from: 'Kigali', to: 'Huye', date: '15 Sep, 2024', time: '09:30 AM', seats: 'C1', qrValue: 'RT-98CD3', logoUrl: 'https://www.ritco.rw/wp-content/uploads/2021/03/logo.svg' },
+  { id: '3', company: 'Horizon Express', from: 'Huye', to: 'Musanze', date: '15 Sep, 2024', time: '09:00 AM', seats: 'C2', qrValue: 'HZ-45BC2', logoUrl: 'https://media.jobinrwanda.com/logo/horizon-express-ltd-1681284534.png' },
 ];
 
-// Mock API fetch function
 const fetchTicketsAPI = async (type) => {
     console.log(`Fetching ${type} tickets from API...`);
     return new Promise(resolve => {
         setTimeout(() => {
-            if (type === 'Upcoming') {
-                resolve(mockUpcomingTickets);
-            } else {
-                resolve(mockPastTickets);
-            }
+            resolve(type === 'Upcoming' ? mockUpcomingTickets : mockPastTickets);
         }, 800);
     });
 };
@@ -51,47 +43,43 @@ export default function MyTicketsScreen({ navigation }) {
   const [activeTab, setActiveTab] = useState('Upcoming');
   const [tickets, setTickets] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // This effect simulates loading tickets from local storage (for offline access)
-  // and then fetching fresh data from an API.
-  useEffect(() => {
-    const loadTickets = async () => {
-      setIsLoading(true);
-      
-      // Step 1: For upcoming tickets, try to load from storage first for offline capability.
-      // This provides an instant view of tickets even without internet.
-      if (activeTab === 'Upcoming') {
+  const loadAndFetchTickets = useCallback(async (isRefresh = false) => {
+    if (!isRefresh) setIsLoading(true); else setIsRefreshing(true);
+
+    if (activeTab === 'Upcoming') {
         try {
-          const storedTicketsJSON = await AsyncStorage.getItem(TICKETS_STORAGE_KEY);
-          if (storedTicketsJSON) {
-            console.log("Loaded upcoming tickets from local storage.");
-            setTickets(JSON.parse(storedTicketsJSON));
-          }
+            const storedTicketsJSON = await AsyncStorage.getItem(TICKETS_STORAGE_KEY);
+            if (storedTicketsJSON) {
+                console.log("Loaded upcoming tickets from storage.");
+                setTickets(JSON.parse(storedTicketsJSON));
+            }
         } catch (e) {
-          console.warn('Error reading tickets from storage', e);
+            console.warn('Error reading tickets from storage', e);
         }
-      }
+    }
 
-      // Step 2: Fetch fresh data from API to update the list.
-      try {
-        const fetchedTickets = await fetchTicketsAPI(activeTab);
-        setTickets(fetchedTickets as any);
+    try {
+        const fetchedTickets = await fetchTicketsAPI(activeTab) as any[];
+        setTickets(fetchedTickets);
         
-        // Step 3: If viewing upcoming tickets, save the fresh data to storage for the next offline view.
-        if (activeTab === 'Upcoming') {
-          console.log("Saving fresh upcoming tickets to local storage.");
-          await AsyncStorage.setItem(TICKETS_STORAGE_KEY, JSON.stringify(fetchedTickets));
+        if (activeTab === 'Upcoming' && fetchedTickets.length > 0) {
+            console.log("Saving fresh upcoming tickets to storage.");
+            await AsyncStorage.setItem(TICKETS_STORAGE_KEY, JSON.stringify(fetchedTickets));
         }
-      } catch (e) {
-        console.warn('Failed to fetch tickets from API. Displaying stored data.', e);
-        // If API fails, the view will gracefully keep showing the stored data.
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadTickets();
+    } catch (e) {
+        console.warn('Failed to fetch from API. Displaying stored data.', e);
+    } finally {
+        if (!isRefresh) setIsLoading(false); else setIsRefreshing(false);
+    }
   }, [activeTab]);
+
+  useFocusEffect(
+    useCallback(() => {
+        loadAndFetchTickets();
+    }, [loadAndFetchTickets])
+  );
   
   const handleTicketPress = (ticket) => {
       // navigation.navigate('TicketDetails', { ticket });
@@ -126,8 +114,15 @@ export default function MyTicketsScreen({ navigation }) {
                 />
             )}
             contentContainerStyle={styles.list}
+            refreshControl={
+                <RefreshControl 
+                    refreshing={isRefreshing}
+                    onRefresh={() => loadAndFetchTickets(true)}
+                    tintColor="#FFFFFF"
+                />
+            }
             ListHeaderComponent={() => (
-            activeTab === 'Upcoming' && <Text style={styles.offlineNotice}>Your upcoming tickets are available offline.</Text>
+                activeTab === 'Upcoming' && <Text style={styles.offlineNotice}>Pull down to refresh. Your upcoming tickets are available offline.</Text>
             )}
             ListEmptyComponent={() => (
                 <View style={styles.emptyContainer}>
@@ -146,7 +141,8 @@ const styles = StyleSheet.create({
   headerTitle: { fontSize: 28, fontWeight: 'bold', color: 'white' },
   tabContainer: {
     flexDirection: 'row',
-    margin: 20,
+    marginHorizontal: 20,
+    marginTop: 20,
     backgroundColor: '#001A52',
     borderRadius: 12,
   },
@@ -168,6 +164,7 @@ const styles = StyleSheet.create({
   },
   list: {
     paddingHorizontal: 20,
+    paddingTop: 10,
   },
   offlineNotice: {
       color: '#A7C7E7',

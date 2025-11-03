@@ -3,9 +3,15 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import BusSeat from '../components/BusSeat';
+// FIX: Import SeatStatus type and define a Seat type to ensure correct type inference.
+import BusSeat, { SeatStatus } from '../components/BusSeat';
 
-const generateSeats = () => {
+type Seat = {
+    id: string;
+    status: SeatStatus;
+};
+
+const generateSeats = (): Seat[][] => {
     return Array.from({ length: 12 }, (_, i) => [
         { id: `A${i+1}`, status: Math.random() > 0.7 ? 'occupied' : 'available' },
         { id: `B${i+1}`, status: Math.random() > 0.8 ? 'occupied' : 'available' },
@@ -20,9 +26,9 @@ export default function SeatSelectionScreen({ route, navigation }) {
     const trip = { price: 4500, company: 'Volcano Express' };
     
     const [seats, setSeats] = useState(generateSeats());
-    const [selectedSeats, setSelectedSeats] = useState([]);
+    const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
 
-    const handleSelectSeat = (seatId) => {
+    const handleSelectSeat = (seatId: string) => {
         if (selectedSeats.includes(seatId)) {
             setSelectedSeats(selectedSeats.filter(id => id !== seatId));
         } else {

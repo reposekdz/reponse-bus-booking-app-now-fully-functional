@@ -1,14 +1,16 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 
-// Mock Icon
 const Icon = ({ name, style }) => <Text style={[{ color: '#6B7280', fontSize: 10 }, style]}>{name}</Text>;
 
 export default function BookingCard({ ticket, isPast, onPress }) {
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} disabled={!onPress}>
       <View style={styles.topRow}>
-          <View style={styles.logoPlaceholder} />
+          {ticket.logoUrl ? 
+            <Image source={{ uri: ticket.logoUrl }} style={styles.logo} /> : 
+            <View style={styles.logoPlaceholder} />
+          }
           <View style={styles.routeContainer}>
             <Text style={styles.location}>{ticket.from}</Text>
             <Icon name="-->" style={styles.arrowIcon}/>
@@ -53,11 +55,19 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 4,
     position: 'relative',
+    paddingRight: 60, // Space for QR code area
   },
   topRow: {
       flexDirection: 'row',
       alignItems: 'center',
       marginBottom: 4,
+  },
+  logo: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      marginRight: 12,
+      resizeMode: 'contain',
   },
   logoPlaceholder: {
       width: 32,
@@ -127,5 +137,6 @@ const styles = StyleSheet.create({
       color: '#9CA3AF',
       transform: [{ rotate: '270deg'}],
       fontSize: 12,
+      letterSpacing: 2,
   }
 });

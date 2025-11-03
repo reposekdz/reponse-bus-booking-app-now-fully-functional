@@ -28,13 +28,16 @@ const DriverDashboard: React.FC<DriverDashboardProps> = ({ onLogout, theme, setT
     const [view, setView] = useState('dashboard');
     const [scannedTicket, setScannedTicket] = useState('');
     const [scanResult, setScanResult] = useState<{ type: 'success' | 'error', message: string } | null>(null);
-    // FIX: Make a mutable copy of passengers to update status
     const [passengers, setPassengers] = useState(mockCurrentTrip.passengers);
 
     const toggleTheme = () => setTheme(theme === 'light' ? 'dark' : 'light');
 
     const handleScan = () => {
         setScanResult(null);
+        if (!scannedTicket) {
+            setScanResult({ type: 'error', message: 'Ticket ID cannot be empty.' });
+            return;
+        }
         const passenger = passengers.find(p => p.ticketId === scannedTicket);
         if (passenger) {
             if (passenger.status === 'boarded') {
@@ -42,13 +45,34 @@ const DriverDashboard: React.FC<DriverDashboardProps> = ({ onLogout, theme, setT
             } else {
                 onPassengerBoarding(passenger.ticketId);
                 setScanResult({ type: 'success', message: `Welcome, ${passenger.name}! Seat: ${passenger.seat}.` });
-                // Update local state to reflect change immediately
                 setPassengers(passengers.map(p => p.ticketId === scannedTicket ? {...p, status: 'boarded'} : p));
             }
         } else {
             setScanResult({ type: 'error', message: 'Invalid ticket ID. Please try again.' });
         }
         setScannedTicket('');
+    };
+    
+    const simulateScan = (type: 'success' | 'failure' | 'duplicate') => {
+        if (type === 'success') {
+            const passengerToScan = passengers.find(p => p.status === 'booked');
+            if (passengerToScan) {
+                setScannedTicket(passengerToScan.ticketId);
+            } else {
+                setScannedTicket('VK-83AD1'); // Fallback if all are boarded
+            }
+        } else if (type === 'duplicate') {
+            const boardedPassenger = passengers.find(p => p.status === 'boarded');
+             if (boardedPassenger) {
+                setScannedTicket(boardedPassenger.ticketId);
+            } else {
+                 setScannedTicket('VK-83AD3');
+            }
+        } else {
+            setScannedTicket('INVALID-ID');
+        }
+        // Use timeout to ensure state update before scan
+        setTimeout(handleScan, 50);
     };
 
     const NavLink = ({ viewName, label, icon: Icon }) => (
@@ -81,23 +105,38 @@ const DriverDashboard: React.FC<DriverDashboardProps> = ({ onLogout, theme, setT
                     {view === 'boarding' ? (
                         <div className="max-w-xl mx-auto">
                              <h1 className="text-3xl font-bold dark:text-gray-200 mb-6">Scan Passenger Ticket</h1>
-                             <div className="bg-white dark:bg-gray-800/50 p-8 rounded-2xl shadow-lg">
-                                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Enter the ticket ID from the passenger's QR code to verify and board them.</p>
+                             <div className="bg-white dark:bg-gray-800/50 p-6 sm:p-8 rounded-2xl shadow-lg">
+                                <div className="aspect-square w-full bg-gray-900 rounded-xl mb-6 flex items-center justify-center p-4 relative overflow-hidden">
+                                    <div className="absolute inset-0 bg-repeat opacity-5" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`}}></div>
+                                    <div className="w-full h-full border-4 border-dashed border-blue-500/50 rounded-lg flex items-center justify-center flex-col">
+                                        <QrCodeIcon className="w-20 h-20 text-blue-400/50"/>
+                                        <p className="text-blue-400/50 mt-2 text-sm font-semibold">Align QR code within frame</p>
+                                    </div>
+                                </div>
+                                 <p className="text-sm text-center text-gray-500 dark:text-gray-400 mb-4">Enter ticket ID manually if scan fails</p>
                                  <div className="flex space-x-2">
                                      <input 
                                         type="text"
                                         value={scannedTicket}
                                         onChange={(e) => setScannedTicket(e.target.value.toUpperCase())}
-                                        placeholder="Enter Ticket ID (e.g., VK-83AD1)"
+                                        placeholder="Enter Ticket ID..."
                                         className="flex-grow p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-blue-500"
                                      />
-                                     <button onClick={handleScan} className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700">Scan</button>
+                                     <button onClick={handleScan} className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700">Verify</button>
                                  </div>
                                  {scanResult && (
                                      <div className={`mt-4 p-3 rounded-md text-sm font-semibold ${scanResult.type === 'success' ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300'}`}>
                                          {scanResult.message}
                                      </div>
                                  )}
+                                 <div className="text-center mt-4 text-xs text-gray-400">
+                                     <p>For Demo:</p>
+                                     <div className="flex justify-center space-x-2 mt-1">
+                                         <button onClick={() => simulateScan('success')} className="text-green-500 hover:underline">Simulate Success</button>
+                                         <button onClick={() => simulateScan('duplicate')} className="text-yellow-500 hover:underline">Simulate Duplicate</button>
+                                         <button onClick={() => simulateScan('failure')} className="text-red-500 hover:underline">Simulate Failure</button>
+                                     </div>
+                                 </div>
                              </div>
                              <div className="mt-6 bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-lg">
                                 <h2 className="font-bold text-lg mb-4 dark:text-white">Passenger Manifest ({mockCurrentTrip.route})</h2>
@@ -115,7 +154,20 @@ const DriverDashboard: React.FC<DriverDashboardProps> = ({ onLogout, theme, setT
                              </div>
                         </div>
                     ) : (
-                         <h1 className="text-3xl font-bold dark:text-gray-200 mb-6">Dashboard is under construction.</h1>
+                        <div>
+                             <h1 className="text-3xl font-bold dark:text-gray-200 mb-6">Dashboard</h1>
+                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <button onClick={() => setView('boarding')} className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white p-8 rounded-2xl shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all text-left">
+                                    <QrCodeIcon className="w-12 h-12 mb-4"/>
+                                    <h2 className="text-2xl font-bold">Start Passenger Boarding</h2>
+                                    <p className="opacity-80 mt-2">Scan tickets to verify and board passengers for the current trip.</p>
+                                </button>
+                                 <div className="bg-white dark:bg-gray-800/50 p-8 rounded-2xl shadow-lg">
+                                    <h2 className="text-2xl font-bold dark:text-white">Trip Details</h2>
+                                    <p className="mt-2 text-gray-600 dark:text-gray-400">More trip details and actions will be shown here.</p>
+                                </div>
+                             </div>
+                        </div>
                     )}
                 </main>
             </div>
