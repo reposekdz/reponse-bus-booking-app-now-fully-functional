@@ -1,6 +1,7 @@
 
 
 
+
 import React, { useState, useMemo, useRef, useEffect, FormEvent } from 'react';
 import { UserCircleIcon, CogIcon, ArrowRightIcon, WalletIcon, ArrowUpRightIcon, ArrowDownLeftIcon, ChatBubbleLeftRightIcon, BellAlertIcon, ChartBarIcon, SearchIcon, BusIcon, BuildingOfficeIcon, MapPinIcon, BriefcaseIcon, LockClosedIcon, CameraIcon, XIcon, PaperAirplaneIcon } from './components/icons';
 import StarRating from './components/StarRating';
@@ -198,7 +199,6 @@ const WalletActionModal: React.FC<{
     );
 };
 
-// FIX: Added missing props to fix type error from App.tsx
 interface ProfilePageProps {
     user: any;
     walletData: any;

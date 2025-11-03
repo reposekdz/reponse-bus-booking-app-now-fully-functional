@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Page } from './App';
-// FIX: Imported missing ChevronRightIcon
 import { ArrowRightIcon, CheckCircleIcon, ChevronRightIcon } from './components/icons';
 import { mockCompaniesData } from './admin/AdminDashboard';
 

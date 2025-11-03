@@ -1,40 +1,41 @@
-import React, { createContext, useState, useContext } from 'react';
-
-type UserRole = 'passenger' | 'admin' | 'company' | 'driver' | 'agent';
+// FIX: Implemented useAuth hook to fix module not found error.
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 interface User {
-    name: string;
-    email: string;
-    role: UserRole;
-    avatarUrl: string;
+  name: string;
+  email: string;
+  role: 'passenger' | 'company' | 'admin' | 'agent';
+  avatarUrl: string;
+  walletBalance?: number;
 }
 
 interface AuthContextType {
-    user: User | null;
-    setUser: (user: User | null) => void;
+  user: User | null;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
 }
 
-const AuthContext = createContext<AuthContextType>({
-    user: null,
-    setUser: () => {},
-});
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const defaultUser: User = {
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<User | null>({
     name: 'Kalisa Jean',
     email: 'kalisa.j@example.com',
     role: 'passenger',
     avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=2080&auto=format&fit=crop',
+    walletBalance: 25000,
+  });
+
+  return (
+    <AuthContext.Provider value={{ user, setUser }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
-// FIX: Explicitly type the `children` prop to resolve multiple TypeScript errors.
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-    const [user, setUser] = useState<User | null>(defaultUser);
-
-    return (
-        <AuthContext.Provider value={{ user, setUser }}>
-            {children}
-        </AuthContext.Provider>
-    );
+export const useAuth = (): AuthContextType => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 };
-
-export const useAuth = () => useContext(AuthContext);

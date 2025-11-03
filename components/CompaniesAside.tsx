@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Page } from '../App';
 import { XIcon, SearchIcon, BuildingOfficeIcon, ChevronRightIcon } from './icons';
-// FIX: Corrected import path for mockCompaniesData
 import { mockCompaniesData } from '../admin/AdminDashboard';
 import StarRating from './StarRating';
 

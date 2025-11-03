@@ -1,9 +1,5 @@
-
-import React, { useState, useMemo, useEffect } from 'react';
-import {
-    SunIcon, MoonIcon, CogIcon, UsersIcon, ChartBarIcon, BuildingOfficeIcon,
-    BusIcon, MapIcon, SearchIcon, CheckCircleIcon, ArrowRightIcon, UserCircleIcon
-} from './components/icons';
+import React, { useState } from 'react';
+import { SunIcon, MoonIcon, CogIcon, UsersIcon, ChartBarIcon, QrCodeIcon } from './components/icons';
 import { Page } from './App';
 
 interface DriverDashboardProps {
@@ -16,145 +12,113 @@ interface DriverDashboardProps {
     navigate: (page: Page, data?: any) => void;
 }
 
-const mockPassengersData = {
-    'VB01': [
-        { name: 'Kalisa Jean', seat: 'A5', ticketId: 'VK-83AD1', status: 'booked' },
-        { name: 'Mutesi Aline', seat: 'A6', ticketId: 'VK-83AD2', status: 'booked' },
-        { name: 'Hakizimana David', seat: 'B1', ticketId: 'VK-83AD3', status: 'booked' },
+const mockCurrentTrip = {
+    id: 'VK-TRIP-123',
+    route: 'Kigali - Rubavu',
+    departureTime: '07:00 AM',
+    arrivalTime: '10:30 AM',
+    passengers: [
+        { id: 1, name: 'Kalisa Jean', seat: 'A5', ticketId: 'VK-83AD1', status: 'booked' },
+        { id: 2, name: 'Mutesi Aline', seat: 'A6', ticketId: 'VK-83AD2', status: 'booked' },
+        { id: 3, name: 'Gatete David', seat: 'B1', ticketId: 'VK-83AD3', status: 'boarded' },
     ],
-    'RT01': [
-        { name: 'Umuhoza Grace', seat: 'C1', ticketId: 'RT-98CD3', status: 'booked' },
-        { name: 'Ndayizeye Eric', seat: 'C2', ticketId: 'RT-98CD4', status: 'booked' },
-    ]
 };
 
-const mockTrips = {
-    'VB01': { from: 'Kigali', to: 'Rubavu', time: '07:00' },
-    'RT01': { from: 'Kigali', to: 'Huye', time: '08:30' },
-}
-
 const DriverDashboard: React.FC<DriverDashboardProps> = ({ onLogout, theme, setTheme, driverData, allCompanies, onPassengerBoarding, navigate }) => {
-    const [currentTrip, setCurrentTrip] = useState<any>(null);
-    const [passengers, setPassengers] = useState<any[]>([]);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [fullDriverData, setFullDriverData] = useState(null);
-
-    useEffect(() => {
-        const tripInfo = mockTrips[driverData.assignedBusId];
-        if (tripInfo) {
-            setCurrentTrip(tripInfo);
-            setPassengers(mockPassengersData[driverData.assignedBusId] || []);
-        }
-        // In a real app, you'd fetch this. Here we'll simulate finding it.
-        // This is a mock-up based on data structures in other files.
-        const foundDriver = {
-            id: 1, name: 'John Doe', company: 'Volcano Express', assignedBusId: 'VB01', phone: '0788111222', status: 'Active', email: 'j.doe@volcano.rw', joinDate: '2020-02-15T00:00:00Z', totalTrips: 1240, safetyScore: 98.5, avatarUrl: driverData.avatarUrl, coverUrl: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?q=80&w=2048&auto=format&fit=crop', bio: "Umushoferi w'inararibonye ufite ishyaka ryo gutanga serivisi nziza kandi itekanye.", certifications: [{name: 'License Category D', id: 'D12345', expiry: '2028-12-31'}], location: 'Kigali'
-        }
-        setFullDriverData(foundDriver);
-    }, [driverData]);
+    const [view, setView] = useState('dashboard');
+    const [scannedTicket, setScannedTicket] = useState('');
+    const [scanResult, setScanResult] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+    // FIX: Make a mutable copy of passengers to update status
+    const [passengers, setPassengers] = useState(mockCurrentTrip.passengers);
 
     const toggleTheme = () => setTheme(theme === 'light' ? 'dark' : 'light');
 
-    const handleConfirmBoarding = (ticketId: string) => {
-        setPassengers(prev => prev.map(p => p.ticketId === ticketId ? { ...p, status: 'boarded' } : p));
-        onPassengerBoarding(ticketId); // Update global state
+    const handleScan = () => {
+        setScanResult(null);
+        const passenger = passengers.find(p => p.ticketId === scannedTicket);
+        if (passenger) {
+            if (passenger.status === 'boarded') {
+                setScanResult({ type: 'error', message: `${passenger.name} has already boarded.` });
+            } else {
+                onPassengerBoarding(passenger.ticketId);
+                setScanResult({ type: 'success', message: `Welcome, ${passenger.name}! Seat: ${passenger.seat}.` });
+                // Update local state to reflect change immediately
+                setPassengers(passengers.map(p => p.ticketId === scannedTicket ? {...p, status: 'boarded'} : p));
+            }
+        } else {
+            setScanResult({ type: 'error', message: 'Invalid ticket ID. Please try again.' });
+        }
+        setScannedTicket('');
     };
 
-    const filteredPassengers = useMemo(() => {
-        return passengers.filter(p =>
-            p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            p.seat.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-    }, [passengers, searchTerm]);
-    
-    const boardedCount = useMemo(() => passengers.filter(p => p.status === 'boarded').length, [passengers]);
-    const totalPassengers = passengers.length;
-    const boardingProgress = totalPassengers > 0 ? (boardedCount / totalPassengers) * 100 : 0;
-
-    if (!currentTrip) {
-        return (
-            <div className={`min-h-screen flex flex-col items-center justify-center ${theme} bg-gray-100 dark:bg-gray-900`}>
-                <BusIcon className="w-16 h-16 text-gray-400 mb-4"/>
-                <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Nta rugendo ruhari</h1>
-                <p className="text-gray-500 dark:text-gray-400">Nta rugendo ruri bubone kuri iyi modoka ubu.</p>
-                 <button onClick={onLogout} className="mt-6 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700">Sohoka</button>
-            </div>
-        );
-    }
+    const NavLink = ({ viewName, label, icon: Icon }) => (
+      <button onClick={() => setView(viewName)} className={`group w-full flex items-center px-4 py-3 transition-all duration-300 rounded-lg relative ${view === viewName ? 'text-white bg-white/10' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>
+          <div className={`absolute left-0 top-0 h-full w-1 rounded-r-full bg-yellow-400 transition-all duration-300 ${view === viewName ? 'scale-y-100' : 'scale-y-0 group-hover:scale-y-50'}`}></div>
+          <Icon className="w-6 h-6 mr-4 transition-transform duration-300 group-hover:scale-110" />
+          <span className="font-semibold">{label}</span>
+      </button>
+    );
 
     return (
-        <div className={`min-h-screen flex flex-col ${theme} bg-gray-100 dark:bg-gray-900`}>
-            <header className="h-16 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-sm flex items-center justify-between px-6 border-b dark:border-gray-700/50 sticky top-0 z-10">
-                <button onClick={() => navigate('driverProfile', fullDriverData)} className="flex items-center space-x-2 group">
-                    <img src={driverData.avatarUrl} alt={driverData.name} className="w-9 h-9 rounded-full object-cover border-2 border-transparent group-hover:border-blue-500 transition"/>
-                    <div className="font-bold text-gray-800 dark:text-white">Ikaze, {driverData.name}</div>
-                </button>
-                <div className="flex items-center space-x-4">
-                    <button onClick={toggleTheme} className="text-gray-500 dark:text-gray-400">{theme === 'light' ? <MoonIcon className="w-6 h-6"/> : <SunIcon className="w-6 h-6"/>}</button>
-                    <button onClick={onLogout} className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700">Sohoka</button>
-                </div>
-            </header>
-
-            <main className="flex-1 p-4 sm:p-6 lg:p-8">
-                <div className="max-w-4xl mx-auto">
-                    <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-lg mb-6">
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Urugendo rwawe</p>
-                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                             <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white flex items-center">
-                                {currentTrip.from} <ArrowRightIcon className="w-6 h-6 mx-2 text-gray-400"/> {currentTrip.to}
-                            </h1>
-                            <div className="text-sm sm:text-right mt-2 sm:mt-0">
-                                <p className="font-semibold dark:text-gray-200">{currentTrip.time} &bull; Bisi {driverData.assignedBusId}</p>
-                                <p className="text-gray-500 dark:text-gray-400">{totalPassengers} Abagenzi</p>
-                            </div>
-                        </div>
+        <div className={`min-h-screen flex ${theme}`}>
+            <aside className="w-64 bg-gradient-to-b from-gray-800 via-gray-900 to-black text-gray-300 flex-col hidden lg:flex border-r border-gray-700/50">
+                <div className="h-20 flex items-center justify-center text-white font-bold text-xl border-b border-white/10">DRIVER PORTAL</div>
+                <nav className="flex-1 px-4 py-6 space-y-2">
+                    <NavLink viewName="dashboard" label="Dashboard" icon={ChartBarIcon} />
+                    <NavLink viewName="boarding" label="Passenger Boarding" icon={QrCodeIcon} />
+                    <NavLink viewName="profile" label="My Profile" icon={UsersIcon} />
+                </nav>
+            </aside>
+            <div className="flex-1 flex flex-col bg-gray-100 dark:bg-gray-900">
+                <header className="h-16 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-sm flex items-center justify-between px-6 border-b dark:border-gray-700/50">
+                    <div className="font-bold text-gray-800 dark:text-white">Welcome, {driverData.name.split(' ')[0]}</div>
+                    <div className="flex items-center space-x-4">
+                        <button onClick={toggleTheme} className="text-gray-500 dark:text-gray-400">{theme === 'light' ? <MoonIcon className="w-6 h-6"/> : <SunIcon className="w-6 h-6"/>}</button>
+                        <button onClick={onLogout} className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700">Logout</button>
                     </div>
-                    
-                    <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg">
-                        <div className="mb-4">
-                            <div className="flex justify-between items-center mb-1">
-                                <h3 className="font-bold text-lg dark:text-white">Urutonde rw'Abagenzi</h3>
-                                <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">{boardedCount} / {totalPassengers} Bemejwe</p>
-                            </div>
-                             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-                                <div className="bg-green-500 h-2.5 rounded-full transition-all duration-500" style={{ width: `${boardingProgress}%` }}></div>
-                            </div>
-                        </div>
-
-                         <div className="relative mb-4">
-                            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                            <input 
-                                type="text" 
-                                placeholder="Shakisha umugenzi ku izina cyangwa umwanya..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 focus:ring-2 focus:ring-blue-500"
-                            />
-                        </div>
-
-                        <div className="space-y-3 max-h-96 overflow-y-auto custom-scrollbar pr-2">
-                            {filteredPassengers.map(passenger => (
-                                <div key={passenger.ticketId} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50">
-                                    <div>
-                                        <p className="font-semibold dark:text-white">{passenger.name}</p>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400">Umwanya: {passenger.seat} &bull; ID: {passenger.ticketId}</p>
-                                    </div>
-                                    {passenger.status === 'boarded' ? (
-                                        <div className="flex items-center space-x-2 text-green-600">
-                                            <CheckCircleIcon className="w-6 h-6"/>
-                                            <span className="font-semibold text-sm">Yemejwe</span>
+                </header>
+                <main className="flex-1 p-6 lg:p-8 overflow-y-auto">
+                    {view === 'boarding' ? (
+                        <div className="max-w-xl mx-auto">
+                             <h1 className="text-3xl font-bold dark:text-gray-200 mb-6">Scan Passenger Ticket</h1>
+                             <div className="bg-white dark:bg-gray-800/50 p-8 rounded-2xl shadow-lg">
+                                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Enter the ticket ID from the passenger's QR code to verify and board them.</p>
+                                 <div className="flex space-x-2">
+                                     <input 
+                                        type="text"
+                                        value={scannedTicket}
+                                        onChange={(e) => setScannedTicket(e.target.value.toUpperCase())}
+                                        placeholder="Enter Ticket ID (e.g., VK-83AD1)"
+                                        className="flex-grow p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-blue-500"
+                                     />
+                                     <button onClick={handleScan} className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700">Scan</button>
+                                 </div>
+                                 {scanResult && (
+                                     <div className={`mt-4 p-3 rounded-md text-sm font-semibold ${scanResult.type === 'success' ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300'}`}>
+                                         {scanResult.message}
+                                     </div>
+                                 )}
+                             </div>
+                             <div className="mt-6 bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-lg">
+                                <h2 className="font-bold text-lg mb-4 dark:text-white">Passenger Manifest ({mockCurrentTrip.route})</h2>
+                                <div className="space-y-3 h-64 overflow-y-auto custom-scrollbar">
+                                    {passengers.map(p => (
+                                        <div key={p.id} className="flex justify-between items-center p-2 rounded-md bg-gray-100 dark:bg-gray-700/50">
+                                            <div>
+                                                <p className="font-semibold dark:text-white">{p.name}</p>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400">Seat: {p.seat} | ID: {p.ticketId}</p>
+                                            </div>
+                                            <span className={`px-2 py-1 text-xs rounded-full font-bold ${p.status === 'boarded' ? 'bg-green-200 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-yellow-200 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'}`}>{p.status}</span>
                                         </div>
-                                    ) : (
-                                        <button onClick={() => handleConfirmBoarding(passenger.ticketId)} className="px-4 py-2 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                                            Emeza
-                                        </button>
-                                    )}
+                                    ))}
                                 </div>
-                            ))}
+                             </div>
                         </div>
-                    </div>
-                </div>
-            </main>
+                    ) : (
+                         <h1 className="text-3xl font-bold dark:text-gray-200 mb-6">Dashboard is under construction.</h1>
+                    )}
+                </main>
+            </div>
         </div>
     );
 };
