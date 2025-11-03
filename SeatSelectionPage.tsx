@@ -71,9 +71,11 @@ const BusLayout: React.FC<{ seats: any[], selectedSeats: string[], reservedSeats
 const BoardingPass: React.FC<{
     trip: any;
     selection: { selectedSeats: string[], totalPrice: string };
-}> = ({ trip, selection }) => {
+    user: any;
+}> = ({ trip, selection, user }) => {
+    const ticketId = `VK-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
     return (
-        <div className="max-w-md mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden relative">
+        <div className="max-w-md mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden relative border dark:border-gray-700">
             {/* Header */}
             <div className="bg-blue-600 dark:bg-blue-800 p-4 flex items-center justify-between">
                 <div className="flex items-center space-x-2">
@@ -88,17 +90,17 @@ const BoardingPass: React.FC<{
                 <div className="flex justify-between items-center mb-4">
                     <div>
                         <p className="text-xs text-gray-500 dark:text-gray-400">UVA</p>
-                        <p className="text-2xl font-bold text-gray-800 dark:text-white">Kigali</p>
+                        <p className="text-2xl font-bold text-gray-800 dark:text-white">{trip.from || 'Kigali'}</p>
                     </div>
                     <ArrowRightIcon className="w-6 h-6 text-gray-400 dark:text-gray-500 flex-shrink-0 mx-4"/>
                     <div className="text-right">
                         <p className="text-xs text-gray-500 dark:text-gray-400">UJYA</p>
-                        <p className="text-2xl font-bold text-gray-800 dark:text-white">Rubavu</p>
+                        <p className="text-2xl font-bold text-gray-800 dark:text-white">{trip.to || 'Rubavu'}</p>
                     </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 text-sm border-t border-b dark:border-gray-700 py-4 my-4">
-                    <div><p className="text-gray-500 dark:text-gray-400">Umugenzi</p><p className="font-semibold dark:text-white">Kalisa Jean</p></div>
+                    <div><p className="text-gray-500 dark:text-gray-400">Umugenzi</p><p className="font-semibold dark:text-white">{user.name}</p></div>
                     <div><p className="text-gray-500 dark:text-gray-400">Itariki</p><p className="font-semibold dark:text-white">28 Ukwakira, 2024</p></div>
                     <div><p className="text-gray-500 dark:text-gray-400">Guhaguruka</p><p className="font-semibold dark:text-white">{trip.departureTime}</p></div>
                     <div><p className="text-gray-500 dark:text-gray-400">Imyanya</p><p className="font-bold text-blue-600 dark:text-blue-400 text-base">{selection.selectedSeats.join(', ')}</p></div>
@@ -106,15 +108,16 @@ const BoardingPass: React.FC<{
 
                 <div className="text-center">
                     <QrCodeIcon className="w-32 h-32 mx-auto text-gray-800 dark:text-gray-200" />
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">ID y'Itike: VK-NEWTKT</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 font-mono">ID y'Itike: {ticketId}</p>
                 </div>
             </div>
 
             {/* Perforated edge */}
-            <div className="relative h-4 bg-gray-50 dark:bg-gray-800">
-                <div className="absolute inset-0 bg-repeat-x" style={{ backgroundImage: `radial-gradient(circle at 0 0, transparent 0, transparent 4px, #e5e7eb 4px, #e5e7eb 5px)`}}></div>
-                 <div className="absolute inset-0 bg-repeat-x dark:hidden" style={{ backgroundImage: `radial-gradient(circle at 0 0, transparent 0, transparent 4px, white 4px, white 5px)`}}></div>
-                 <div className="hidden dark:block absolute inset-0 bg-repeat-x" style={{ backgroundImage: `radial-gradient(circle at 0 0, transparent 0, transparent 4px, #1f2937 4px, #1f2937 5px)`}}></div>
+             <div className="h-4 bg-gray-50 dark:bg-gray-800 relative">
+                <div className="absolute inset-y-0 left-0 w-full h-full flex justify-between">
+                    <div className="w-4 h-8 bg-gray-100 dark:bg-gray-900 rounded-r-full -translate-y-1/2"></div>
+                    <div className="w-4 h-8 bg-gray-100 dark:bg-gray-900 rounded-l-full -translate-y-1/2"></div>
+                </div>
             </div>
         </div>
     );
@@ -124,22 +127,23 @@ const BoardingPass: React.FC<{
 const BookingConfirmationView: React.FC<{
     trip: any;
     selection: { selectedSeats: string[], totalPrice: string };
+    user: any;
     transactionDetails: { oldBalance: number; amountPaid: number; } | null;
     newBalance: number;
     onTrack: () => void;
     onShareTicket: () => void;
     onGoToBookings: () => void;
-}> = ({ trip, selection, transactionDetails, newBalance, onTrack, onShareTicket, onGoToBookings }) => {
+}> = ({ trip, selection, user, transactionDetails, newBalance, onTrack, onShareTicket, onGoToBookings }) => {
     return (
         <div className="text-center max-w-2xl mx-auto py-12 animate-fade-in">
             <CheckCircleIcon className="w-20 h-20 text-green-500 mx-auto mb-4" />
             <h2 className="text-3xl font-bold text-gray-800 dark:text-white">Wishyuye neza!</h2>
             <p className="text-gray-600 dark:text-gray-400 mt-2 mb-8">Urugendo rwawe rwemejwe. Dore itike yawe:</p>
             
-            <BoardingPass trip={trip} selection={selection} />
+            <BoardingPass trip={trip} selection={selection} user={user} />
 
             {transactionDetails && (
-                <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg mt-8 text-left max-w-md mx-auto">
+                <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg mt-8 text-left max-w-md mx-auto border dark:border-gray-700">
                     <h4 className="font-bold mb-2 dark:text-white">Incāmunigo y'Ikoranabuhanga</h4>
                     <div className="text-sm space-y-1">
                         <div className="flex justify-between"><span>Ayariho:</span><span className="font-mono">{new Intl.NumberFormat('fr-RW').format(transactionDetails.oldBalance)} RWF</span></div>
@@ -168,14 +172,14 @@ const BookingConfirmationView: React.FC<{
 const PaymentModal: React.FC<{
     totalPrice: string;
     onClose: () => void;
-    onConfirm: (serialCode: string) => void;
+    onConfirm: (pin: string) => void;
     error: string;
 }> = ({ totalPrice, onClose, onConfirm, error }) => {
-    const [serialCode, setSerialCode] = useState('');
+    const [pin, setPin] = useState('');
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onConfirm(serialCode);
+        onConfirm(pin);
     };
 
     return (
@@ -191,16 +195,19 @@ const PaymentModal: React.FC<{
                         <p className="text-4xl font-bold text-green-600 dark:text-green-400">{totalPrice}</p>
                     </div>
                     <div>
-                        <label htmlFor="serial-code" className="text-sm font-medium text-gray-700 dark:text-gray-300">Shyiramo Kode yawe</label>
-                        <input 
-                            id="serial-code"
-                            type="text" 
-                            value={serialCode} 
-                            onChange={e => setSerialCode(e.target.value.toUpperCase())} 
-                            placeholder="e.g., KJ7821"
-                            className="w-full mt-1 p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:outline-none" 
-                            required
-                        />
+                        <label htmlFor="pin-code" className="text-sm font-medium text-gray-700 dark:text-gray-300">Shyiramo PIN y'ikofi yawe</label>
+                        <div className="relative mt-1">
+                            <LockClosedIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"/>
+                            <input 
+                                id="pin-code"
+                                type="password" 
+                                value={pin} 
+                                onChange={e => setPin(e.target.value)} 
+                                maxLength={4}
+                                className="w-full pl-10 p-2 text-center tracking-[1em] border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:outline-none" 
+                                required
+                            />
+                        </div>
                     </div>
                     {error && <p className="text-red-500 text-sm text-center">{error}</p>}
                     <button type="submit" className="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition">
@@ -217,6 +224,7 @@ interface SeatSelectionPageProps {
   onConfirm: (selection: { tripData: any; selectedSeats: string[]; totalPrice: string; paymentMethod: string }) => void;
   navigate: (page: Page) => void;
   walletData: any;
+  user: any;
 }
 
 const generateSeats = () => {
@@ -236,7 +244,7 @@ const generateSeats = () => {
 };
 
 
-const SeatSelectionPage: React.FC<SeatSelectionPageProps> = ({ tripData, onConfirm, navigate, walletData }) => {
+const SeatSelectionPage: React.FC<SeatSelectionPageProps> = ({ tripData, onConfirm, navigate, walletData, user }) => {
   const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
   const [reservedSeats, setReservedSeats] = useState<string[]>([]);
   const [isConfirmed, setIsConfirmed] = useState(false);
@@ -367,9 +375,9 @@ const SeatSelectionPage: React.FC<SeatSelectionPageProps> = ({ tripData, onConfi
     }
   };
   
-  const handlePaymentConfirm = (serialCode: string) => {
-    if (serialCode !== walletData.serialCode) {
-        setPaymentError('Kode watanze siyo. Ongera ugerageze.');
+  const handlePaymentConfirm = (pin: string) => {
+    if (pin !== walletData.walletPin) {
+        setPaymentError('PIN watanze siyo. Ongera ugerageze.');
         return;
     }
     
@@ -402,8 +410,9 @@ const SeatSelectionPage: React.FC<SeatSelectionPageProps> = ({ tripData, onConfi
             <BookingConfirmationView 
                 trip={tripData}
                 selection={finalSelection}
+                user={user}
                 transactionDetails={transactionDetails}
-                newBalance={walletData.balance}
+                newBalance={walletData.balance - (transactionDetails?.amountPaid || 0)}
                 onTrack={() => setShowTrackingModal(true)}
                 onShareTicket={() => alert('Sharing ticket...')}
                 onGoToBookings={() => navigate('bookings')}
@@ -426,7 +435,7 @@ const SeatSelectionPage: React.FC<SeatSelectionPageProps> = ({ tripData, onConfi
                     <div className="bg-gray-50 dark:bg-gray-800 rounded-lg shadow-lg p-6 sticky top-24">
                         <h2 className="text-2xl font-bold border-b dark:border-gray-700 pb-4 mb-4">Incāmunigo y'Itike</h2>
                         <div className="space-y-3 mb-4 text-sm">
-                            <p><strong>Urugendo:</strong> Kigali <ArrowRightIcon className="w-4 h-4 inline-block mx-1" /> Rubavu</p>
+                            <p><strong>Urugendo:</strong> {tripData.from || 'Kigali'} <ArrowRightIcon className="w-4 h-4 inline-block mx-1" /> {tripData.to || 'Rubavu'}</p>
                             <p><strong>Ikigo:</strong> <span className="font-semibold text-blue-600 dark:text-blue-400">{tripData.company}</span></p>
                             <p><strong>Itariki:</strong> 28 Ukwakira, 2024</p>
                             <p><strong>Igihe:</strong> {tripData.departureTime} - {tripData.arrivalTime}</p>
@@ -487,7 +496,7 @@ const SeatSelectionPage: React.FC<SeatSelectionPageProps> = ({ tripData, onConfi
             error={paymentError}
         />
       )}
-      {showTrackingModal && <LiveTrackingModal trip={{...tripData, route: 'Kigali - Rubavu'}} onClose={() => setShowTrackingModal(false)} />}
+      {showTrackingModal && <LiveTrackingModal trip={{...tripData, route: `${tripData.from || 'Kigali'} - ${tripData.to || 'Rubavu'}`}} onClose={() => setShowTrackingModal(false)} />}
     </div>
   );
 };
