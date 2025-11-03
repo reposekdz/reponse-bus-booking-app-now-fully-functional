@@ -1,15 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowRightIcon, WifiIcon, AcIcon, PowerIcon, StarIcon } from './components/icons';
-import AdBanner from './components/AdBanner';
-
-const searchResults = [
-  { id: 1, company: 'Volcano Express', departureTime: '07:00 AM', arrivalTime: '10:30 AM', duration: '3h 30m', price: '4,500 FRW', availableSeats: 23, amenities: ['WiFi', 'AC'], tag: 'Ikunzwe Cyane' },
-  { id: 2, company: 'Horizon Express', departureTime: '08:30 AM', arrivalTime: '12:15 PM', duration: '3h 45m', price: '4,800 FRW', availableSeats: 15, amenities: ['AC', 'Charging'] },
-  { id: 3, company: 'RITCO', departureTime: '09:00 AM', arrivalTime: '12:30 PM', duration: '3h 30m', price: '4,500 FRW', availableSeats: 30, amenities: ['WiFi', 'AC', 'Charging'], tag: 'Byuzuye' },
-  { id: 4, company: 'Volcano Express', departureTime: '11:00 AM', arrivalTime: '02:30 PM', duration: '3h 30m', price: '4,500 FRW', availableSeats: 5, amenities: ['AC'] },
-];
 
 interface SearchResultsPageProps {
+  results: any[];
   onTripSelect: (trip: any) => void;
 }
 
@@ -40,7 +33,7 @@ const SearchResultCard: React.FC<{ result: any, onSelect: () => void, isFavorite
                 <p className="text-sm text-gray-500 dark:text-gray-400">Kigali</p>
             </div>
             <div className="text-center text-gray-400">
-                <p className="text-xs">{result.duration}</p>
+                <p className="text-xs">{Math.floor(result.durationMinutes / 60)}h {result.durationMinutes % 60}m</p>
                 <div className="w-20 h-0.5 bg-gray-300 dark:bg-gray-600 my-1"></div>
                 <p className="text-xs">Ntaho uhagaze</p>
             </div>
@@ -50,7 +43,7 @@ const SearchResultCard: React.FC<{ result: any, onSelect: () => void, isFavorite
             </div>
         </div>
         <div className="text-center flex-shrink-0">
-            <p className="text-2xl font-bold text-green-600 dark:text-green-400">{result.price}</p>
+            <p className="text-2xl font-bold text-green-600 dark:text-green-400">{new Intl.NumberFormat('fr-RW').format(result.price)} RWF</p>
             <p className="text-xs text-gray-500 dark:text-gray-400">hasigaye imyanya {result.availableSeats}</p>
         </div>
         <div className="flex items-center space-x-2">
@@ -69,7 +62,7 @@ const SearchResultCard: React.FC<{ result: any, onSelect: () => void, isFavorite
 );
 
 
-const SearchResultsPage: React.FC<SearchResultsPageProps> = ({ onTripSelect }) => {
+const SearchResultsPage: React.FC<SearchResultsPageProps> = ({ results, onTripSelect }) => {
   const [favoriteTrips, setFavoriteTrips] = useState<number[]>([]);
 
   useEffect(() => {
@@ -91,17 +84,24 @@ const SearchResultsPage: React.FC<SearchResultsPageProps> = ({ onTripSelect }) =
   return (
     <div className="min-h-full">
         <div className="space-y-6">
-            {searchResults.map((result, index) => (
-                <SearchResultCard 
-                    key={result.id} 
-                    result={result} 
-                    onSelect={() => onTripSelect(result)}
-                    isFavorite={favoriteTrips.includes(result.id)}
-                    onToggleFavorite={() => toggleFavorite(result.id)}
-                    style={{ animationDelay: `${index * 100}ms` }}
-                    className="stagger-fade-in"
-                />
-            ))}
+            {results.length > 0 ? (
+                results.map((result, index) => (
+                    <SearchResultCard 
+                        key={result.id} 
+                        result={result} 
+                        onSelect={() => onTripSelect(result)}
+                        isFavorite={favoriteTrips.includes(result.id)}
+                        onToggleFavorite={() => toggleFavorite(result.id)}
+                        style={{ animationDelay: `${index * 100}ms` }}
+                        className="stagger-fade-in"
+                    />
+                ))
+            ) : (
+                <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-xl shadow-lg">
+                    <h3 className="text-xl font-bold text-gray-800 dark:text-white">Nta Ngendo Zibonetse</h3>
+                    <p className="text-gray-500 dark:text-gray-400 mt-2">Gerageza guhindura ibyo washatse.</p>
+                </div>
+            )}
         </div>
     </div>
   );

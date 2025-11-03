@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import HeroSection from './components/HeroSection';
@@ -26,7 +27,8 @@ import PackageDeliveryPage from './PackageDeliveryPage';
 import BusCharterPage from './BusCharterPage';
 import CompaniesAside from './components/CompaniesAside';
 import ServicesAside from './components/ServicesAside';
-import BookingSearchPage from './BookingSearchPage';
+// FIX: Import allSearchResults to provide data to SearchResultsPage
+import BookingSearchPage, { allSearchResults } from './BookingSearchPage';
 import BottomNavigation from './components/BottomNavigation';
 import TicketModal from './components/TicketModal';
 
@@ -137,7 +139,8 @@ const App: React.FC = () => {
     switch (currentPage) {
       case 'login': return <LoginPage onNavigate={navigate} onLogin={handleLogin} />;
       case 'register': return <RegisterPage onNavigate={navigate} />;
-      case 'search': return <SearchResultsPage onTripSelect={() => navigate('seatSelection')} />;
+      // FIX: Pass 'results' prop to SearchResultsPage and pass trip data on selection.
+      case 'search': return <SearchResultsPage results={allSearchResults} onTripSelect={(trip) => navigate('seatSelection', trip)} />;
       case 'seatSelection': return <SeatSelectionPage onConfirm={() => alert("Proceed to payment")} onBack={() => navigate('search')} tripData={pageData} />;
       case 'bookings': return <BookingsPage onViewTicket={setViewingTicket} />;
       case 'profile': return <ProfilePage onNavigate={navigate} />;
@@ -149,7 +152,8 @@ const App: React.FC = () => {
       case 'services': return <ServicesPage onNavigate={navigate} onToggleServicesAside={() => setShowServicesAside(true)} />;
       case 'packageDelivery': return <PackageDeliveryPage onNavigate={navigate} />;
       case 'busCharter': return <BusCharterPage onNavigate={navigate} />;
-      case 'bookingSearch': return <BookingSearchPage onSearch={handleSearch} />;
+      // FIX: Pass 'navigate' prop to BookingSearchPage as it's required.
+      case 'bookingSearch': return <BookingSearchPage onSearch={handleSearch} navigate={navigate} />;
       
       case 'adminDashboard': case 'adminCompanies': case 'adminDrivers': case 'adminAgents': case 'adminPassengers': case 'adminUsers': case 'adminFinancials': case 'adminAds': case 'adminPromotions': case 'agentProfile':
         return <AdminLayout currentPage={currentPage} navigate={navigate} agentTransactions={agentTransactions} pageData={pageData} />;
