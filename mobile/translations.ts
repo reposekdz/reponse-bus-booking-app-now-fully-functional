@@ -31,6 +31,14 @@ export const translations = {
     'mobile_wallet_add': 'Ongeramo Amafaranga',
     'mobile_wallet_history': 'Amateka y\'ibyakozwe',
     'mobile_wallet_empty': 'Nta gikorwa kirakorwa.',
+     // Services
+    'mobile_services_title': 'Serivisi Zacu',
+    'mobile_service_package': 'Ohereza Ipaki',
+    'mobile_service_package_desc': 'Kohereza imizigo byizewe kandi byihuse.',
+    'mobile_service_charter': 'Kodesha Bisi',
+    'mobile_service_charter_desc': 'Kodesha bisi ku birori byawe.',
+    'mobile_service_lost': 'Ibintu Byatakaye',
+    'mobile_service_lost_desc': 'Menyesha cyangwa shakisha ikintu cyatakaye.',
   },
   EN: {
     'form_from': 'From',
@@ -63,6 +71,14 @@ export const translations = {
     'mobile_wallet_add': 'Add Funds',
     'mobile_wallet_history': 'Transaction History',
     'mobile_wallet_empty': 'No transactions yet.',
+    // Services
+    'mobile_services_title': 'Our Services',
+    'mobile_service_package': 'Send a Package',
+    'mobile_service_package_desc': 'Reliable and fast parcel delivery.',
+    'mobile_service_charter': 'Bus Charter',
+    'mobile_service_charter_desc': 'Rent a bus for your group event.',
+    'mobile_service_lost': 'Lost & Found',
+    'mobile_service_lost_desc': 'Report or find a lost item.',
   },
   FR: {
     'form_from': 'De',
@@ -95,5 +111,13 @@ export const translations = {
     'mobile_wallet_add': 'Ajouter des Fonds',
     'mobile_wallet_history': 'Historique des Transactions',
     'mobile_wallet_empty': 'Aucune transaction.',
+    // Services
+    'mobile_services_title': 'Nos Services',
+    'mobile_service_package': 'Envoyer un Colis',
+    'mobile_service_package_desc': 'Livraison de colis fiable et rapide.',
+    'mobile_service_charter': 'Location de Bus',
+    'mobile_service_charter_desc': 'Louez un bus pour votre événement de groupe.',
+    'mobile_service_lost': 'Objets Trouvés',
+    'mobile_service_lost_desc': 'Signalez ou retrouvez un objet perdu.',
   }
 };

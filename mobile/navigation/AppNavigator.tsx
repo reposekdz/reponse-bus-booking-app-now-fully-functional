@@ -19,6 +19,8 @@ import EditProfileScreen from '../screens/EditProfileScreen';
 import WalletScreen from '../screens/WalletScreen';
 import BusCharterScreen from '../screens/BusCharterScreen';
 import LostAndFoundScreen from '../screens/LostAndFoundScreen';
+import PackageDeliveryScreen from '../screens/PackageDeliveryScreen';
+import ReportLostItemScreen from '../screens/ReportLostItemScreen';
 
 
 // Agent Screens
@@ -39,6 +41,7 @@ import ManageFleetScreen from '../screens/company/ManageFleetScreen';
 import ManageDriversScreen from '../screens/company/ManageDriversScreen';
 import AddEditBusScreen from '../screens/company/AddEditBusScreen';
 import AddEditDriverScreen from '../screens/company/AddEditDriverScreen';
+import CompanyPassengersScreen from '../screens/company/CompanyPassengersScreen';
 
 
 // Admin Screens
@@ -134,12 +137,14 @@ function CompanyTabs() {
                 if (route.name === 'Dashboard') iconName = 'chart-bar';
                 else if (route.name === 'Fleet') iconName = 'bus';
                 else if (route.name === 'Drivers') iconName = 'users';
+                 else if (route.name === 'Passengers') iconName = 'users';
                 return <Icon name={iconName} size={size} color={color} />;
             },
         })}>
             <Tab.Screen name="Dashboard" component={CompanyDashboardScreen} />
             <Tab.Screen name="Fleet" component={ManageFleetScreen} />
             <Tab.Screen name="Drivers" component={ManageDriversScreen} />
+            <Tab.Screen name="Passengers" component={CompanyPassengersScreen} />
         </Tab.Navigator>
     );
 }
@@ -182,6 +187,8 @@ export default function AppNavigator() {
                     <Stack.Screen name="DriverBoarding" component={BoardingScreen} />
                     <Stack.Screen name="BusCharter" component={BusCharterScreen} />
                     <Stack.Screen name="LostAndFound" component={LostAndFoundScreen} />
+                    <Stack.Screen name="PackageDelivery" component={PackageDeliveryScreen} />
+                    <Stack.Screen name="ReportLostItem" component={ReportLostItemScreen} />
                     <Stack.Screen name="AddEditBus" component={AddEditBusScreen} />
                     <Stack.Screen name="AddEditDriver" component={AddEditDriverScreen} />
                 </>

@@ -2,57 +2,59 @@ import React, { useState, FormEvent } from 'react';
 import { Page } from './App';
 import { ArchiveBoxIcon, BusIcon, BriefcaseIcon, MapIcon, ShieldCheckIcon, CreditCardIcon, ChevronRightIcon, TruckIcon } from './components/icons';
 import PackageTrackingModal from './PackageTrackingModal';
-
-const allServices = [
-    {
-      id: 'cargo-logistics',
-      title: 'Ohereza Ipaki',
-      description: 'Ohereza cyangwa wakire imizigo yawe mu buryo bwizewe.',
-      icon: ArchiveBoxIcon,
-      page: 'packageDelivery',
-      isFeatured: true,
-    },
-    {
-      id: 'bus-charter',
-      title: 'Kodesha Imodoka',
-      description: 'Tegura urugendo rwihariye rw\'itsinda ryawe.',
-      icon: BusIcon,
-      page: 'busCharter',
-      isFeatured: true,
-    },
-    {
-      id: 'corporate-travel',
-      title: 'Ingendo z\'Ubucuruzi',
-      description: 'Ibisubizo byihariye ku bigo.',
-      icon: BriefcaseIcon,
-    },
-    {
-      id: 'tour-packages',
-      title: 'Ingendo z\'Ubukerarugendo',
-      description: 'Sura ibyiza nyaburanga by\'u Rwanda.',
-      icon: MapIcon,
-    },
-     {
-      id: 'travel-insurance',
-      title: 'Ubwishingizi bw\'ingendo',
-      description: 'Genda amahoro ufite ubwishingizi bwuzuye.',
-      icon: ShieldCheckIcon,
-    },
-    {
-      id: 'gift-cards',
-      title: 'Amakarita y\'impano',
-      description: 'Tanga impano y\'urugendo ku nshuti.',
-      icon: CreditCardIcon,
-    },
-];
+import { useLanguage } from './contexts/LanguageContext';
 
 interface ServicesPageProps {
     onNavigate: (page: Page, data?: any) => void;
 }
 
 const ServicesPage: React.FC<ServicesPageProps> = ({ onNavigate }) => {
+    const { t } = useLanguage();
     const [trackingId, setTrackingId] = useState('');
     const [isTrackingModalOpen, setIsTrackingModalOpen] = useState(false);
+    
+    const allServices = [
+        {
+          id: 'cargo-logistics',
+          title: t('service_package_title'),
+          description: t('service_package_desc'),
+          icon: ArchiveBoxIcon,
+          page: 'packageDelivery',
+          isFeatured: true,
+        },
+        {
+          id: 'bus-charter',
+          title: t('service_charter_title'),
+          description: t('service_charter_desc'),
+          icon: BusIcon,
+          page: 'busCharter',
+          isFeatured: true,
+        },
+        {
+          id: 'corporate-travel',
+          title: t('service_corporate_title'),
+          description: t('service_corporate_desc'),
+          icon: BriefcaseIcon,
+        },
+        {
+          id: 'tour-packages',
+          title: t('service_tours_title'),
+          description: t('service_tours_desc'),
+          icon: MapIcon,
+        },
+         {
+          id: 'travel-insurance',
+          title: t('service_insurance_title'),
+          description: t('service_insurance_desc'),
+          icon: ShieldCheckIcon,
+        },
+        {
+          id: 'gift-cards',
+          title: t('service_gifts_title'),
+          description: t('service_gifts_desc'),
+          icon: CreditCardIcon,
+        },
+    ];
 
     const handleTrackPackage = (e: FormEvent) => {
         e.preventDefault();

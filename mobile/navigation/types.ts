@@ -22,6 +22,8 @@ export type RootStackParamList = {
   DriverBoarding: undefined;
   BusCharter: undefined;
   LostAndFound: undefined;
+  PackageDelivery: undefined;
+  ReportLostItem: undefined;
   // Modals or forms
   AddEditBus: AddEditBusParams;
   AddEditDriver: AddEditDriverParams;
