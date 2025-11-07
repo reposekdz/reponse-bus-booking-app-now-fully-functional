@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 // In a real app, you would use:
 // import NetInfo from "@react-native-community/netinfo";
 
+const OFFLINE_QUEUE_KEY = '@GoBus:agent_offline_queue';
+
 export default function useNetwork() {
   const [isOnline, setIsOnline] = useState(true);
 

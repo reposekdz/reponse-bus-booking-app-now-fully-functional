@@ -47,6 +47,7 @@ import SpecialOffers from './components/SpecialOffers';
 import BookingConfirmationPage from './BookingConfirmationPage';
 import FavoritesPage from './FavoritesPage';
 import PriceAlertsPage from './PriceAlertsPage';
+import LoyaltyPage from './LoyaltyPage';
 
 
 export type Page = 
@@ -61,11 +62,11 @@ export type Page =
   | 'fleetMonitoring' | 'driverProfile' | 'agentProfile' | 'bookingSearch' | 'passengerProfile'
   | 'corporateTravel' | 'tourPackages' | 'travelInsurance' | 'giftCards' | 'adminAnnouncements'
   | 'hotelBooking' | 'eventTickets' | 'vehicleRentals' | 'vipLounge' | 'companyRouteAnalytics'
-  | 'bookingConfirmation' | 'favorites' | 'priceAlerts';
+  | 'bookingConfirmation' | 'favorites' | 'priceAlerts' | 'loyalty';
 
 // Mock User Data
 const mockUsers = {
-  passenger: { name: 'Kalisa Jean', email: 'passenger@rwandabus.rw', role: 'passenger', avatarUrl: 'https://randomuser.me/api/portraits/men/32.jpg', coverUrl: 'https://images.unsplash.com/photo/1619534103142-93b3f276c120?q=80&w=2070&auto=format&fit=crop', walletBalance: 15000, pin: '1234', priceAlerts: [] },
+  passenger: { name: 'Kalisa Jean', email: 'passenger@rwandabus.rw', role: 'passenger', avatarUrl: 'https://randomuser.me/api/portraits/men/32.jpg', coverUrl: 'https://images.unsplash.com/photo/1619534103142-93b3f276c120?q=80&w=2070&auto=format&fit=crop', walletBalance: 15000, pin: '1234', priceAlerts: [], loyaltyPoints: 1250, referralCode: 'KAL-JEAN-8B' },
   company: { name: 'Volcano Express', email: 'manager@volcano.rw', role: 'company', avatarUrl: 'https://pbs.twimg.com/profile_images/1237839357116452865/p-28c8o-_400x400.jpg', coverUrl: 'https://images.unsplash.com/photo/1544620347-c4fd4a3d5957?q=80&w=2048&auto=format&fit=crop', pin: '2024' },
   admin: { name: 'Admin User', email: 'admin@rwandabus.rw', role: 'admin', avatarUrl: 'https://randomuser.me/api/portraits/women/44.jpg', coverUrl: 'https://images.unsplash.com/photo/1579546929518-9e396f3cc809?q=80&w=2070&auto=format&fit=crop' },
   driver: { 
@@ -190,8 +191,8 @@ const AppContent: React.FC = () => {
       case 'login': return <LoginPage onNavigate={navigate} onLogin={handleLogin} />;
       case 'register': return <RegisterPage onNavigate={navigate} />;
       case 'search': return <SearchResultsPage results={allSearchResults} onTripSelect={(trip) => navigate('seatSelection', trip)} />;
-      case 'seatSelection': return <SeatSelectionPage tripData={pageData} onConfirm={(bookingDetails) => navigate('bookingConfirmation', bookingDetails)} onBack={() => navigate('search')} />;
-      case 'bookingConfirmation': return <BookingConfirmationPage bookingDetails={pageData} onNavigate={navigate} />;
+      case 'seatSelection': return <SeatSelectionPage tripData={pageData} onConfirm={(bookingDetails) => navigate('bookingConfirmation', bookingDetails)} onBack={() => navigate('search')} user={user} />;
+      case 'bookingConfirmation': return <BookingConfirmationPage bookingDetails={pageData} onNavigate={navigate} setUser={setUser} />;
       case 'bookings': return <BookingsPage onViewTicket={setViewingTicket} user={user} />;
       case 'profile': return <ProfilePage onNavigate={navigate} user={user} setUser={setUser} />;
       case 'scheduled': return <ScheduledTripsPage onSearch={handleSearch}/>;
@@ -214,6 +215,7 @@ const AppContent: React.FC = () => {
       case 'vipLounge': return <VipLoungePage onNavigate={navigate} />;
       case 'favorites': return <FavoritesPage onNavigate={navigate} />;
       case 'priceAlerts': return <PriceAlertsPage onNavigate={navigate} user={user} />;
+      case 'loyalty': return <LoyaltyPage user={user} onNavigate={navigate} />;
       
       case 'adminDashboard': case 'adminCompanies': case 'adminDrivers': case 'adminAgents': case 'adminUsers': case 'adminFinancials': case 'adminAds': case 'adminPromotions': case 'adminAnnouncements':
         return <AdminLayout currentPage={currentPage} navigate={navigate} />;

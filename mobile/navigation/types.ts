@@ -30,6 +30,7 @@ export type RootStackParamList = {
   // Profile stack screens
   EditProfile: undefined;
   Wallet: undefined;
+  Loyalty: undefined;
 };
 
 // This allows us to use useNavigation with type safety

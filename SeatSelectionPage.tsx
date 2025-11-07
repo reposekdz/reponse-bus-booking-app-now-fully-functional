@@ -40,11 +40,13 @@ interface SeatSelectionPageProps {
   tripData: any;
   onConfirm: (bookingDetails: any) => void;
   onBack: () => void;
+  user: any;
 }
 
-const SeatSelectionPage: React.FC<SeatSelectionPageProps> = ({ tripData, onConfirm, onBack }) => {
+const SeatSelectionPage: React.FC<SeatSelectionPageProps> = ({ tripData, onConfirm, onBack, user }) => {
   const [seats, setSeats] = useState(initialSeats);
   const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
+  const [usePoints, setUsePoints] = useState(false);
   
   const trip = tripData || { price: 4500, company: 'Volcano Express', from: 'Kigali', to: 'Rubavu', departureTime: '07:00' }; // Fallback for direct access
 
@@ -55,15 +57,23 @@ const SeatSelectionPage: React.FC<SeatSelectionPageProps> = ({ tripData, onConfi
   };
   
   const totalPrice = selectedSeats.length * trip.price;
+  
+  const availablePoints = user?.loyaltyPoints || 0;
+  // Assuming 1 point = 1 RWF for discount
+  const pointsToUse = Math.min(availablePoints, totalPrice);
+  const discount = usePoints ? pointsToUse : 0;
+  const finalPrice = totalPrice - discount;
 
   const handleConfirmClick = () => {
     // In a real app, payment would be handled here. We'll simulate success.
     const bookingDetails = {
       ...trip,
       seats: selectedSeats.join(', '),
-      totalPrice: totalPrice,
-      bookingId: `RB-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
-      passengerName: 'Kalisa Jean' // Mocked logged-in user
+      totalPrice: finalPrice,
+      pointsUsed: discount,
+      pointsEarned: Math.floor(finalPrice / 100), // Points earned on the final price
+      bookingId: `GB-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
+      passengerName: user?.name || 'Guest User'
     };
     onConfirm(bookingDetails);
   };
@@ -99,14 +109,27 @@ const SeatSelectionPage: React.FC<SeatSelectionPageProps> = ({ tripData, onConfi
                 <div className="lg:col-span-1">
                      <div className="sticky top-24 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg">
                          <h2 className="text-xl font-bold dark:text-white mb-4">Summary y'Urugendo</h2>
-                         <div className="space-y-3 border-b dark:border-gray-700 pb-4">
+                         <div className="space-y-3 pb-4">
                              <p><strong>Ikigo:</strong> {trip.company}</p>
                              <p><strong>Imyanya Wahisemo:</strong> {selectedSeats.length > 0 ? selectedSeats.join(', ') : 'Ntawahisemo'}</p>
                              <p><strong>Igiciro cy'umwanya:</strong> {new Intl.NumberFormat('fr-RW').format(trip.price)} RWF</p>
                          </div>
-                         <div className="mt-4">
+                         {availablePoints > 0 && selectedSeats.length > 0 && (
+                            <div className="border-t dark:border-gray-700 pt-4 mt-4">
+                                <label className="flex items-center justify-between cursor-pointer">
+                                    <span className="font-semibold text-sm">Use {pointsToUse} GoPoints</span>
+                                    <div className="relative">
+                                        <input type="checkbox" checked={usePoints} onChange={() => setUsePoints(!usePoints)} className="sr-only" />
+                                        <div className={`block w-10 h-6 rounded-full transition ${usePoints ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}`}></div>
+                                        <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${usePoints ? 'transform translate-x-4' : ''}`}></div>
+                                    </div>
+                                </label>
+                                {usePoints && <p className="text-sm text-green-600 font-semibold">- {new Intl.NumberFormat('fr-RW').format(discount)} RWF</p>}
+                            </div>
+                        )}
+                         <div className="mt-4 border-t dark:border-gray-700 pt-4">
                              <p className="text-lg font-bold">Igiciro Cyose:</p>
-                             <p className="text-3xl font-extrabold text-green-600 dark:text-green-400">{new Intl.NumberFormat('fr-RW').format(totalPrice)} RWF</p>
+                             <p className="text-3xl font-extrabold text-green-600 dark:text-green-400">{new Intl.NumberFormat('fr-RW').format(finalPrice)} RWF</p>
                          </div>
                          <button onClick={handleConfirmClick} disabled={selectedSeats.length === 0} className="mt-6 w-full flex items-center justify-center px-6 py-3 rounded-lg bg-gradient-to-r from-yellow-400 to-yellow-500 text-[#0033A0] font-bold hover:saturate-150 transition-all duration-300 shadow-md disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-0.5">
                             Komeza <ArrowRightIcon className="w-5 h-5 ml-2" />

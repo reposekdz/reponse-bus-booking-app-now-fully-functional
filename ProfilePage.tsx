@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Page } from './App';
-import { UserCircleIcon, TicketIcon, ClockIcon, WalletIcon, CogIcon, ChevronRightIcon, PencilSquareIcon, CameraIcon } from './components/icons';
+import { UserCircleIcon, TicketIcon, ClockIcon, WalletIcon, CogIcon, ChevronRightIcon, PencilSquareIcon, CameraIcon, SparklesIcon } from './components/icons';
 import WalletTopUpModal from './components/WalletTopUpModal';
 
 interface ProfilePageProps {
@@ -17,10 +17,12 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onNavigate, user, setUser }) 
         name: 'Guest User',
         email: 'guest@example.com',
         avatarUrl: 'https://randomuser.me/api/portraits/lego/1.jpg',
-        coverUrl: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?q=80&w=2070&auto=format&fit=crop',
+        coverUrl: 'https://images.unsplash.com/photo/1579546929518-9e396f3cc809?q=80&w=2070&auto=format&fit=crop',
         memberSince: 'Not logged in',
         walletBalance: 0,
         pin: '0000',
+        loyaltyPoints: 0,
+        referralCode: 'GUEST-CODE'
     };
 
     const menuItems: { label: string, icon: React.FC<any>, page: Page }[] = [
@@ -72,16 +74,34 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onNavigate, user, setUser }) 
                         </div>
                     </div>
 
-                    <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {menuItems.map(item => (
-                             <button key={item.label} onClick={() => onNavigate(item.page)} className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md flex items-center justify-between hover:shadow-lg hover:-translate-y-1 transition-all">
-                                 <div className="flex items-center">
-                                     <item.icon className="w-7 h-7 text-blue-600 dark:text-blue-400" />
-                                     <span className="ml-4 font-semibold text-lg text-gray-800 dark:text-white">{item.label}</span>
-                                 </div>
-                                 <ChevronRightIcon className="w-6 h-6 text-gray-400" />
-                             </button>
-                        ))}
+                    <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            {menuItems.map(item => (
+                                <button key={item.label} onClick={() => onNavigate(item.page)} className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md flex items-center justify-between hover:shadow-lg hover:-translate-y-1 transition-all">
+                                    <div className="flex items-center">
+                                        <item.icon className="w-7 h-7 text-blue-600 dark:text-blue-400" />
+                                        <span className="ml-4 font-semibold text-lg text-gray-800 dark:text-white">{item.label}</span>
+                                    </div>
+                                    <ChevronRightIcon className="w-6 h-6 text-gray-400" />
+                                </button>
+                            ))}
+                        </div>
+                         <div className="space-y-6">
+                            <div className="bg-gradient-to-br from-yellow-400 via-orange-500 to-red-500 text-white rounded-2xl shadow-xl p-6 text-center">
+                                <SparklesIcon className="w-8 h-8 mx-auto mb-2"/>
+                                <p className="text-sm opacity-90">GoPoints Balance</p>
+                                <p className="text-4xl font-bold">{new Intl.NumberFormat().format(displayUser.loyaltyPoints || 0)}</p>
+                                <button onClick={() => onNavigate('loyalty')} className="mt-2 text-xs font-semibold bg-white/20 px-3 py-1 rounded-full hover:bg-white/30">View History</button>
+                            </div>
+                            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
+                                <h3 className="font-bold text-lg dark:text-white">Refer & Earn</h3>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Share your code with friends. You both get 500 bonus GoPoints!</p>
+                                <div className="mt-4 flex items-center space-x-2 p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                                    <p className="flex-grow font-mono text-blue-600 dark:text-blue-400">{displayUser.referralCode}</p>
+                                    <button onClick={() => navigator.clipboard.writeText(displayUser.referralCode).then(() => alert('Copied!'))} className="px-3 py-1 text-xs font-semibold bg-blue-600 text-white rounded-md">Copy</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </main>
             </div>

@@ -7,6 +7,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 const CheckIcon = () => <Text style={styles.checkIcon}>✓</Text>;
 
 export default function BookingConfirmationScreen({ navigation }) {
+    const pointsEarned = Math.floor((Math.random() * 50) + 50); // Mock points
+
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.content}>
@@ -16,6 +18,8 @@ export default function BookingConfirmationScreen({ navigation }) {
                 <Text style={styles.title}>Booking Confirmed!</Text>
                 <Text style={styles.subtitle}>Your ticket has been sent to your email. You can also find it in the "My Tickets" section.</Text>
                 
+                <Text style={styles.pointsText}>✨ You've earned {pointsEarned} GoPoints! ✨</Text>
+
                 <View style={styles.card}>
                     <Text style={styles.cardTitle}>Kigali to Rubavu</Text>
                     <Text style={styles.cardCompany}>Volcano Express</Text>
@@ -70,7 +74,17 @@ const styles = StyleSheet.create({
         color: '#6B7280',
         textAlign: 'center',
         marginTop: 8,
+        marginBottom: 16,
+    },
+    pointsText: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#D97706',
         marginBottom: 24,
+        backgroundColor: '#FEF3C7',
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: 16,
     },
     card: {
         backgroundColor: 'white',

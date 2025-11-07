@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Page } from '../App';
-import { SunIcon, MoonIcon, MenuIcon, XIcon, UserCircleIcon, TicketIcon, LanguageIcon, ChevronDownIcon, WalletIcon, BusIcon, BellIcon, TagIcon, StarIcon, BellAlertIcon } from './icons';
+import { SunIcon, MoonIcon, MenuIcon, XIcon, UserCircleIcon, TicketIcon, LanguageIcon, ChevronDownIcon, WalletIcon, BusIcon, BellIcon, TagIcon, StarIcon, BellAlertIcon, SparklesIcon } from './icons';
 import { useLanguage } from '../contexts/LanguageContext';
 
 interface HeaderProps {
@@ -72,7 +72,7 @@ const Header: React.FC<HeaderProps> = ({ currentPage, onNavigate, user, onLogout
       <div className="container mx-auto px-6 h-20 flex justify-between items-center">
         <button onClick={() => onNavigate('home')} className="group flex items-center gap-2 text-2xl font-extrabold tracking-tight transition-transform duration-300 hover:scale-105">
           <BusIcon className="w-8 h-8 transition-transform duration-500 group-hover:-translate-x-1 group-hover:text-yellow-300" />
-          <span>Rwanda<span className="text-yellow-300">Bus</span></span>
+          <span>Go<span className="text-yellow-300">Bus</span></span>
         </button>
 
         <nav className="hidden lg:flex items-center space-x-2">
@@ -85,7 +85,7 @@ const Header: React.FC<HeaderProps> = ({ currentPage, onNavigate, user, onLogout
         </nav>
 
         <div className="flex items-center space-x-2 sm:space-x-4">
-           <div className="relative" ref={langRef}>
+           <div className="relative hidden sm:block" ref={langRef}>
             <button onClick={() => setIsLangOpen(!isLangOpen)} className="flex items-center space-x-1 p-2 rounded-full hover:bg-white/10">
               <LanguageIcon className="w-5 h-5" />
               <span className="text-xs font-bold hidden sm:inline">{currentLang?.code}</span>
@@ -103,11 +103,11 @@ const Header: React.FC<HeaderProps> = ({ currentPage, onNavigate, user, onLogout
               </DropdownMenu>
           </div>
 
-          <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-white/10">
+          <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-white/10 hidden sm:block">
             {theme === 'light' ? <MoonIcon className="w-5 h-5" /> : <SunIcon className="w-5 h-5" />}
           </button>
 
-          <div className="relative" ref={notificationsRef}>
+          <div className="relative hidden sm:block" ref={notificationsRef}>
             <button onClick={() => setIsNotificationsOpen(!isNotificationsOpen)} className="p-2 rounded-full hover:bg-white/10 relative">
               <BellIcon className="w-5 h-5" />
               <span className="absolute top-1 right-1 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white/20"></span>
@@ -135,6 +135,19 @@ const Header: React.FC<HeaderProps> = ({ currentPage, onNavigate, user, onLogout
                 </div>
             </DropdownMenu>
           </div>
+
+          <div className="block sm:hidden flex items-center space-x-2">
+            <div className="relative" ref={langRef}>
+                <button onClick={() => setIsLangOpen(!isLangOpen)} className="p-2 rounded-full hover:bg-white/10">
+                    <LanguageIcon className="w-5 h-5"/>
+                </button>
+            </div>
+             <div className="relative" ref={notificationsRef}>
+                <button onClick={() => setIsNotificationsOpen(!isNotificationsOpen)} className="p-2 rounded-full hover:bg-white/10">
+                    <BellIcon className="w-5 h-5"/>
+                </button>
+            </div>
+          </div>
           
           <div className="hidden lg:flex items-center">
             {user ? (
@@ -154,6 +167,7 @@ const Header: React.FC<HeaderProps> = ({ currentPage, onNavigate, user, onLogout
                     <div className="py-2">
                         <button onClick={() => { onNavigate('profile'); setIsUserMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm hover:bg-white/20 flex items-center"><UserCircleIcon className="w-5 h-5 mr-3"/> {t('usermenu_profile')}</button>
                         <button onClick={() => { onNavigate('bookings'); setIsUserMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm hover:bg-white/20 flex items-center"><TicketIcon className="w-5 h-5 mr-3"/> {t('usermenu_bookings')}</button>
+                        <button onClick={() => { onNavigate('loyalty'); setIsUserMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm hover:bg-white/20 flex items-center"><SparklesIcon className="w-5 h-5 mr-3"/> My GoPoints</button>
                         <button onClick={() => { onNavigate('priceAlerts'); setIsUserMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm hover:bg-white/20 flex items-center"><BellAlertIcon className="w-5 h-5 mr-3"/> Price Alerts</button>
                         <button onClick={() => { onNavigate('favorites'); setIsUserMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm hover:bg-white/20 flex items-center"><StarIcon className="w-5 h-5 mr-3"/> My Favorites</button>
                     </div>

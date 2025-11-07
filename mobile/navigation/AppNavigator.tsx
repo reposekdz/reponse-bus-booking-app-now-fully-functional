@@ -21,6 +21,7 @@ import BusCharterScreen from '../screens/BusCharterScreen';
 import LostAndFoundScreen from '../screens/LostAndFoundScreen';
 import PackageDeliveryScreen from '../screens/PackageDeliveryScreen';
 import ReportLostItemScreen from '../screens/ReportLostItemScreen';
+import LoyaltyScreen from '../screens/LoyaltyScreen';
 
 
 // Agent Screens
@@ -60,6 +61,7 @@ function ProfileNavigator() {
             <ProfileStack.Screen name="ProfileMain" component={ProfileScreen} />
             <ProfileStack.Screen name="EditProfile" component={EditProfileScreen} />
             <ProfileStack.Screen name="Wallet" component={WalletScreen} />
+            <ProfileStack.Screen name="Loyalty" component={LoyaltyScreen} />
         </ProfileStack.Navigator>
     );
 }

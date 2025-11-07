@@ -7,6 +7,7 @@ export interface User {
   role: 'passenger' | 'company' | 'admin' | 'agent' | 'driver';
   avatarUrl: string;
   // Role-specific properties
+  loyaltyPoints?: number;
   walletBalance?: number; // for passenger
   company?: string;      // for driver/company
   assignedBus?: string; // for driver

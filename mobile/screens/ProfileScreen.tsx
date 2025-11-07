@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../hooks/useAuth';
-import { useLanguage } from '../contexts/LanguageContext';
+import { useLanguage } from '../hooks/useLanguage';
 
 const ProfileOption = ({ label, icon, onPress }) => (
     <TouchableOpacity style={styles.option} onPress={onPress}>
@@ -23,11 +23,16 @@ export default function ProfileScreen({ navigation }) {
                     <Image source={{ uri: user?.avatarUrl }} style={styles.avatar} />
                     <Text style={styles.name}>{user?.name}</Text>
                     <Text style={styles.email}>{user?.email}</Text>
+                     <View style={styles.pointsContainer}>
+                        <Text style={styles.pointsIcon}>✨</Text>
+                        <Text style={styles.points}>{new Intl.NumberFormat().format(user?.loyaltyPoints || 0)} GoPoints</Text>
+                    </View>
                 </View>
                 
                 <View style={styles.menu}>
                     <ProfileOption label={t('mobile_profile_edit')} icon="👤" onPress={() => navigation.navigate('EditProfile')} />
                     <ProfileOption label={t('mobile_profile_bookings')} icon="🎟️" onPress={() => navigation.navigate(t('mobile_tab_tickets'))} />
+                    <ProfileOption label="GoPoints" icon="✨" onPress={() => navigation.navigate('Loyalty')} />
                     <ProfileOption label={t('mobile_profile_wallet')} icon="💳" onPress={() => navigation.navigate('Wallet')} />
                     <ProfileOption label={t('mobile_profile_settings')} icon="⚙️" onPress={() => alert('Navigate to Settings')} />
                     <ProfileOption label={t('mobile_profile_help')} icon="❓" onPress={() => alert('Navigate to Help Center')} />
@@ -62,6 +67,24 @@ const styles = StyleSheet.create({
     },
     email: {
         color: '#6B7280',
+    },
+    pointsContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 12,
+        backgroundColor: '#FEF3C7',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 16
+    },
+    pointsIcon: {
+        fontSize: 16,
+        marginRight: 6
+    },
+    points: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: '#92400E'
     },
     menu: {
         marginTop: 24,

@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import html2canvas from 'html2canvas';
 import { Page } from './App';
 // FIX: Replaced the missing `ArrowDownTrayIcon` with `ArrowUpTrayIcon` to resolve an import error. A dedicated download icon should be created for better UI/UX.
@@ -36,14 +36,29 @@ const QRCode: React.FC<{ value: string; size: number }> = ({ value, size }) => {
 };
 
 
-const BookingConfirmationPage: React.FC<{ bookingDetails: any, onNavigate: (page: Page) => void }> = ({ bookingDetails, onNavigate }) => {
+const BookingConfirmationPage: React.FC<{ bookingDetails: any, onNavigate: (page: Page) => void, setUser: (fn: (user: any) => any) => void }> = ({ bookingDetails, onNavigate, setUser }) => {
     const ticketRef = useRef<HTMLDivElement>(null);
+    const pointsAlreadyAdded = useRef(false);
+
+    useEffect(() => {
+        if (bookingDetails && setUser && !pointsAlreadyAdded.current) {
+            const { pointsEarned, pointsUsed } = bookingDetails;
+            setUser(prevUser => {
+                if (!prevUser) return null;
+                return {
+                    ...prevUser,
+                    loyaltyPoints: (prevUser.loyaltyPoints || 0) + (pointsEarned || 0) - (pointsUsed || 0)
+                };
+            });
+            pointsAlreadyAdded.current = true;
+        }
+    }, [bookingDetails, setUser]);
 
     const handleDownload = () => {
         if (ticketRef.current) {
             html2canvas(ticketRef.current, { backgroundColor: '#ffffff' }).then(canvas => {
                 const link = document.createElement('a');
-                link.download = `RwandaBus-Ticket-${bookingDetails.bookingId}.png`;
+                link.download = `GoBus-Ticket-${bookingDetails.bookingId}.png`;
                 link.href = canvas.toDataURL('image/png');
                 link.click();
             });
@@ -61,6 +76,11 @@ const BookingConfirmationPage: React.FC<{ bookingDetails: any, onNavigate: (page
                     <CheckCircleIcon className="w-16 h-16 text-green-500 mx-auto mb-4"/>
                     <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white">Booking Confirmed!</h1>
                     <p className="mt-2 text-lg text-gray-600 dark:text-gray-400">Your trip is scheduled. Your e-ticket is ready below.</p>
+                     {bookingDetails.pointsEarned > 0 && (
+                        <p className="mt-2 text-lg text-green-500 dark:text-green-400 font-semibold">
+                            You earned {bookingDetails.pointsEarned} GoPoints!
+                        </p>
+                    )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

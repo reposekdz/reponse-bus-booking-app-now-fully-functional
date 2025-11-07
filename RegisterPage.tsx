@@ -8,6 +8,18 @@ interface RegisterPageProps {
 
 const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigate }) => {
   const [showPassword, setShowPassword] = useState(false);
+  const [referralCode, setReferralCode] = useState('');
+
+  const handleRegister = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (referralCode.trim()) {
+        alert("Welcome! You and your friend have received 500 bonus GoPoints!");
+    } else {
+        alert("Registration successful!");
+    }
+    // In a real app, you would navigate after successful registration
+    // onNavigate('login');
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50 dark:bg-gray-900">
@@ -18,7 +30,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigate }) => {
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Fungura Konti</h2>
           <p className="text-gray-600 dark:text-gray-400 mb-8">Tangira urugendo rwawe natwe uyu munsi.</p>
           
-          <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+          <form className="space-y-6" onSubmit={handleRegister}>
             <div className="relative">
                 <label htmlFor="full-name" className="sr-only">Amazina Yuzuye</label>
                  <span className="absolute inset-y-0 left-0 flex items-center pl-3">
@@ -47,6 +59,10 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigate }) => {
               <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 dark:text-gray-400">
                 {showPassword ? <EyeOffIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
               </button>
+            </div>
+             <div className="relative">
+                <label htmlFor="referral-code" className="sr-only">Referral Code</label>
+                <input id="referral-code" name="referral" type="text" value={referralCode} onChange={e => setReferralCode(e.target.value)} className="w-full px-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500/50 transition" placeholder="Referral Code (Optional)" />
             </div>
             <div>
               <button type="submit" className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-md text-[#0033A0] bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-all duration-300 shadow-lg">
