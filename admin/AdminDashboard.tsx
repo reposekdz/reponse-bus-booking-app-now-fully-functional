@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChartBarIcon, UsersIcon, BuildingOfficeIcon, BriefcaseIcon } from '../components/icons';
+import { ChartBarIcon, UsersIcon, BuildingOfficeIcon, BriefcaseIcon, CheckCircleIcon } from '../components/icons';
 import ActivityFeed from '../components/ActivityFeed';
 
 // FIX: Exporting mock data to resolve module not found errors in other components.
@@ -74,20 +74,62 @@ const StatCard = ({ title, value, icon, change, changeType }) => (
     </div>
 );
 
-const AdminDashboard: React.FC = () => {
+const BarChart = ({ data, dataKey, labelKey, title, colorClass }) => {
+    const maxValue = Math.max(...data.map(d => d[dataKey]));
     return (
-        <div>
-            <h1 className="text-3xl font-bold dark:text-gray-200 mb-6">Admin Overview</h1>
+        <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-lg h-full flex flex-col">
+            <h3 className="font-bold mb-4 dark:text-white">{title}</h3>
+            <div className="flex-grow flex items-end space-x-2">
+                {data.map(item => (
+                    <div key={item[labelKey]} className="flex-1 flex flex-col items-center justify-end group">
+                        <div className="text-xs font-bold text-gray-800 dark:text-white bg-white/50 dark:bg-black/20 px-2 py-1 rounded-md mb-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            {new Intl.NumberFormat().format(item[dataKey])}
+                        </div>
+                        <div className={`w-full ${colorClass} rounded-t-lg hover:opacity-80 transition-opacity`} style={{height: `${(item[dataKey] / (maxValue || 1)) * 100}%`}}></div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{item[labelKey]}</div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
+
+const SystemHealth = () => (
+    <div className="bg-white dark:bg-gray-800/50 p-4 rounded-2xl shadow-lg flex items-center justify-between">
+        <h3 className="text-lg font-bold dark:text-white">System Health</h3>
+        <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2"><div className="w-3 h-3 rounded-full bg-green-500"></div><span className="text-sm">API: Normal</span></div>
+            <div className="flex items-center space-x-2"><div className="w-3 h-3 rounded-full bg-green-500"></div><span className="text-sm">Payments: Normal</span></div>
+        </div>
+        <div className="flex items-center space-x-2 text-green-500 font-bold">
+            <CheckCircleIcon className="w-6 h-6"/>
+            <span>All Systems Operational</span>
+        </div>
+    </div>
+);
+
+const AdminDashboard: React.FC = () => {
+    const revenueData = [{ day: 'Mon', revenue: 3.5 }, { day: 'Tue', revenue: 4.2 }, { day: 'Wed', revenue: 3.9 }, { day: 'Thu', revenue: 5.1 }, { day: 'Fri', revenue: 6.8 }, { day: 'Sat', revenue: 8.2 }, { day: 'Sun', revenue: 7.5 }];
+    const passengerData = [{ day: 'Mon', passengers: 1200 }, { day: 'Tue', passengers: 1500 }, { day: 'Wed', passengers: 1400 }, { day: 'Thu', passengers: 1800 }, { day: 'Fri', passengers: 2500 }, { day: 'Sat', passengers: 3200 }, { day: 'Sun', passengers: 2800 }];
+    const companyRevenue = [{ name: 'VOL', revenue: 5.8 }, { name: 'RIT', revenue: 8.2 }, { name: 'HOR', revenue: 3.1 }, { name: 'KBS', revenue: 4.5 }];
+
+    return (
+        <div className="space-y-6">
+            <h1 className="text-3xl font-bold dark:text-gray-200">Admin Overview</h1>
+            <SystemHealth />
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatCard title="Total Revenue" value="25.8M RWF" icon={<ChartBarIcon className="w-6 h-6 text-blue-600"/>} change="+5.2%" changeType="increase" />
                 <StatCard title="Total Passengers" value="8.6M" icon={<UsersIcon className="w-6 h-6 text-blue-600"/>} change="+2.1%" changeType="increase" />
                 <StatCard title="Active Companies" value="5" icon={<BuildingOfficeIcon className="w-6 h-6 text-blue-600"/>} change="+1" changeType="increase" />
                 <StatCard title="Registered Agents" value="2" icon={<BriefcaseIcon className="w-6 h-6 text-blue-600"/>} change="+0%" changeType="increase" />
             </div>
-            <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-lg">
-                    <h2 className="text-xl font-bold dark:text-white">Platform Analytics</h2>
-                    <p className="text-gray-500 dark:text-gray-400 mt-4">Charts showing revenue, passenger growth, etc., will be here.</p>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6" style={{ minHeight: '300px' }}>
+                <BarChart data={revenueData} dataKey="revenue" labelKey="day" title="Weekly Revenue (Millions RWF)" colorClass="bg-green-400 dark:bg-green-800" />
+                <BarChart data={passengerData} dataKey="passengers" labelKey="day" title="Weekly Passengers" colorClass="bg-blue-400 dark:bg-blue-800"/>
+            </div>
+             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2">
+                    <BarChart data={companyRevenue} dataKey="revenue" labelKey="name" title="Revenue by Company (Billions RWF)" colorClass="bg-indigo-400 dark:bg-indigo-800"/>
                 </div>
                 <ActivityFeed />
             </div>

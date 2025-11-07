@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { SunIcon, MoonIcon, CogIcon, UsersIcon, ChartBarIcon, QrCodeIcon, ChartPieIcon, ClipboardDocumentListIcon, WrenchScrewdriverIcon, MegaphoneIcon, CalendarIcon } from './components/icons';
+import { SunIcon, MoonIcon, CogIcon, UsersIcon, ChartBarIcon, QrCodeIcon, ChartPieIcon, ClipboardDocumentListIcon, WrenchScrewdriverIcon, MegaphoneIcon, CalendarIcon, ChatBubbleLeftRightIcon } from './components/icons';
 import { Page } from './App';
 import DriverSettingsPage from './DriverSettingsPage';
 import { mockCompaniesData } from './admin/AdminDashboard';
@@ -34,6 +34,11 @@ const mockCurrentTrip = {
 const mockAnnouncements = [
     { id: 1, text: "Reminder: All drivers must complete the new safety training module by Friday.", date: "2024-10-28" },
     { id: 2, text: "Heavy rain is expected on the Kigali-Huye route this afternoon. Please drive with extra caution.", date: "2024-10-27" }
+];
+
+const mockMessages = [
+    { id: 1, from: 'Manager', text: 'John, please call me when you reach the Nyabugogo terminal.', time: '10:15 AM'},
+    { id: 2, from: 'You', text: 'Will do.', time: '10:16 AM'},
 ];
 
 const DriverDashboard: React.FC<DriverDashboardProps> = ({ onLogout, theme, setTheme, driverData, allCompanies, onPassengerBoarding, navigate }) => {
@@ -177,7 +182,7 @@ const DriverDashboard: React.FC<DriverDashboardProps> = ({ onLogout, theme, setT
                                 <p className="opacity-80 mt-2">Submit a maintenance request for your assigned bus.</p>
                             </button>
                          </div>
-                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-lg">
                                 <h2 className="text-xl font-bold dark:text-white mb-4 flex items-center"><CalendarIcon className="w-6 h-6 mr-3 text-green-400"/> My Weekly Schedule</h2>
                                 <div className="space-y-3">
@@ -198,6 +203,21 @@ const DriverDashboard: React.FC<DriverDashboardProps> = ({ onLogout, theme, setT
                                             <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">{new Date(ann.date).toDateString()}</p>
                                         </div>
                                     ))}
+                                </div>
+                            </div>
+                             <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-lg flex flex-col">
+                                <h2 className="text-xl font-bold dark:text-white mb-4 flex items-center"><ChatBubbleLeftRightIcon className="w-6 h-6 mr-3 text-purple-400"/> Direct Messages</h2>
+                                <div className="flex-grow space-y-3">
+                                    {mockMessages.map(msg => (
+                                        <div key={msg.id} className={`p-2 rounded-lg max-w-[80%] ${msg.from === 'Manager' ? 'bg-gray-200 dark:bg-gray-700 self-start' : 'bg-blue-500 text-white self-end'}`}>
+                                            <p className="text-sm">{msg.text}</p>
+                                            <p className={`text-xs mt-1 ${msg.from === 'Manager' ? 'text-gray-500 dark:text-gray-400' : 'text-blue-100'} text-right`}>{msg.time}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="mt-4 flex space-x-2">
+                                    <input type="text" placeholder="Reply to manager..." className="flex-grow p-2 text-sm border rounded-lg dark:bg-gray-700 dark:border-gray-600" />
+                                    <button className="px-4 bg-blue-600 text-white font-semibold rounded-lg">Send</button>
                                 </div>
                             </div>
                          </div>

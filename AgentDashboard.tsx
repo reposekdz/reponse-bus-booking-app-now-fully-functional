@@ -89,6 +89,63 @@ const DashboardView = ({ agentData, transactions }) => {
     );
 };
 
+const CustomerLookupView = () => {
+    const [searchTerm, setSearchTerm] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [customer, setCustomer] = useState(null);
+    const [error, setError] = useState('');
+
+    const handleSearch = () => {
+        if (!searchTerm) return;
+        setIsLoading(true);
+        setError('');
+        setCustomer(null);
+        setTimeout(() => {
+            if (searchTerm === '0788123456' || searchTerm.toUpperCase() === 'UM1234') {
+                setCustomer({ name: 'Kalisa Jean', phone: '0788123456', serial: 'UM1234', balance: 15000 });
+            } else {
+                setError('No customer found with that ID.');
+            }
+            setIsLoading(false);
+        }, 1000);
+    };
+
+    return (
+        <div>
+            <h1 className="text-3xl font-bold dark:text-gray-200 mb-6">Customer Lookup</h1>
+            <div className="max-w-2xl mx-auto bg-white dark:bg-gray-800/50 p-8 rounded-2xl shadow-lg">
+                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Search for a passenger by their phone number or serial code to assist them.</p>
+                <div className="flex space-x-2">
+                     <input 
+                        type="text" 
+                        value={searchTerm}
+                        onChange={e => setSearchTerm(e.target.value)}
+                        placeholder="Enter phone or serial code..."
+                        className="flex-grow p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    />
+                    <button onClick={handleSearch} disabled={isLoading} className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition w-36">
+                        {isLoading ? <div className="w-5 h-5 border-2 border-t-white border-l-white border-b-transparent border-r-transparent rounded-full animate-spin mx-auto"></div> : 'Search'}
+                    </button>
+                </div>
+                {error && <p className="text-red-500 text-sm mt-4">{error}</p>}
+                {customer && (
+                    <div className="mt-6 bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg animate-fade-in">
+                        <p className="font-bold text-xl text-gray-800 dark:text-white">{customer.name}</p>
+                        <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-300 mt-2">
+                            <span className="flex items-center"><PhoneIcon className="w-4 h-4 mr-1.5"/>{customer.phone}</span>
+                            <span className="flex items-center font-mono"><UsersIcon className="w-4 h-4 mr-1.5"/>{customer.serial}</span>
+                        </div>
+                         <div className="mt-4 border-t dark:border-gray-600 pt-4">
+                            <p className="text-sm font-semibold">Wallet Balance</p>
+                            <p className="text-2xl font-bold text-green-600 dark:text-green-400">{new Intl.NumberFormat('fr-RW').format(customer.balance)} RWF</p>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
+
 const DepositView = ({ onAgentDeposit, passengerSerialCode, agentPin }) => {
     const [serialCode, setSerialCode] = useState('');
     const [passengerInfo, setPassengerInfo] = useState<{name: string; phone: string; location: string} | null>(null);
@@ -297,6 +354,7 @@ const AgentDashboard: React.FC<AgentDashboardProps> = ({ onLogout, theme, setThe
             case 'dashboard': return <DashboardView agentData={agentData} transactions={transactions} />;
             case 'deposit': return <DepositView onAgentDeposit={onAgentDeposit} passengerSerialCode={passengerSerialCode} agentPin={agentData.pin} />;
             case 'transactions': return <TransactionsView transactions={transactions} />;
+            case 'customerLookup': return <CustomerLookupView />;
             default: return <DashboardView agentData={agentData} transactions={transactions} />;
         }
     };
@@ -316,6 +374,7 @@ const AgentDashboard: React.FC<AgentDashboardProps> = ({ onLogout, theme, setThe
                 <nav className="flex-1 px-4 py-6 space-y-2">
                     <NavLink viewName="dashboard" label="Imbonerahamwe" icon={ChartBarIcon} />
                     <NavLink viewName="deposit" label="Kubitsa" icon={CreditCardIcon} />
+                    <NavLink viewName="customerLookup" label="Customer Lookup" icon={SearchIcon} />
                     <NavLink viewName="transactions" label="Ibikorwa" icon={WalletIcon} />
                     <button onClick={() => navigate('agentProfile')} className={`group w-full flex items-center px-4 py-3 transition-all duration-300 rounded-lg relative text-gray-400 hover:text-white hover:bg-white/5`}>
                          <div className={`absolute left-0 top-0 h-full w-1 rounded-r-full bg-yellow-400 transition-all duration-300 scale-y-0 group-hover:scale-y-50`}></div>

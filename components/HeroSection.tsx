@@ -14,7 +14,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onSearch }) => {
 
   return (
     <>
-      <section className="relative h-screen min-h-[700px] flex items-center justify-center text-white">
+      <section className="relative h-[70vh] min-h-[600px] flex items-center justify-center text-white">
         <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?q=80&w=2048&auto=format&fit=crop')" }}></div>
         <div className="absolute inset-0 bg-gradient-to-t from-blue-900/80 to-green-900/40 z-10"></div>
         <div className="relative z-20 container mx-auto px-6 text-center">

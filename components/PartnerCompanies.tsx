@@ -3,14 +3,14 @@ import type { Page } from '../App';
 import StarRating from './StarRating';
 import { ArrowRightIcon } from './icons';
 
-interface PartnerCompaniesProps {
+interface OurPartnersProps {
     navigate: (page: Page, data?: any) => void;
 }
 
 const partners = [
   { id: 'volcano', name: 'Volcano Express', logoText: 'VOLCANO', rating: 4.8, reviews: 250, bgImage: 'https://images.unsplash.com/photo-1593256398246-8853b3815c32?q=80&w=2070&auto=format&fit=crop' },
   { id: 'ritco', name: 'RITCO', logoText: 'RITCO', rating: 4.5, reviews: 120, bgImage: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?q=80&w=2048&auto=format&fit=crop' },
-  { id: 'horizon', name: 'Horizon Express', logoText: 'HORIZON', rating: 4.2, reviews: 98, bgImage: 'https://images.unsplash.com/photo-1605641793224-6512a8d8363b?q=80&w=1974&auto=format&fit=crop' },
+  { id: 'horizon', name: 'Horizon Express', logoText: 'HORIZON', rating: 4.2, reviews: 98, bgImage: 'https://images.unsplash.com/photo-1605641793224-6512a_d8363b?q=80&w=1974&auto=format&fit=crop' },
   { id: 'stellart', name: 'STELLART', logoText: 'STELLART', rating: 4.6, reviews: 150, bgImage: 'https://images.unsplash.com/photo-1616372819235-9b2e1577a2d4?q=80&w=2070&auto=format&fit=crop' },
 ];
 
@@ -35,7 +35,7 @@ const PartnerCard: React.FC<{ partner: typeof partners[0]; onSelect: () => void 
             <h4 className="text-2xl font-bold text-white" style={{textShadow: '2px 2px 4px rgba(0,0,0,0.5)'}}>{partner.name}</h4>
             <div className="flex items-center mt-2 space-x-2">
                 <StarRating rating={partner.rating} />
-                <span className="text-sm text-gray-300">({partner.reviews} ibitekerezo)</span>
+                <span className="text-sm text-gray-300">({partner.reviews} reviews)</span>
             </div>
             
             <div className="absolute bottom-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -46,14 +46,14 @@ const PartnerCard: React.FC<{ partner: typeof partners[0]; onSelect: () => void 
 );
 
 
-const PartnerCompanies: React.FC<PartnerCompaniesProps> = ({ navigate }) => {
+const OurPartners: React.FC<OurPartnersProps> = ({ navigate }) => {
   return (
-    <section className="py-16 sm:py-24 bg-gray-50 dark:bg-gray-900">
+    <section className="bg-gray-50 dark:bg-gray-900">
       <div className="container mx-auto px-6">
         <div className="text-center mb-16">
-          <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight sm:text-4xl">Ibigo by'Ingendo Dukorana</h2>
+          <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight sm:text-4xl">Our Trusted Partners</h2>
            <p className="mt-4 max-w-2xl mx-auto text-lg text-gray-600 dark:text-gray-400">
-            Kanda ku kigo kugira ngo umenye byinshi ku ngendo zacyo n'imodoka zikoreshwa.
+            Click a company to learn more about their routes and fleet.
           </p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -66,4 +66,4 @@ const PartnerCompanies: React.FC<PartnerCompaniesProps> = ({ navigate }) => {
   );
 };
 
-export default PartnerCompanies;
+export default OurPartners;

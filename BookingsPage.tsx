@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TicketIcon, ChevronRightIcon, QrCodeIcon, ArrowPathIcon, ShareIcon } from './components/icons';
+import { TicketIcon, ChevronRightIcon, QrCodeIcon, ArrowPathIcon, ShareIcon, BellAlertIcon } from './components/icons';
 
 const upcomingBookings = [
     { id: 'TICKET-001', from: 'Kigali', to: 'Rubavu', company: 'Volcano Express', date: '28 Ukwakira, 2024', time: '07:00 AM', seats: 'A5, A6', price: '9,000 FRW', passenger: 'Kalisa Jean', busPlate: 'RAD 123 B' },
@@ -47,10 +47,16 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewTicket, isPast
         </div>
          <div className="bg-gray-100 dark:bg-gray-700/50 px-5 py-2 flex items-center justify-end space-x-4">
             {isPast ? (
+                <>
+                 <button onClick={() => alert(`Price alert set for ${booking.from} to ${booking.to}!`)} className="flex items-center text-xs font-semibold text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                    <BellAlertIcon className="w-4 h-4 mr-1.5"/>
+                    Set Price Alert
+                </button>
                  <button onClick={() => alert(`Re-booking trip from ${booking.from} to ${booking.to}...`)} className="flex items-center text-xs font-semibold text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                     <ArrowPathIcon className="w-4 h-4 mr-1.5"/>
                     Re-book Trip
                 </button>
+                </>
             ) : (
                 <button onClick={() => alert(`Sharing trip details for ${booking.id}...`)} className="flex items-center text-xs font-semibold text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                     <ShareIcon className="w-4 h-4 mr-1.5"/>

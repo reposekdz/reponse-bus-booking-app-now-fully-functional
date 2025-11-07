@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Page } from '../App';
-import { ChartBarIcon, BusIcon, UsersIcon, MapIcon, WalletIcon, CogIcon } from '../components/icons';
+import { ChartBarIcon, BusIcon, UsersIcon, MapIcon, WalletIcon, CogIcon, ChartPieIcon } from '../components/icons';
 import CompanyDashboard from './CompanyDashboard';
 import CompanyBuses from './CompanyBuses';
 import CompanyDrivers from './CompanyDrivers';
@@ -10,6 +10,7 @@ import CompanyPassengers from './CompanyPassengers';
 import CompanyFinancials from './CompanyFinancials';
 import CompanySettings from './CompanySettings';
 import FleetMonitoring from './FleetMonitoring';
+import CompanyRouteAnalytics from './CompanyRouteAnalytics';
 
 interface CompanyLayoutProps {
     currentPage: Page;
@@ -20,6 +21,7 @@ interface CompanyLayoutProps {
 const navItems: { page: Page; label: string; icon: React.FC<any> }[] = [
     { page: 'companyDashboard', label: 'Dashboard', icon: ChartBarIcon },
     { page: 'fleetMonitoring', label: 'Fleet Monitoring', icon: MapIcon },
+    { page: 'companyRouteAnalytics', label: 'Route Analytics', icon: ChartPieIcon },
     { page: 'companyBuses', label: 'Manage Buses', icon: BusIcon },
     { page: 'companyDrivers', label: 'Manage Drivers', icon: UsersIcon },
     { page: 'companyRoutes', label: 'Manage Routes', icon: MapIcon },
@@ -40,6 +42,7 @@ const CompanyLayout: React.FC<CompanyLayoutProps> = ({ currentPage, navigate, co
             case 'companyFinancials': return <CompanyFinancials />;
             case 'companySettings': return <CompanySettings companyData={companyData} />;
             case 'fleetMonitoring': return <FleetMonitoring />;
+            case 'companyRouteAnalytics': return <CompanyRouteAnalytics />;
             default: return <CompanyDashboard companyPin={companyData.pin} />;
         }
     };

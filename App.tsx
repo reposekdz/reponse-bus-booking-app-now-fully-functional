@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import HeroSection from './components/HeroSection';
 import HowItWorks from './components/HowItWorks';
-import PartnerCompanies from './components/PartnerCompanies';
+import OurPartners from './components/PartnerCompanies';
 import Footer from './components/Footer';
 import LoginPage from './LoginPage';
 import RegisterPage from './RegisterPage';
@@ -36,6 +36,14 @@ import CorporateTravelPage from './CorporateTravelPage';
 import TourPackagesPage from './TourPackagesPage';
 import GiftCardsPage from './GiftCardsPage';
 import TravelInsurancePage from './TravelInsurancePage';
+import FeaturedDestinations from './components/FeaturedDestinations';
+import Testimonials from './components/Testimonials';
+import HotelBookingPage from './HotelBookingPage';
+import EventTicketsPage from './EventTicketsPage';
+import VehicleRentalsPage from './VehicleRentalsPage';
+import VipLoungePage from './VipLoungePage';
+import WhyChooseUs from './components/WhyChooseUs';
+import SpecialOffers from './components/SpecialOffers';
 
 
 export type Page = 
@@ -48,11 +56,12 @@ export type Page =
   | 'adminPromotions' | 'companyBuses' | 'companyDrivers' | 'companyRoutes' 
   | 'companyPassengers' | 'companyFinancials' | 'companySettings' 
   | 'fleetMonitoring' | 'driverProfile' | 'agentProfile' | 'bookingSearch' | 'passengerProfile'
-  | 'corporateTravel' | 'tourPackages' | 'travelInsurance' | 'giftCards' | 'adminAnnouncements';
+  | 'corporateTravel' | 'tourPackages' | 'travelInsurance' | 'giftCards' | 'adminAnnouncements'
+  | 'hotelBooking' | 'eventTickets' | 'vehicleRentals' | 'vipLounge' | 'companyRouteAnalytics';
 
 // Mock User Data
 const mockUsers = {
-  passenger: { name: 'Kalisa Jean', email: 'passenger@rwandabus.rw', role: 'passenger', avatarUrl: 'https://randomuser.me/api/portraits/men/32.jpg', coverUrl: 'https://images.unsplash.com/photo-1619534103142-93b3f276c120?q=80&w=2070&auto=format&fit=crop', walletBalance: 15000, pin: '1234' },
+  passenger: { name: 'Kalisa Jean', email: 'passenger@rwandabus.rw', role: 'passenger', avatarUrl: 'https://randomuser.me/api/portraits/men/32.jpg', coverUrl: 'https://images.unsplash.com/photo-1619534103142-93b3f276c120?q=80&w=2070&auto=format&fit=crop', walletBalance: 15000, pin: '1234', priceAlerts: [] },
   company: { name: 'Volcano Express', email: 'manager@volcano.rw', role: 'company', avatarUrl: 'https://pbs.twimg.com/profile_images/1237839357116452865/p-28c8o-_400x400.jpg', coverUrl: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?q=80&w=2048&auto=format&fit=crop', pin: '2024' },
   admin: { name: 'Admin User', email: 'admin@rwandabus.rw', role: 'admin', avatarUrl: 'https://randomuser.me/api/portraits/women/44.jpg', coverUrl: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?q=80&w=2070&auto=format&fit=crop' },
   driver: { 
@@ -194,11 +203,15 @@ const AppContent: React.FC = () => {
       case 'tourPackages': return <TourPackagesPage onNavigate={navigate} />;
       case 'travelInsurance': return <TravelInsurancePage onNavigate={navigate} />;
       case 'giftCards': return <GiftCardsPage onNavigate={navigate} />;
+      case 'hotelBooking': return <HotelBookingPage onNavigate={navigate} />;
+      case 'eventTickets': return <EventTicketsPage onNavigate={navigate} />;
+      case 'vehicleRentals': return <VehicleRentalsPage onNavigate={navigate} />;
+      case 'vipLounge': return <VipLoungePage onNavigate={navigate} />;
       
       case 'adminDashboard': case 'adminCompanies': case 'adminDrivers': case 'adminAgents': case 'adminUsers': case 'adminFinancials': case 'adminAds': case 'adminPromotions': case 'adminAnnouncements':
         return <AdminLayout currentPage={currentPage} navigate={navigate} />;
         
-      case 'companyDashboard': case 'companyBuses': case 'companyDrivers': case 'companyRoutes': case 'companyPassengers': case 'companyFinancials': case 'companySettings': case 'fleetMonitoring':
+      case 'companyDashboard': case 'companyBuses': case 'companyDrivers': case 'companyRoutes': case 'companyPassengers': case 'companyFinancials': case 'companySettings': case 'fleetMonitoring': case 'companyRouteAnalytics':
         return <CompanyLayout currentPage={currentPage} navigate={navigate} companyData={user} />;
         
       case 'driverDashboard':
@@ -216,14 +229,22 @@ const AppContent: React.FC = () => {
         return (
           <>
             <HeroSection onSearch={handleSearch} />
-            <HowItWorks />
-            <PartnerCompanies navigate={navigate} />
+            <div className="bg-gray-50 dark:bg-gray-900">
+              <div className="space-y-16 md:space-y-24 py-16 md:py-24">
+                  <FeaturedDestinations onSearch={handleSearch} />
+                  <WhyChooseUs />
+                  <SpecialOffers onSearch={handleSearch} />
+                  <HowItWorks />
+                  <Testimonials />
+                  <OurPartners navigate={navigate} />
+              </div>
+            </div>
           </>
         );
     }
   };
   
-  const isDashboard = ['adminDashboard', 'companyDashboard', 'driverDashboard', 'agentDashboard', 'adminCompanies', 'adminDrivers', 'adminAgents', 'adminUsers', 'adminFinancials', 'adminAds', 'adminPromotions', 'adminAnnouncements', 'companyBuses', 'companyDrivers', 'companyRoutes', 'companyPassengers', 'companyFinancials', 'companySettings', 'fleetMonitoring', 'agentProfile', 'driverProfile', 'passengerProfile'].includes(currentPage);
+  const isDashboard = ['adminDashboard', 'companyDashboard', 'driverDashboard', 'agentDashboard', 'adminCompanies', 'adminDrivers', 'adminAgents', 'adminUsers', 'adminFinancials', 'adminAds', 'adminPromotions', 'adminAnnouncements', 'companyBuses', 'companyDrivers', 'companyRoutes', 'companyPassengers', 'companyFinancials', 'companySettings', 'fleetMonitoring', 'agentProfile', 'driverProfile', 'passengerProfile', 'companyRouteAnalytics'].includes(currentPage);
   const showBottomNav = !isDashboard && ['home', 'bookingSearch', 'companies', 'profile', 'services'].includes(currentPage);
 
   return (
