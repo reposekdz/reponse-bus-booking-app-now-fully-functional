@@ -91,7 +91,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ onSearch }) => {
             <input type="date" id="return-date" value={returnDate} onChange={(e) => setReturnDate(e.target.value)} disabled={tripType === 'one-way'} className={formInputBaseClass}/>
           </div>
       </div>
-       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1">
           <div className="relative">
             <label className={formLabelClass}>{t('form_passengers')}</label>
             <button type="button" onClick={() => setIsPassengerDropdownOpen(!isPassengerDropdownOpen)} className={`${formInputBaseClass} text-left`}>
@@ -119,11 +119,6 @@ const BookingForm: React.FC<BookingFormProps> = ({ onSearch }) => {
                 </div>
             )}
           </div>
-            <div className="relative">
-                <label className={formLabelClass}>{t('form_promo_code')}</label>
-                <TagIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 z-10" />
-                <input type="text" placeholder={t('form_promo_placeholder')} className={formInputBaseClass}/>
-            </div>
        </div>
 
       <button

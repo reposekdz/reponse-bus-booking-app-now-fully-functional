@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { UsersIcon, SearchIcon } from '../components/icons';
 
