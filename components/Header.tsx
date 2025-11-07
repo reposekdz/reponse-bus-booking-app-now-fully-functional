@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Page } from '../App';
-import { SunIcon, MoonIcon, MenuIcon, XIcon, UserCircleIcon, TicketIcon, LanguageIcon, ChevronDownIcon, WalletIcon, BusIcon, BellIcon, TagIcon } from './icons';
+import { SunIcon, MoonIcon, MenuIcon, XIcon, UserCircleIcon, TicketIcon, LanguageIcon, ChevronDownIcon, WalletIcon, BusIcon, BellIcon, TagIcon, StarIcon } from './icons';
 import { useLanguage } from '../contexts/LanguageContext';
 
 interface HeaderProps {
@@ -154,6 +154,7 @@ const Header: React.FC<HeaderProps> = ({ currentPage, onNavigate, user, onLogout
                     <div className="py-2">
                         <button onClick={() => { onNavigate('profile'); setIsUserMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm hover:bg-white/20 flex items-center"><UserCircleIcon className="w-5 h-5 mr-3"/> {t('usermenu_profile')}</button>
                         <button onClick={() => { onNavigate('bookings'); setIsUserMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm hover:bg-white/20 flex items-center"><TicketIcon className="w-5 h-5 mr-3"/> {t('usermenu_bookings')}</button>
+                        <button onClick={() => { onNavigate('favorites'); setIsUserMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm hover:bg-white/20 flex items-center"><StarIcon className="w-5 h-5 mr-3"/> My Favorites</button>
                     </div>
                      <div className="border-t border-white/20 p-2">
                         <button onClick={onLogout} className="w-full text-left px-3 py-2 text-sm font-semibold text-red-300 rounded-md hover:bg-red-900/20">{t('usermenu_logout')}</button>

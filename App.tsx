@@ -45,6 +45,7 @@ import VipLoungePage from './VipLoungePage';
 import WhyChooseUs from './components/WhyChooseUs';
 import SpecialOffers from './components/SpecialOffers';
 import BookingConfirmationPage from './BookingConfirmationPage';
+import FavoritesPage from './FavoritesPage';
 
 
 export type Page = 
@@ -59,7 +60,7 @@ export type Page =
   | 'fleetMonitoring' | 'driverProfile' | 'agentProfile' | 'bookingSearch' | 'passengerProfile'
   | 'corporateTravel' | 'tourPackages' | 'travelInsurance' | 'giftCards' | 'adminAnnouncements'
   | 'hotelBooking' | 'eventTickets' | 'vehicleRentals' | 'vipLounge' | 'companyRouteAnalytics'
-  | 'bookingConfirmation';
+  | 'bookingConfirmation' | 'favorites';
 
 // Mock User Data
 const mockUsers = {
@@ -210,6 +211,7 @@ const AppContent: React.FC = () => {
       case 'eventTickets': return <EventTicketsPage onNavigate={navigate} />;
       case 'vehicleRentals': return <VehicleRentalsPage onNavigate={navigate} />;
       case 'vipLounge': return <VipLoungePage onNavigate={navigate} />;
+      case 'favorites': return <FavoritesPage onNavigate={navigate} />;
       
       case 'adminDashboard': case 'adminCompanies': case 'adminDrivers': case 'adminAgents': case 'adminUsers': case 'adminFinancials': case 'adminAds': case 'adminPromotions': case 'adminAnnouncements':
         return <AdminLayout currentPage={currentPage} navigate={navigate} />;

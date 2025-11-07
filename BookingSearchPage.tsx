@@ -1,17 +1,15 @@
-import React, { useState, useMemo } from 'react';
-import { ArrowRightIcon, FilterIcon, LocationMarkerIcon, CalendarIcon, UserCircleIcon } from './components/icons';
+import React, { useState, useMemo, useEffect } from 'react';
+import { ArrowRightIcon, FilterIcon, LocationMarkerIcon, CalendarIcon, UserCircleIcon, WifiIcon, AcIcon, PowerIcon, StarIcon } from './components/icons';
 import SearchResultsPage from './SearchResultsPage';
 import { Page } from './App';
 
 interface BookingSearchPageProps {
   onSearch: (from: string, to: string) => void;
-  // FIX: Allow navigate to accept data for navigating to seat selection page
   navigate: (page: Page, data?: any) => void;
 }
 
 const locations = ['Kigali', 'Rubavu', 'Musanze', 'Huye', 'Rusizi', 'Nyagatare', 'Muhanga'];
 
-// FIX: Export mock data for use in other components
 export const allSearchResults = [
   { id: 1, company: 'Volcano Express', departureTime: '07:00', arrivalTime: '10:30', durationMinutes: 210, price: 4500, availableSeats: 23, amenities: ['WiFi', 'AC'], tag: 'Ikunzwe Cyane' },
   { id: 2, company: 'Horizon Express', departureTime: '08:30', arrivalTime: '12:15', durationMinutes: 225, price: 4800, availableSeats: 15, amenities: ['AC', 'Charging'] },
@@ -33,6 +31,25 @@ const BookingSearchPage: React.FC<BookingSearchPageProps> = ({ onSearch: navigat
   const [priceRange, setPriceRange] = useState(5500);
   const [timeRange, setTimeRange] = useState({ min: 5, max: 23 });
   const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
+  const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [favoriteTrips, setFavoriteTrips] = useState<number[]>([]);
+
+  useEffect(() => {
+    const loadFavorites = () => {
+        const storedFavorites = localStorage.getItem('favoriteTrips');
+        setFavoriteTrips(storedFavorites ? JSON.parse(storedFavorites) : []);
+    };
+    loadFavorites();
+
+    window.addEventListener('storage', loadFavorites);
+    window.addEventListener('favoritesChanged', loadFavorites);
+
+    return () => {
+        window.removeEventListener('storage', loadFavorites);
+        window.removeEventListener('favoritesChanged', loadFavorites);
+    };
+  }, []);
   
   const availableCompanies = useMemo(() => [...new Set(allSearchResults.map(res => res.company))], []);
 
@@ -44,30 +61,40 @@ const BookingSearchPage: React.FC<BookingSearchPageProps> = ({ onSearch: navigat
     );
   };
   
+  const handleAmenityToggle = (amenity: string) => {
+    setSelectedAmenities(prev =>
+        prev.includes(amenity)
+            ? prev.filter(a => a !== amenity)
+            : [...prev, amenity]
+    );
+  };
+
   const resetFilters = () => {
     setSortOrder('fastest');
     setPriceRange(5500);
     setTimeRange({ min: 5, max: 23 });
     setSelectedCompanies([]);
+    setSelectedAmenities([]);
+    setShowFavoritesOnly(false);
   };
 
   const filteredAndSortedResults = useMemo(() => {
     let results = allSearchResults
       .filter(trip => {
-        // Price filter
-        if (trip.price > priceRange) return false;
+        if (priceRange < trip.price) return false;
         
-        // Time filter
         const departureHour = parseInt(trip.departureTime.split(':')[0], 10);
         if (departureHour < timeRange.min || departureHour > timeRange.max) return false;
 
-        // Company filter
         if (selectedCompanies.length > 0 && !selectedCompanies.includes(trip.company)) return false;
+
+        if (selectedAmenities.length > 0 && !selectedAmenities.every(a => trip.amenities.includes(a))) return false;
+
+        if (showFavoritesOnly && !favoriteTrips.includes(trip.id)) return false;
         
         return true;
       });
 
-    // Sorting
     results.sort((a, b) => {
       switch (sortOrder) {
         case 'cheapest': return a.price - b.price;
@@ -79,7 +106,7 @@ const BookingSearchPage: React.FC<BookingSearchPageProps> = ({ onSearch: navigat
     });
 
     return results;
-  }, [sortOrder, priceRange, timeRange, selectedCompanies]);
+  }, [sortOrder, priceRange, timeRange, selectedCompanies, selectedAmenities, showFavoritesOnly, favoriteTrips]);
 
 
   return (
@@ -105,32 +132,48 @@ const BookingSearchPage: React.FC<BookingSearchPageProps> = ({ onSearch: navigat
                         <button onClick={resetFilters} className="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline">Siba byose</button>
                     </div>
                     
-                    {/* Sort Order */}
                     <div className="border-b dark:border-gray-700 pb-4">
                         <h4 className="font-semibold mb-2 dark:text-gray-200">Tondeka</h4>
-                        <div className="flex flex-col space-y-2 text-sm">
-                            <button onClick={() => setSortOrder('fastest')} className={`text-left p-1 rounded ${sortOrder==='fastest' ? 'font-bold text-blue-600' : ''}`}>Icyihuta cyane</button>
-                            <button onClick={() => setSortOrder('cheapest')} className={`text-left p-1 rounded ${sortOrder==='cheapest' ? 'font-bold text-blue-600' : ''}`}>Igihendutse</button>
-                            <button onClick={() => setSortOrder('earliest')} className={`text-left p-1 rounded ${sortOrder==='earliest' ? 'font-bold text-blue-600' : ''}`}>Igisohoka mbere</button>
-                            <button onClick={() => setSortOrder('seats_desc')} className={`text-left p-1 rounded ${sortOrder==='seats_desc' ? 'font-bold text-blue-600' : ''}`}>Imyanya myinshi</button>
-                        </div>
+                        <select value={sortOrder} onChange={e => setSortOrder(e.target.value)} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600">
+                            <option value="fastest">Icyihuta cyane</option>
+                            <option value="cheapest">Igihendutse</option>
+                            <option value="earliest">Igisohoka mbere</option>
+                            <option value="seats_desc">Imyanya myinshi</option>
+                        </select>
                     </div>
 
-                    {/* Price Range */}
+                    <div className="border-b dark:border-gray-700 py-4">
+                        <label className="flex items-center justify-between cursor-pointer">
+                            <h4 className="font-semibold dark:text-gray-200 flex items-center"><StarIcon className="w-5 h-5 mr-2 text-yellow-400"/> Show Favorites Only</h4>
+                             <div className="relative">
+                                <input type="checkbox" checked={showFavoritesOnly} onChange={() => setShowFavoritesOnly(!showFavoritesOnly)} className="sr-only" />
+                                <div className={`block w-10 h-6 rounded-full transition ${showFavoritesOnly ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'}`}></div>
+                                <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${showFavoritesOnly ? 'transform translate-x-4' : ''}`}></div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div className="border-b dark:border-gray-700 py-4">
+                        <h4 className="font-semibold mb-2 dark:text-gray-200">Amenities</h4>
+                        <div className="space-y-2">
+                           <label className="flex items-center space-x-2 cursor-pointer"><input type="checkbox" checked={selectedAmenities.includes('WiFi')} onChange={() => handleAmenityToggle('WiFi')} className="h-4 w-4 rounded"/><WifiIcon className="w-4 h-4 ml-1"/><span className="text-sm">WiFi</span></label>
+                           <label className="flex items-center space-x-2 cursor-pointer"><input type="checkbox" checked={selectedAmenities.includes('AC')} onChange={() => handleAmenityToggle('AC')} className="h-4 w-4 rounded"/><AcIcon className="w-4 h-4 ml-1"/><span className="text-sm">A/C</span></label>
+                           <label className="flex items-center space-x-2 cursor-pointer"><input type="checkbox" checked={selectedAmenities.includes('Charging')} onChange={() => handleAmenityToggle('Charging')} className="h-4 w-4 rounded"/><PowerIcon className="w-4 h-4 ml-1"/><span className="text-sm">Charging</span></label>
+                        </div>
+                    </div>
+                    
                     <div className="border-b dark:border-gray-700 py-4">
                         <h4 className="font-semibold mb-2 dark:text-gray-200">Igiciro ntarengwa</h4>
                         <input type="range" min="4000" max="5500" step="100" value={priceRange} onChange={e => setPriceRange(Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700" />
                         <div className="text-right text-sm font-bold text-gray-700 dark:text-gray-300 mt-1">{new Intl.NumberFormat('fr-RW').format(priceRange)} RWF</div>
                     </div>
 
-                    {/* Time Range */}
-                     <div className="border-b dark:border-gray-700 py-4">
+                    <div className="border-b dark:border-gray-700 py-4">
                         <h4 className="font-semibold mb-2 dark:text-gray-200">Isaha yo guhaguruka</h4>
                         <input type="range" min="5" max="23" value={timeRange.max} onChange={e => setTimeRange(prev => ({...prev, max: Number(e.target.value)}))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700" />
                         <div className="text-right text-sm font-bold text-gray-700 dark:text-gray-300 mt-1">{timeRange.min}:00 - {timeRange.max}:00</div>
                     </div>
 
-                    {/* Companies */}
                     <div className="pt-4">
                          <h4 className="font-semibold mb-2 dark:text-gray-200">Ibigo</h4>
                          <div className="space-y-2">
