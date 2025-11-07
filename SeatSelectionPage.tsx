@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { ArrowLeftIcon, ArrowRightIcon, BusIcon } from './components/icons';
 
 type SeatStatus = 'available' | 'occupied' | 'selected';
+type SeatType = 'window' | 'aisle' | 'standard' | 'extra-legroom';
 
-const Seat: React.FC<{ status: SeatStatus, id: string, onSelect: (id: string) => void }> = ({ status, id, onSelect }) => {
+const Seat: React.FC<{ status: SeatStatus; id: string; type: SeatType; onSelect: (id: string) => void }> = ({ status, id, type, onSelect }) => {
   const isSelectable = status === 'available' || status === 'selected';
   
   let seatClass = 'w-10 h-10 rounded-md flex items-center justify-center font-bold text-xs cursor-pointer transition-all duration-200';
@@ -15,25 +16,35 @@ const Seat: React.FC<{ status: SeatStatus, id: string, onSelect: (id: string) =>
     seatClass += ' bg-yellow-400 text-blue-900 ring-2 ring-yellow-500 animate-pop-in';
   }
 
-  return <button onClick={() => isSelectable && onSelect(id)} className={seatClass} disabled={!isSelectable}>{id}</button>;
+  let tooltipText = 'Standard Seat';
+  if (type === 'window') tooltipText = 'Window Seat';
+  if (type === 'aisle') tooltipText = 'Aisle Seat';
+  if (type === 'extra-legroom') tooltipText = 'Extra Legroom';
+
+  return <button data-tooltip={tooltipText} onClick={() => isSelectable && onSelect(id)} className={seatClass} disabled={!isSelectable}>{id}</button>;
 };
 
-const initialSeats: { id: string; status: SeatStatus }[][] = [
-  [{ id: '1A', status: 'occupied' }, { id: '1B', status: 'available' }, { id: 'aisle', status: 'occupied' }, { id: '1C', status: 'available' }, { id: '1D', status: 'available' }],
-  [{ id: '2A', status: 'available' }, { id: '2B', status: 'available' }, { id: 'aisle', status: 'occupied' }, { id: '2C', status: 'occupied' }, { id: '2D', status: 'available' }],
+const initialSeats: { id: string; status: SeatStatus, type: SeatType }[][] = [
+  [{ id: '1A', status: 'occupied', type: 'window' }, { id: '1B', status: 'available', type: 'aisle' }, { id: 'aisle', status: 'occupied', type: 'aisle' }, { id: '1C', status: 'available', type: 'aisle' }, { id: '1D', status: 'available', type: 'window' }],
+  [{ id: '2A', status: 'available', type: 'window' }, { id: '2B', status: 'available', type: 'aisle' }, { id: 'aisle', status: 'occupied', type: 'aisle' }, { id: '2C', status: 'occupied', type: 'aisle' }, { id: '2D', status: 'available', type: 'window' }],
   // ... more rows
 ];
 
 // Generate more rows for a more complete bus
 for (let i = 3; i <= 12; i++) {
     initialSeats.push([
-        { id: `${i}A`, status: Math.random() > 0.7 ? 'occupied' : 'available' },
-        { id: `${i}B`, status: Math.random() > 0.8 ? 'occupied' : 'available' },
-        { id: 'aisle', status: 'occupied' },
-        { id: `${i}C`, status: Math.random() > 0.6 ? 'occupied' : 'available' },
-        { id: `${i}D`, status: Math.random() > 0.75 ? 'occupied' : 'available' }
+        { id: `${i}A`, status: Math.random() > 0.7 ? 'occupied' : 'available', type: 'window' },
+        { id: `${i}B`, status: Math.random() > 0.8 ? 'occupied' : 'available', type: 'aisle' },
+        { id: 'aisle', status: 'occupied', type: 'aisle' },
+        { id: `${i}C`, status: Math.random() > 0.6 ? 'occupied' : 'available', type: 'aisle' },
+        { id: `${i}D`, status: Math.random() > 0.75 ? 'occupied' : 'available', type: 'window' }
     ]);
 }
+// Add extra legroom mock
+initialSeats[5][0].type = 'extra-legroom';
+initialSeats[5][1].type = 'extra-legroom';
+initialSeats[5][3].type = 'extra-legroom';
+initialSeats[5][4].type = 'extra-legroom';
 
 
 interface SeatSelectionPageProps {
@@ -48,7 +59,7 @@ const SeatSelectionPage: React.FC<SeatSelectionPageProps> = ({ tripData, onConfi
   const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
   const [usePoints, setUsePoints] = useState(false);
   
-  const trip = tripData || { price: 4500, company: 'Volcano Express', from: 'Kigali', to: 'Rubavu', departureTime: '07:00' }; // Fallback for direct access
+  const trip = tripData || { price: 4500, dynamicPrice: 4700, company: 'Volcano Express', from: 'Kigali', to: 'Rubavu', departureTime: '07:00' }; // Fallback for direct access
 
   const handleSelectSeat = (id: string) => {
     setSelectedSeats(prev => 
@@ -56,7 +67,7 @@ const SeatSelectionPage: React.FC<SeatSelectionPageProps> = ({ tripData, onConfi
     );
   };
   
-  const totalPrice = selectedSeats.length * trip.price;
+  const totalPrice = selectedSeats.length * (trip.dynamicPrice || trip.price);
   
   const availablePoints = user?.loyaltyPoints || 0;
   // Assuming 1 point = 1 RWF for discount
@@ -94,7 +105,7 @@ const SeatSelectionPage: React.FC<SeatSelectionPageProps> = ({ tripData, onConfi
                                 <div key={rowIndex} className="flex justify-around">
                                     {row.map(seat => seat.id === 'aisle' 
                                         ? <div key={seat.id} className="w-10 h-10" /> 
-                                        : <Seat key={seat.id} id={seat.id} status={selectedSeats.includes(seat.id) ? 'selected' : seat.status} onSelect={handleSelectSeat} />
+                                        : <Seat key={seat.id} id={seat.id} type={seat.type} status={selectedSeats.includes(seat.id) ? 'selected' : seat.status} onSelect={handleSelectSeat} />
                                     )}
                                 </div>
                             ))}
@@ -112,7 +123,7 @@ const SeatSelectionPage: React.FC<SeatSelectionPageProps> = ({ tripData, onConfi
                          <div className="space-y-3 pb-4">
                              <p><strong>Ikigo:</strong> {trip.company}</p>
                              <p><strong>Imyanya Wahisemo:</strong> {selectedSeats.length > 0 ? selectedSeats.join(', ') : 'Ntawahisemo'}</p>
-                             <p><strong>Igiciro cy'umwanya:</strong> {new Intl.NumberFormat('fr-RW').format(trip.price)} RWF</p>
+                             <p><strong>Igiciro cy'umwanya:</strong> {new Intl.NumberFormat('fr-RW').format(trip.dynamicPrice || trip.price)} RWF</p>
                          </div>
                          {availablePoints > 0 && selectedSeats.length > 0 && (
                             <div className="border-t dark:border-gray-700 pt-4 mt-4">

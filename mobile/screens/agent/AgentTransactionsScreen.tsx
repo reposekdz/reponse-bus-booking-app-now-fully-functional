@@ -1,4 +1,3 @@
-// FIX: Implemented AgentTransactionsScreen to fix module not found error.
 import React from 'react';
 import { View, Text, StyleSheet, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';

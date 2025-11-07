@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import HeroSection from './components/HeroSection';
@@ -122,7 +123,11 @@ const AppContent: React.FC = () => {
   
   // Passenger serial code for agent demo
   const passengerSerialCode = "UM1234";
-  const [agentTransactions, setAgentTransactions] = useState([]);
+  const [agentTransactions, setAgentTransactions] = useState([
+      { id: 1, agentId: 'a1', passengerSerial: 'UM5678', passengerName: 'Mutesi Aline', amount: 15000, commission: 750, date: new Date().toISOString() },
+      { id: 2, agentId: 'a2', passengerSerial: 'UM9101', passengerName: 'Gatete David', amount: 25000, commission: 1250, date: new Date().toISOString() },
+      { id: 3, agentId: 'a1', passengerSerial: 'UM1121', passengerName: 'Uwineza Grace', amount: 10000, commission: 500, date: new Date().toISOString() },
+  ]);
 
   useEffect(() => {
     if (theme === 'dark') {

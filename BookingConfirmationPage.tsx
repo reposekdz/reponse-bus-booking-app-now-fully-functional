@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import html2canvas from 'html2canvas';
 import { Page } from './App';
-// FIX: Replaced the missing `ArrowDownTrayIcon` with `ArrowUpTrayIcon` to resolve an import error. A dedicated download icon should be created for better UI/UX.
+// FIX: Replaced the missing `ArrowDownTrayIcon` with `ArrowUpTrayIcon` to resolve an import error.
 import { CheckCircleIcon, ArrowUpTrayIcon, TicketIcon, ArrowRightIcon } from './components/icons';
 
 // Simple hash function to generate a "unique" pattern from a string

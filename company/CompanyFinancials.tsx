@@ -79,7 +79,6 @@ const CompanyFinancials: React.FC = () => {
                                    <p className="font-semibold text-sm dark:text-gray-200">{tx.type}</p>
                                    <p className={`font-mono text-sm font-semibold ${tx.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>{new Intl.NumberFormat('fr-RW').format(tx.amount)}</p>
                                </div>
-                               {/* FIX: The 'details' property does not exist. Use 'driver' or 'route' which are available on the transaction object. */}
                                <p className="text-xs text-gray-500">{tx.driver || tx.route}</p>
                            </div>
                        ))}

@@ -11,14 +11,14 @@ interface BookingSearchPageProps {
 const locations = ['Kigali', 'Rubavu', 'Musanze', 'Huye', 'Rusizi', 'Nyagatare', 'Muhanga'];
 
 export const allSearchResults = [
-  { id: 1, company: 'Volcano Express', departureTime: '07:00', arrivalTime: '10:30', durationMinutes: 210, price: 4500, availableSeats: 23, amenities: ['WiFi', 'AC'], tag: 'Ikunzwe Cyane' },
-  { id: 2, company: 'Horizon Express', departureTime: '08:30', arrivalTime: '12:15', durationMinutes: 225, price: 4800, availableSeats: 15, amenities: ['AC', 'Charging'] },
-  { id: 3, company: 'RITCO', departureTime: '09:00', arrivalTime: '12:30', durationMinutes: 210, price: 4500, availableSeats: 30, amenities: ['WiFi', 'AC', 'Charging'] },
-  { id: 4, company: 'Volcano Express', departureTime: '11:00', arrivalTime: '14:30', durationMinutes: 210, price: 4500, availableSeats: 5, amenities: ['AC'] },
-  { id: 5, company: 'International', departureTime: '06:30', arrivalTime: '10:15', durationMinutes: 225, price: 4200, availableSeats: 18, amenities: ['Charging'] },
-  { id: 6, company: 'RITCO', departureTime: '13:00', arrivalTime: '16:30', durationMinutes: 210, price: 4600, availableSeats: 40, amenities: ['WiFi', 'AC'] },
-  { id: 7, company: 'Horizon Express', departureTime: '15:00', arrivalTime: '18:45', durationMinutes: 225, price: 5000, availableSeats: 10, amenities: ['AC', 'Charging'] },
-  { id: 8, company: 'Volcano Express', departureTime: '18:00', arrivalTime: '21:30', durationMinutes: 210, price: 4700, availableSeats: 12, amenities: ['WiFi', 'AC', 'Charging'] },
+  { id: 1, company: 'Volcano Express', departureTime: '07:00', arrivalTime: '10:30', durationMinutes: 210, basePrice: 4500, availableSeats: 23, amenities: ['WiFi', 'AC'], tag: 'Ikunzwe Cyane' },
+  { id: 2, company: 'Horizon Express', departureTime: '08:30', arrivalTime: '12:15', durationMinutes: 225, basePrice: 4800, availableSeats: 15, amenities: ['AC', 'Charging'] },
+  { id: 3, company: 'RITCO', departureTime: '09:00', arrivalTime: '12:30', durationMinutes: 210, basePrice: 4500, availableSeats: 30, amenities: ['WiFi', 'AC', 'Charging'] },
+  { id: 4, company: 'Volcano Express', departureTime: '11:00', arrivalTime: '14:30', durationMinutes: 210, basePrice: 4500, availableSeats: 5, amenities: ['AC'] },
+  { id: 5, company: 'International', departureTime: '06:30', arrivalTime: '10:15', durationMinutes: 225, basePrice: 4200, availableSeats: 18, amenities: ['Charging'] },
+  { id: 6, company: 'RITCO', departureTime: '13:00', arrivalTime: '16:30', durationMinutes: 210, basePrice: 4600, availableSeats: 40, amenities: ['WiFi', 'AC'] },
+  { id: 7, company: 'Horizon Express', departureTime: '15:00', arrivalTime: '18:45', durationMinutes: 225, basePrice: 5000, availableSeats: 10, amenities: ['AC', 'Charging'] },
+  { id: 8, company: 'Volcano Express', departureTime: '18:00', arrivalTime: '21:30', durationMinutes: 210, basePrice: 4700, availableSeats: 12, amenities: ['WiFi', 'AC', 'Charging'] },
 ];
 
 const BookingSearchPage: React.FC<BookingSearchPageProps> = ({ onSearch: navigateToResults, navigate }) => {
@@ -80,8 +80,15 @@ const BookingSearchPage: React.FC<BookingSearchPageProps> = ({ onSearch: navigat
 
   const filteredAndSortedResults = useMemo(() => {
     let results = allSearchResults
+      .map(trip => {
+          // Dynamic pricing simulation: price increases as seats decrease
+          const occupancyRatio = 1 - (trip.availableSeats / 50); // Assuming max 50 seats
+          const surgeFactor = 1 + (occupancyRatio * 0.2); // Max 20% surge
+          const dynamicPrice = Math.round((trip.basePrice * surgeFactor) / 100) * 100;
+          return { ...trip, dynamicPrice };
+      })
       .filter(trip => {
-        if (priceRange < trip.price) return false;
+        if (priceRange < trip.dynamicPrice) return false;
         
         const departureHour = parseInt(trip.departureTime.split(':')[0], 10);
         if (departureHour < timeRange.min || departureHour > timeRange.max) return false;
@@ -97,7 +104,7 @@ const BookingSearchPage: React.FC<BookingSearchPageProps> = ({ onSearch: navigat
 
     results.sort((a, b) => {
       switch (sortOrder) {
-        case 'cheapest': return a.price - b.price;
+        case 'cheapest': return a.dynamicPrice - b.dynamicPrice;
         case 'fastest': return a.durationMinutes - b.durationMinutes;
         case 'earliest': return a.departureTime.localeCompare(b.departureTime);
         case 'seats_desc': return b.availableSeats - a.availableSeats;

@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 
 const Icon = ({ name, style }) => <Text style={[{ color: '#6B7280', fontSize: 10 }, style]}>{name}</Text>;
 
-// FIX: Change component to React.FC and define props to correctly handle React's special `key` prop.
 interface BookingCardProps {
   ticket: any;
   isPast?: boolean;

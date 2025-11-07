@@ -1,7 +1,7 @@
 import React, { useState, useMemo, FormEvent } from 'react';
 import { 
     SunIcon, MoonIcon, CogIcon, UsersIcon, ChartBarIcon, ArrowDownLeftIcon,
-    WalletIcon, CreditCardIcon, SearchIcon, XIcon, CheckCircleIcon, PhoneIcon, MapPinIcon
+    WalletIcon, CreditCardIcon, SearchIcon, XIcon, CheckCircleIcon, PhoneIcon, MapPinIcon, StarIcon
 } from './components/icons';
 import PinModal from './components/PinModal';
 import { Page } from './App';
@@ -31,23 +31,54 @@ const StatCard = ({ title, value, icon, format = 'currency' }) => (
     </div>
 );
 
-const DailyGoal = ({ current, goal }) => {
-    const percentage = Math.min((current / goal) * 100, 100);
+const Leaderboard = ({ agentData, allTransactions }) => {
+    const mockAgents = [
+        { id: 'a1', name: 'Jane Smith', avatarUrl: 'https://randomuser.me/api/portraits/women/5.jpg' },
+        { id: 'a2', name: 'Peter Kamari', avatarUrl: 'https://randomuser.me/api/portraits/men/7.jpg' }
+    ];
+
+    const leaderboardData = useMemo(() => {
+        const agentTotals = {};
+        allTransactions.forEach(tx => {
+            if(!agentTotals[tx.agentId]) agentTotals[tx.agentId] = 0;
+            agentTotals[tx.agentId] += tx.amount;
+        });
+
+        // Add logged-in agent if not in transactions
+        if(!agentTotals[agentData.id]) agentTotals[agentData.id] = 0;
+        
+        return Object.entries(agentTotals)
+            .map(([agentId, total]) => {
+                const agentInfo = mockAgents.find(a => a.id === agentId) || agentData;
+                return { ...agentInfo, total };
+            })
+            .sort((a,b) => b.total - a.total)
+            .slice(0, 3);
+    }, [agentData, allTransactions]);
+
+    const rankColors = ['bg-yellow-400', 'bg-gray-300', 'bg-yellow-600'];
+
     return (
         <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-lg">
-            <h3 className="font-bold mb-2 dark:text-white">Today's Deposit Goal</h3>
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
-                <div className="bg-gradient-to-r from-green-400 to-blue-500 h-4 rounded-full" style={{ width: `${percentage}%` }}></div>
-            </div>
-            <div className="flex justify-between items-center mt-2 text-sm">
-                <span className="font-bold text-green-600 dark:text-green-400">{new Intl.NumberFormat('fr-RW').format(current)}</span>
-                <span className="text-gray-500 dark:text-gray-400">Goal: {new Intl.NumberFormat('fr-RW').format(goal)}</span>
+            <h3 className="font-bold mb-4 dark:text-white">Top Agent Leaderboard</h3>
+            <div className="space-y-3">
+                {leaderboardData.map((agent, index) => (
+                    <div key={agent.id} className="flex items-center space-x-3 bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg">
+                        <span className={`font-bold text-lg w-8 h-8 flex items-center justify-center rounded-full text-white ${rankColors[index]}`}>{index + 1}</span>
+                        <img src={agent.avatarUrl} alt={agent.name} className="w-10 h-10 rounded-full"/>
+                        <div className="flex-1">
+                            <p className="font-semibold text-sm dark:text-white">{agent.name}</p>
+                            <p className="text-xs text-green-600 dark:text-green-400 font-bold">{new Intl.NumberFormat('fr-RW').format(agent.total as number)} RWF</p>
+                        </div>
+                    </div>
+                ))}
             </div>
         </div>
-    )
-}
+    );
+};
 
-const DashboardView = ({ agentData, transactions }) => {
+
+const DashboardView = ({ agentData, transactions, allTransactions }) => {
     const totalDeposits = transactions.reduce((sum, tx) => sum + tx.amount, 0);
     const totalCommission = transactions.reduce((sum, tx) => sum + tx.commission, 0);
     const uniquePassengers = new Set(transactions.map(tx => tx.passengerSerial)).size;
@@ -63,7 +94,7 @@ const DashboardView = ({ agentData, transactions }) => {
             </div>
              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2">
-                    <DailyGoal current={totalDeposits} goal={200000} />
+                    <Leaderboard agentData={agentData} allTransactions={allTransactions} />
                 </div>
                 <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-lg">
                     <h3 className="font-bold mb-4 dark:text-white">Ibikorwa bya Vuba</h3>
@@ -360,13 +391,15 @@ const AgentDashboard: React.FC<AgentDashboardProps> = ({ onLogout, theme, setThe
     const [view, setView] = useState('dashboard');
     const toggleTheme = () => setTheme(theme === 'light' ? 'dark' : 'light');
 
+    const agentSpecificTransactions = useMemo(() => transactions.filter(tx => tx.agentId === agentData.id), [transactions, agentData.id]);
+
     const renderContent = () => {
         switch (view) {
-            case 'dashboard': return <DashboardView agentData={agentData} transactions={transactions} />;
+            case 'dashboard': return <DashboardView agentData={agentData} transactions={agentSpecificTransactions} allTransactions={transactions} />;
             case 'deposit': return <DepositView onAgentDeposit={onAgentDeposit} passengerSerialCode={passengerSerialCode} agentPin={agentData.pin} />;
-            case 'transactions': return <TransactionsView transactions={transactions} />;
+            case 'transactions': return <TransactionsView transactions={agentSpecificTransactions} />;
             case 'customerLookup': return <CustomerLookupView />;
-            default: return <DashboardView agentData={agentData} transactions={transactions} />;
+            default: return <DashboardView agentData={agentData} transactions={agentSpecificTransactions} allTransactions={transactions} />;
         }
     };
 

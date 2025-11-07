@@ -8,7 +8,6 @@ const searchResults = [
   { id: 3, company: 'RITCO', departureTime: '09:00', arrivalTime: '12:30', price: 4500, seats: 30 },
 ];
 
-// FIX: Change component to React.FC and define props to correctly handle React's special `key` prop.
 interface TripCardProps {
     trip: typeof searchResults[0];
     onPress: () => void;

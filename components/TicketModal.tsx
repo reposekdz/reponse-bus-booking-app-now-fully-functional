@@ -12,12 +12,12 @@ const simpleHash = (str: string) => {
   return hash;
 };
 
-const QRCode: React.FC<{ value: string; size: number }> = ({ value, size }) => {
+const QRCode: React.FC<{ value: string; size: number, isActive: boolean }> = ({ value, size, isActive }) => {
   const hash = simpleHash(value);
   const gridSize = 15; // QR codes are grids
 
   return (
-    <div className="p-2 bg-white" style={{ width: size, height: size }}>
+    <div className={`p-2 bg-white rounded-lg ${isActive ? 'activated-ticket-glow' : ''}`} style={{ width: size, height: size }}>
       <div className="grid grid-cols-15 w-full h-full">
         {Array.from({ length: gridSize * gridSize }).map((_, i) => {
           const bit = (hash >> (i % 31)) & 1;
@@ -34,6 +34,7 @@ const QRCode: React.FC<{ value: string; size: number }> = ({ value, size }) => {
   );
 };
 
+
 const InfoRow: React.FC<{ label: string; value: string }> = ({ label, value }) => (
     <div className="py-3 border-b border-dashed border-gray-300 dark:border-gray-600">
         <p className="text-xs text-gray-500 dark:text-gray-400 uppercase">{label}</p>
@@ -41,7 +42,7 @@ const InfoRow: React.FC<{ label: string; value: string }> = ({ label, value }) =
     </div>
 );
 
-const TicketModal: React.FC<{ ticket: any; onClose: () => void }> = ({ ticket, onClose }) => {
+const TicketModal: React.FC<{ ticket: any; onClose: () => void, isActive?: boolean }> = ({ ticket, onClose, isActive = false }) => {
   if (!ticket) return null;
 
   return (
@@ -66,9 +67,13 @@ const TicketModal: React.FC<{ ticket: any; onClose: () => void }> = ({ ticket, o
 
         <main className="p-6">
             <div className="flex items-center justify-center mb-4">
-                <QRCode value={ticket.id} size={180} />
+                <QRCode value={ticket.id} size={180} isActive={isActive} />
             </div>
-            <p className="text-center text-sm text-gray-500 dark:text-gray-400 mb-6">Present this code for scanning at the terminal.</p>
+             {isActive ? (
+                <p className="text-center font-bold text-lg text-green-500 animate-pulse mb-4">TICKET ACTIVATED</p>
+            ) : (
+                <p className="text-center text-sm text-gray-500 dark:text-gray-400 mb-6">Present this code for scanning at the terminal.</p>
+            )}
             
             <div className="space-y-2">
                 <InfoRow label="Passenger" value={ticket.passenger} />

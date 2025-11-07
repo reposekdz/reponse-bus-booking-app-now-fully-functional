@@ -5,7 +5,6 @@ import { RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation/types';
 
-// FIX: Update param list to a known key for type safety.
 type AddEditDriverScreenRouteProp = RouteProp<RootStackParamList, 'AddEditDriver'>;
 // @ts-ignore
 type AddEditDriverScreenNavigationProp = StackNavigationProp<RootStackParamList, 'AddEditDriver'>;

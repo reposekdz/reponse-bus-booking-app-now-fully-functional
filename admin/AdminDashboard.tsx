@@ -2,7 +2,6 @@ import React from 'react';
 import { ChartBarIcon, UsersIcon, BuildingOfficeIcon, BriefcaseIcon, CheckCircleIcon, CurrencyDollarIcon } from '../components/icons';
 import ActivityFeed from '../components/ActivityFeed';
 
-// FIX: Exporting mock data to resolve module not found errors in other components.
 export const mockCompaniesData = [
   { id: 'volcano', name: 'Volcano Express', status: 'Active', totalRevenue: 5_800_000_000, totalPassengers: 3_500_000, routesCount: 30, logoUrl: 'https://pbs.twimg.com/profile_images/1237839357116452865/p-28c8o-_400x400.jpg', coverUrl: 'https://images.unsplash.com/photo/1593256398246-8853b3815c32?q=80&w=2070&auto=format&fit=crop', description: 'Volcano Express is one of the most popular transport companies in Rwanda, known for its excellent service, cleanliness, and punctuality.' },
   { id: 'ritco', name: 'RITCO', status: 'Active', totalRevenue: 8_200_000_000, totalPassengers: 2_100_000, routesCount: 25, logoUrl: 'https://www.ritco.rw/wp-content/uploads/2021/04/ritco-logo-single.png', coverUrl: 'https://images.unsplash.com/photo/1544620347-c4fd4a3d5957?q=80&w=2048&auto=format&fit=crop', description: 'RITCO is a public-private partnership providing reliable country-wide transportation with a modern fleet of large buses.' },

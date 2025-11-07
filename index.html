@@ -68,6 +68,79 @@
        .rotate-y-minus-10 {
         transform: rotateY(-10deg);
       }
+      
+      /* New Advanced Animations */
+      @keyframes subtle-gradient-animation {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+      }
+      .animated-gradient-bg {
+        background-size: 200% 200%;
+        animation: subtle-gradient-animation 15s ease infinite;
+      }
+      
+      @keyframes glowing-border {
+        0% { box-shadow: 0 0 5px #FBBF24, 0 0 10px #FBBF24, inset 0 0 5px #FBBF24; }
+        50% { box-shadow: 0 0 20px #F59E0B, 0 0 30px #F59E0B, inset 0 0 10px #F59E0B; }
+        100% { box-shadow: 0 0 5px #FBBF24, 0 0 10px #FBBF24, inset 0 0 5px #FBBF24; }
+      }
+      .activated-ticket-glow {
+        animation: glowing-border 2.5s ease-in-out infinite;
+      }
+      
+      .interactive-button {
+          background-size: 200% auto;
+          transition: background-position 0.5s;
+      }
+      .interactive-button:hover {
+          background-position: right center;
+      }
+
+      /* Tooltip for Seat Selection */
+      [data-tooltip] {
+        position: relative;
+        cursor: pointer;
+      }
+      [data-tooltip]:before {
+        content: attr(data-tooltip);
+        position: absolute;
+        bottom: 110%;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 4px 8px;
+        background-color: #333;
+        color: white;
+        border-radius: 4px;
+        font-size: 12px;
+        white-space: nowrap;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.2s, visibility 0.2s;
+        z-index: 10;
+      }
+      [data-tooltip]:hover:before {
+        opacity: 1;
+        visibility: visible;
+      }
+      
+      /* Fleet Monitoring Animations */
+      @keyframes bus-path-1 {
+        0% { top: 20%; left: 60%; transform: rotate(135deg); }
+        25% { top: 35%; left: 40%; transform: rotate(180deg); }
+        50% { top: 60%; left: 55%; transform: rotate(225deg); }
+        75% { top: 40%; left: 70%; transform: rotate(315deg); }
+        100% { top: 20%; left: 60%; transform: rotate(135deg); }
+      }
+      .animate-bus-path-1 { animation: bus-path-1 25s linear infinite; }
+      
+       @keyframes bus-path-2 {
+        0% { top: 80%; left: 25%; transform: rotate(0deg); }
+        50% { top: 30%; left: 35%; transform: rotate(25deg); }
+        100% { top: 80%; left: 25%; transform: rotate(0deg); }
+      }
+      .animate-bus-path-2 { animation: bus-path-2 20s linear infinite; }
+
     </style>
 <script type="importmap">
 {
