@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 type IconProps = {
@@ -201,10 +202,7 @@ export const TvIcon: React.FC<IconProps> = (props) => (
 );
 export const ShieldCheckIcon: React.FC<IconProps> = (props) => (
   <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-9.903 4.28a9 9 0 1011.858-8.56" />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 21.75c-4.97 0-9-4.03-9-9s4.03-9 9-9 9 4.03 9 9-4.03 9-9 9z" />
-    <path d="M12 21.75c-4.97 0-9-4.03-9-9s4.03-9 9-9 9 4.03 9 9-4.03 9-9 9z" />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 21.75c-4.97 0-9-4.03-9-9s4.03-9 9-9 9 4.03 9 9-4.03 9-9 9zM9 12.75L11.25 15 15 9.75" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
   </svg>
 );
 export const CameraIcon: React.FC<IconProps> = (props) => (
@@ -308,7 +306,8 @@ export const SparklesIcon: React.FC<IconProps> = (props) => (
 
 export const TruckIcon: React.FC<IconProps> = (props) => (
   <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6.538M18 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.11-6.19L3 12.383V16.5a2.25 2.25 0 002.25 2.25h13.5A2.25 2.25 0 0021 16.5v-4.117L19.61 12.56a.75.75 0 00-1.11 0l-1.68 1.681a.75.75 0 01-1.11 0l-.33-1.082a.75.75 0 00-.98-.56L13.5 13.5m-3.11-1.06l-1.68-1.681a.75.75 0 00-1.11 0l-1.68 1.681a.75.75 0 00-1.11 0l-.224.224a.75.75 0 00.32 1.31L8.25 14.25m8.25-6.75-2.625 2.625a.75.75 0 01-1.06 0L12 8.25" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12.56v-6.125c0-.621-.504-1.125-1.125-1.125H5.625c-.621 0-1.125.504-1.125 1.125v6.125" />
   </svg>
 );
 

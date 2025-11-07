@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import HeroSection from './components/HeroSection';
@@ -161,7 +162,7 @@ const AppContent: React.FC = () => {
         return <DriverDashboard onLogout={handleLogout} theme={theme} setTheme={setTheme} driverData={mockUsers.driver} allCompanies={[]} onPassengerBoarding={() => {}} navigate={navigate} />;
 
       case 'agentDashboard':
-        return <AgentDashboard onLogout={handleLogout} theme={theme} setTheme={setTheme} agentData={mockUsers.agent} onAgentDeposit={handleAgentDeposit} passengerSerialCode={passengerSerialCode} transactions={agentTransactions} />;
+        return <AgentDashboard onLogout={handleLogout} theme={theme} setTheme={setTheme} agentData={mockUsers.agent} onAgentDeposit={handleAgentDeposit} passengerSerialCode={passengerSerialCode} transactions={agentTransactions} navigate={navigate} />;
         
       case 'driverProfile': return <DriverProfilePage driver={pageData || mockUsers.driver} />;
       case 'agentProfile': return <AgentProfilePage agent={pageData || mockUsers.agent} allTransactions={agentTransactions} />;

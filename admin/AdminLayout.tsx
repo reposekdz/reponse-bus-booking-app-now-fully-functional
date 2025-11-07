@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Page } from '../App';
 import { ChartBarIcon, BuildingOfficeIcon, UsersIcon, BriefcaseIcon, SunIcon, MoonIcon, MegaphoneIcon, TagIcon, CurrencyDollarIcon } from '../components/icons';
@@ -18,11 +19,11 @@ interface AdminLayoutProps {
 
 const navItems: { page: Page; label: string; icon: React.FC<any> }[] = [
     { page: 'adminDashboard', label: 'Dashboard', icon: ChartBarIcon },
+    { page: 'adminFinancials', label: 'Financials', icon: CurrencyDollarIcon },
     { page: 'adminCompanies', label: 'Companies', icon: BuildingOfficeIcon },
     { page: 'adminDrivers', label: 'Drivers', icon: UsersIcon },
     { page: 'adminAgents', label: 'Agents', icon: BriefcaseIcon },
     { page: 'adminUsers', label: 'All Users', icon: UsersIcon },
-    { page: 'adminFinancials', label: 'Financials', icon: CurrencyDollarIcon },
     { page: 'adminPromotions', label: 'Promotions', icon: TagIcon },
     { page: 'adminAds', label: 'Adverts', icon: MegaphoneIcon },
 ];
