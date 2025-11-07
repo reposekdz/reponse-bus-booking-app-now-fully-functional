@@ -1,6 +1,7 @@
 import React from 'react';
 import { ChartBarIcon, UsersIcon, BuildingOfficeIcon, BriefcaseIcon, CheckCircleIcon, CurrencyDollarIcon } from '../components/icons';
 import ActivityFeed from '../components/ActivityFeed';
+import LiveSalesTicker from '../components/LiveSalesTicker';
 
 export const mockCompaniesData = [
   { id: 'volcano', name: 'Volcano Express', status: 'Active', totalRevenue: 5_800_000_000, totalPassengers: 3_500_000, routesCount: 30, logoUrl: 'https://pbs.twimg.com/profile_images/1237839357116452865/p-28c8o-_400x400.jpg', coverUrl: 'https://images.unsplash.com/photo/1593256398246-8853b3815c32?q=80&w=2070&auto=format&fit=crop', description: 'Volcano Express is one of the most popular transport companies in Rwanda, known for its excellent service, cleanliness, and punctuality.' },
@@ -121,6 +122,7 @@ const AdminDashboard: React.FC = () => {
     return (
         <div className="space-y-6">
             <h1 className="text-3xl font-bold dark:text-gray-200">Admin Overview</h1>
+            <LiveSalesTicker />
             <SystemHealth />
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatCard title="Total Revenue" value="25.8M RWF" icon={<ChartBarIcon className="w-6 h-6 text-blue-600"/>} change="+5.2%" changeType="increase" />

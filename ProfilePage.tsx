@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { Page } from './App';
 import { CameraIcon, TicketIcon, WalletIcon, StarIcon, BellAlertIcon, SparklesIcon, CogIcon, ArrowRightIcon, UserCircleIcon, PhoneIcon, EnvelopeIcon } from './components/icons';
@@ -48,7 +49,6 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onNavigate, user, setUser }) 
     );
   }
 
-  // FIX: Explicitly type profileOptions to ensure `page` is of type `Page`
   const profileOptions: { label: string, icon: React.FC<React.SVGProps<SVGSVGElement>>, page: Page }[] = [
     { label: 'My Bookings', icon: TicketIcon, page: 'bookings' },
     { label: 'My GoPoints', icon: SparklesIcon, page: 'loyalty' },

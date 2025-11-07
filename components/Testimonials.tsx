@@ -7,7 +7,11 @@ const testimonials = [
     { name: 'Aline U.', location: 'Musanze', rating: 4, text: "The package delivery service is surprisingly efficient. My parcel arrived on the same day. The tracking feature is also very helpful.", avatar: 'https://randomuser.me/api/portraits/women/44.jpg' },
 ];
 
-const TestimonialCard = ({ testimonial }) => (
+interface TestimonialCardProps {
+    testimonial: typeof testimonials[0];
+}
+
+const TestimonialCard: React.FC<TestimonialCardProps> = ({ testimonial }) => (
     <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg h-full flex flex-col">
         <div className="flex-grow">
             <StarRating rating={testimonial.rating} />
@@ -23,7 +27,7 @@ const TestimonialCard = ({ testimonial }) => (
     </div>
 );
 
-const Testimonials = () => {
+const Testimonials: React.FC = () => {
     return (
         <section>
             <div className="container mx-auto px-6">

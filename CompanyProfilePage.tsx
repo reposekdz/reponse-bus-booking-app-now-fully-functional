@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { ClockIcon, MapPinIcon, ChevronRightIcon, BusIcon, WifiIcon, AcIcon, PowerIcon, StarIcon, UsersIcon, MapIcon, BriefcaseIcon, TvIcon, ShieldCheckIcon, ArrowRightIcon, CameraIcon, EnvelopeIcon, XIcon, PaperAirplaneIcon, TagIcon, ArchiveBoxIcon, PhoneIcon } from './components/icons';
 import FleetDetailModal from './components/FleetDetailModal';
@@ -167,7 +168,7 @@ const AmenityIcon: React.FC<{ amenity: string; withText?: boolean }> = ({ amenit
             </div>
         );
     }
-    return <IconComponent className={iconClass} title={text} />;
+    return <IconComponent className={iconClass} />;
 };
 
 
@@ -207,6 +208,14 @@ const CompanyProfilePage: React.FC<CompanyProfilePageProps> = ({ company, onSele
   const [toLocation, setToLocation] = useState('');
   const [viewingPhotoIndex, setViewingPhotoIndex] = useState<number | null>(null);
   const [galleryFilter, setGalleryFilter] = useState('all');
+
+  if (!company) {
+    return (
+        <div className="flex items-center justify-center h-screen">
+            <p className="text-xl text-gray-500">Company not found.</p>
+        </div>
+    );
+  }
 
   const data = mockCompanyData[company.id] || defaultCompanyData;
   const averageRating = data.reviews.length > 0 ? data.reviews.reduce((acc: number, r: any) => acc + r.rating, 0) / data.reviews.length : 0;

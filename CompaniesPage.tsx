@@ -1,6 +1,7 @@
+
 import React, { useState, useMemo } from 'react';
 import StarRating from './components/StarRating';
-import { SearchIcon, ChevronRightIcon, StarIcon, MapPinIcon } from './components/icons';
+import { SearchIcon, ChevronRightIcon, StarIcon } from './components/icons';
 import type { Page } from './App';
 import { mockCompaniesData } from './admin/AdminDashboard';
 
@@ -49,7 +50,7 @@ const CompanyCard: React.FC<{ company: any, onSelect: () => void }> = ({ company
                 <StarRating rating={4.5} />
                 <span className="text-sm text-yellow-500 font-bold">{(company.totalPassengers / 1_000_000).toFixed(1)}M+</span>
             </div>
-             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{company.routes.length} ingendo</p>
+             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{company.routesCount} ingendo</p>
         </div>
         <div className="flex-shrink-0">
             <ChevronRightIcon className="w-6 h-6 text-gray-400 dark:text-gray-500" />

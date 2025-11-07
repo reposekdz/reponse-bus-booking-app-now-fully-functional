@@ -2,13 +2,18 @@ import React from 'react';
 import { ArrowRightIcon } from './icons';
 
 const destinations = [
-  { from: 'Kigali', to: 'Rubavu', price: 4500, image: 'https://images.unsplash.com/photo-1590632313655-e9c5220c4273?q=80&w=2070&auto=format&fit=crop' },
+  { from: 'Kigali', to: 'Rubavu', price: 4500, image: 'https://images.unsplash.com/photo/1590632313655-e9c5220c4273?q=80&w=2070&auto=format&fit=crop' },
   { from: 'Kigali', to: 'Musanze', price: 3500, image: 'https://www.andbeyond.com/wp-content/uploads/sites/5/one-of-the-reasons-to-visit-rwanda-gorilla.jpg' },
   { from: 'Kigali', to: 'Huye', price: 3000, image: 'https://live.staticflickr.com/3775/13360251415_a76b7a5449_b.jpg' },
   { from: 'Kigali', to: 'Nyungwe', price: 7000, image: 'https://visitnyungwe.com/wp-content/uploads/2020/09/Nyungwe-Canopy-Walk.jpg' },
 ];
 
-const DestinationCard = ({ dest, onSearch }) => (
+interface DestinationCardProps {
+    dest: typeof destinations[0];
+    onSearch: (from: string, to: string) => void;
+}
+
+const DestinationCard: React.FC<DestinationCardProps> = ({ dest, onSearch }) => (
     <div className="group relative rounded-2xl overflow-hidden shadow-lg h-96">
         <img src={dest.image} alt={`Image of ${dest.to}`} className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"/>
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
@@ -26,8 +31,11 @@ const DestinationCard = ({ dest, onSearch }) => (
     </div>
 );
 
+interface FeaturedDestinationsProps {
+    onSearch: (from?: string, to?: string) => void;
+}
 
-const FeaturedDestinations = ({ onSearch }) => {
+const FeaturedDestinations: React.FC<FeaturedDestinationsProps> = ({ onSearch }) => {
     return (
         <section>
             <div className="container mx-auto px-6">

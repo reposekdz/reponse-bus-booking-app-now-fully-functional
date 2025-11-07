@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import HeroSection from './components/HeroSection';
@@ -49,6 +48,7 @@ import BookingConfirmationPage from './BookingConfirmationPage';
 import FavoritesPage from './FavoritesPage';
 import PriceAlertsPage from './PriceAlertsPage';
 import LoyaltyPage from './LoyaltyPage';
+import PaymentPage from './PaymentPage';
 
 
 export type Page = 
@@ -196,7 +196,8 @@ const AppContent: React.FC = () => {
       case 'login': return <LoginPage onNavigate={navigate} onLogin={handleLogin} />;
       case 'register': return <RegisterPage onNavigate={navigate} />;
       case 'search': return <SearchResultsPage results={allSearchResults} onTripSelect={(trip) => navigate('seatSelection', trip)} />;
-      case 'seatSelection': return <SeatSelectionPage tripData={pageData} onConfirm={(bookingDetails) => navigate('bookingConfirmation', bookingDetails)} onBack={() => navigate('search')} user={user} />;
+      case 'seatSelection': return <SeatSelectionPage tripData={pageData} onConfirm={(bookingDetails) => navigate('payment', bookingDetails)} onBack={() => navigate('search')} user={user} />;
+      case 'payment': return <PaymentPage bookingDetails={pageData} onNavigate={navigate} />;
       case 'bookingConfirmation': return <BookingConfirmationPage bookingDetails={pageData} onNavigate={navigate} setUser={setUser} />;
       case 'bookings': return <BookingsPage onViewTicket={setViewingTicket} user={user} />;
       case 'profile': return <ProfilePage onNavigate={navigate} user={user} setUser={setUser} />;
@@ -267,7 +268,7 @@ const AppContent: React.FC = () => {
 
 
   return (
-    <div className={`${theme} font-sans bg-white dark:bg-gray-900`}>
+    <div className={`font-sans bg-white dark:bg-gray-900`}>
         {showHeader && (
              <Header 
                 currentPage={currentPage} 

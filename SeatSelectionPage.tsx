@@ -1,24 +1,29 @@
+
 import React, { useState } from 'react';
 import { ArrowLeftIcon, ArrowRightIcon } from './components/icons';
 
 type SeatStatus = 'available' | 'occupied' | 'selected';
 type SeatType = 'window' | 'aisle' | 'standard' | 'extra-legroom';
 
-const getSeatPrice = (type: SeatType, basePrice: number): number => {
+const getSeatPrice = (type: SeatType, basePrice: number, demand: number = 1.0): number => {
+    let price = basePrice;
     switch (type) {
         case 'window':
-            return basePrice + 200;
+            price += 200;
+            break;
         case 'aisle':
-            return basePrice + 100;
+            price += 100;
+            break;
         case 'extra-legroom':
-            return basePrice + 500;
-        default:
-            return basePrice;
+            price += 500;
+            break;
     }
+    // Apply demand multiplier and round to nearest 50 RWF
+    return Math.ceil((price * demand) / 50) * 50;
 };
 
 
-const Seat: React.FC<{ status: SeatStatus; id: string; type: SeatType; onSelect: (id: string) => void; basePrice: number }> = ({ status, id, type, onSelect, basePrice }) => {
+const Seat: React.FC<{ status: SeatStatus; id: string; type: SeatType; onSelect: (id: string) => void; basePrice: number, demand: number }> = ({ status, id, type, onSelect, basePrice, demand }) => {
   const isSelectable = status === 'available' || status === 'selected';
   
   let seatClass = 'w-10 h-10 rounded-md flex items-center justify-center font-bold text-xs cursor-pointer transition-all duration-200';
@@ -35,7 +40,7 @@ const Seat: React.FC<{ status: SeatStatus; id: string; type: SeatType; onSelect:
   if (type === 'aisle') tooltipText = 'Aisle Seat';
   if (type === 'extra-legroom') tooltipText = 'Extra Legroom';
 
-  const price = getSeatPrice(type, basePrice);
+  const price = getSeatPrice(type, basePrice, demand);
   const fullTooltip = `${tooltipText} - ${new Intl.NumberFormat('fr-RW').format(price)} RWF`;
 
   return <button data-tooltip={fullTooltip} onClick={() => isSelectable && onSelect(id)} className={seatClass} disabled={!isSelectable}>{id}</button>;
@@ -76,8 +81,9 @@ const SeatSelectionPage: React.FC<SeatSelectionPageProps> = ({ tripData, onConfi
   const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
   const [usePoints, setUsePoints] = useState(false);
   
-  const trip = tripData || { price: 4500, company: 'Volcano Express', from: 'Kigali', to: 'Rubavu', departureTime: '07:00' }; // Fallback for direct access
+  const trip = tripData || { price: 4500, company: 'Volcano Express', from: 'Kigali', to: 'Rubavu', departureTime: '07:00', demand: 1.1 }; // Fallback for direct access
   const basePrice = trip.dynamicPrice || trip.price;
+  const demand = trip.demand || 1.0;
   
   const handleSelectSeat = (id: string) => {
     setSelectedSeats(prev => 
@@ -90,7 +96,7 @@ const SeatSelectionPage: React.FC<SeatSelectionPageProps> = ({ tripData, onConfi
   const totalPrice = selectedSeats.reduce((total, seatId) => {
       const seat = allSeats.find(s => s.id === seatId);
       if (seat) {
-          return total + getSeatPrice(seat.type, basePrice);
+          return total + getSeatPrice(seat.type, basePrice, demand);
       }
       return total;
   }, 0);
@@ -131,30 +137,30 @@ const SeatSelectionPage: React.FC<SeatSelectionPageProps> = ({ tripData, onConfi
                                 <div key={rowIndex} className="flex justify-around">
                                     {row.map(seat => seat.id === 'aisle' 
                                         ? <div key={seat.id} className="w-10 h-10" /> 
-                                        : <Seat key={seat.id} id={seat.id} type={seat.type} status={selectedSeats.includes(seat.id) ? 'selected' : seat.status} onSelect={handleSelectSeat} basePrice={basePrice} />
+                                        : <Seat key={seat.id} id={seat.id} type={seat.type} status={selectedSeats.includes(seat.id) ? 'selected' : seat.status} onSelect={handleSelectSeat} basePrice={basePrice} demand={demand} />
                                     )}
                                 </div>
                             ))}
                         </div>
                     </div>
                      <div className="flex justify-center space-x-6 mt-6">
-                        <div className="flex items-center"><div className="w-4 h-4 bg-blue-100 rounded-sm mr-2"></div><span className="text-sm">Uhari</span></div>
-                        <div className="flex items-center"><div className="w-4 h-4 bg-gray-300 rounded-sm mr-2"></div><span className="text-sm">Wafashwe</span></div>
-                        <div className="flex items-center"><div className="w-4 h-4 bg-yellow-400 rounded-sm mr-2"></div><span className="text-sm">Wahisemo</span></div>
+                        <div className="flex items-center"><div className="w-4 h-4 bg-blue-100 rounded-sm mr-2"></div><span className="text-sm dark:text-gray-300">Uhari</span></div>
+                        <div className="flex items-center"><div className="w-4 h-4 bg-gray-300 rounded-sm mr-2"></div><span className="text-sm dark:text-gray-300">Wafashwe</span></div>
+                        <div className="flex items-center"><div className="w-4 h-4 bg-yellow-400 rounded-sm mr-2"></div><span className="text-sm dark:text-gray-300">Wahisemo</span></div>
                     </div>
                 </div>
                 <div className="lg:col-span-1">
                      <div className="sticky top-24 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg">
                          <h2 className="text-xl font-bold dark:text-white mb-4">Summary y'Urugendo</h2>
                          <div className="space-y-3 pb-4">
-                             <p><strong>Ikigo:</strong> {trip.company}</p>
-                             <p><strong>Imyanya Wahisemo:</strong> {selectedSeats.length > 0 ? selectedSeats.join(', ') : 'Ntawahisemo'}</p>
-                             <p><strong>Igiciro fatizo:</strong> {new Intl.NumberFormat('fr-RW').format(basePrice)} RWF</p>
+                             <p className="dark:text-gray-300"><strong>Ikigo:</strong> {trip.company}</p>
+                             <p className="dark:text-gray-300"><strong>Imyanya Wahisemo:</strong> {selectedSeats.length > 0 ? selectedSeats.join(', ') : 'Ntawahisemo'}</p>
+                             <p className="dark:text-gray-300"><strong>Igiciro fatizo:</strong> {new Intl.NumberFormat('fr-RW').format(basePrice)} RWF</p>
                          </div>
                          {availablePoints > 0 && selectedSeats.length > 0 && (
                             <div className="border-t dark:border-gray-700 pt-4 mt-4">
                                 <label className="flex items-center justify-between cursor-pointer">
-                                    <span className="font-semibold text-sm">Use {pointsToUse} GoPoints</span>
+                                    <span className="font-semibold text-sm dark:text-gray-200">Use {pointsToUse} GoPoints</span>
                                     <div className="relative">
                                         <input type="checkbox" checked={usePoints} onChange={() => setUsePoints(!usePoints)} className="sr-only" />
                                         <div className={`block w-10 h-6 rounded-full transition ${usePoints ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}`}></div>
@@ -165,7 +171,7 @@ const SeatSelectionPage: React.FC<SeatSelectionPageProps> = ({ tripData, onConfi
                             </div>
                         )}
                          <div className="mt-4 border-t dark:border-gray-700 pt-4">
-                             <p className="text-lg font-bold">Igiciro Cyose:</p>
+                             <p className="text-lg font-bold dark:text-gray-200">Igiciro Cyose:</p>
                              <p className="text-3xl font-extrabold text-green-600 dark:text-green-400">{new Intl.NumberFormat('fr-RW').format(finalPrice)} RWF</p>
                          </div>
                          <button onClick={handleConfirmClick} disabled={selectedSeats.length === 0} className="mt-6 w-full flex items-center justify-center px-6 py-3 rounded-lg bg-gradient-to-r from-yellow-400 to-yellow-500 text-[#0033A0] font-bold hover:saturate-150 transition-all duration-300 shadow-md disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-0.5">
