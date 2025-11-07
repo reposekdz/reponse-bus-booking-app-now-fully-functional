@@ -6,24 +6,26 @@ const mockUsers = [
   { 
     id: 1, name: 'Kalisa Jean', email: 'kalisa.j@example.com', role: 'passenger', status: 'Active', joinDate: '2023-01-15',
     avatarUrl: 'https://randomuser.me/api/portraits/men/32.jpg',
+    coverUrl: 'https://images.unsplash.com/photo-1619534103142-93b3f276c120?q=80&w=2070&auto=format&fit=crop',
     walletBalance: 15000,
     bookingHistory: [
       { id: 'TICKET-001', from: 'Kigali', to: 'Rubavu', company: 'Volcano Express', date: '2024-10-28', price: '9,000 FRW' },
       { id: 'TICKET-003', from: 'Kigali', to: 'Musanze', company: 'Horizon Express', date: '2024-10-15', price: '3,500 FRW' },
     ]
   },
-  { id: 2, name: 'John Doe', email: 'driver@volcano.rw', role: 'driver', status: 'Active', joinDate: '2022-03-10' },
-  { id: 3, name: 'Jane Smith', email: 'jane.s@agent.rw', role: 'agent', status: 'Active', joinDate: '2022-09-01' },
-  { id: 4, name: 'Admin User', email: 'admin@rwandabus.rw', role: 'admin', status: 'Active', joinDate: '2022-01-01' },
+  { id: 2, name: 'John Doe', email: 'driver@volcano.rw', role: 'driver', status: 'Active', joinDate: '2022-03-10', avatarUrl: 'https://randomuser.me/api/portraits/men/4.jpg', coverUrl: 'https://images.unsplash.com/photo-1533104816-588941750c11?q=80&w=1974&auto=format&fit=crop' },
+  { id: 3, name: 'Jane Smith', email: 'jane.s@agent.rw', role: 'agent', status: 'Active', joinDate: '2022-09-01', avatarUrl: 'https://randomuser.me/api/portraits/women/5.jpg', coverUrl: 'https://images.unsplash.com/photo-1614323992655-037a34c19a31?q=80&w=2070&auto=format&fit=crop' },
+  { id: 4, name: 'Admin User', email: 'admin@rwandabus.rw', role: 'admin', status: 'Active', joinDate: '2022-01-01', avatarUrl: 'https://randomuser.me/api/portraits/women/44.jpg', coverUrl: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?q=80&w=2070&auto=format&fit=crop' },
   { 
     id: 5, name: 'Mutesi Aline', email: 'mutesi.a@example.com', role: 'passenger', status: 'Suspended', joinDate: '2023-03-22',
     avatarUrl: 'https://randomuser.me/api/portraits/women/33.jpg',
+    coverUrl: 'https://images.unsplash.com/photo-1604928141068-a2acbe86d482?q=80&w=2070&auto=format&fit=crop',
     walletBalance: 2500,
     bookingHistory: [
        { id: 'TICKET-002', from: 'Huye', to: 'Kigali', company: 'RITCO', date: '2024-11-02', price: '3,000 FRW' },
     ]
   },
-  { id: 6, name: 'Volcano Mgr', email: 'manager@volcano.rw', role: 'company', status: 'Active', joinDate: '2022-02-15' },
+  { id: 6, name: 'Volcano Mgr', email: 'manager@volcano.rw', role: 'company', status: 'Active', joinDate: '2022-02-15', avatarUrl: 'https://pbs.twimg.com/profile_images/1237839357116452865/p-28c8o-_400x400.jpg', coverUrl: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?q=80&w=2048&auto=format&fit=crop' },
 ];
 
 const ManageUsers: React.FC<{ navigate: (page: Page, data?: any) => void }> = ({ navigate }) => {
@@ -106,7 +108,10 @@ const ManageUsers: React.FC<{ navigate: (page: Page, data?: any) => void }> = ({
                         <tbody>
                             {filteredUsers.map(user => (
                                 <tr key={user.id} className="border-t dark:border-gray-700">
-                                    <td className="p-3 font-semibold dark:text-white">{user.name}</td>
+                                    <td className="p-3 font-semibold dark:text-white flex items-center space-x-3">
+                                        <img src={user.avatarUrl} alt={user.name} className="w-8 h-8 rounded-full object-cover" />
+                                        <span>{user.name}</span>
+                                    </td>
                                     <td>{user.email}</td>
                                     <td className="capitalize">{user.role}</td>
                                     <td>{new Date(user.joinDate).toLocaleDateString()}</td>

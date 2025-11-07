@@ -39,7 +39,7 @@ const Header: React.FC<HeaderProps> = ({ currentPage, onNavigate, user, onLogout
   
   const DropdownMenu: React.FC<{isOpen: boolean; children: React.ReactNode; onMouseLeave: () => void; className?: string}> = ({isOpen, children, onMouseLeave, className}) => (
       <div 
-        className={`absolute right-0 mt-3 w-64 origin-top-right rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none transition-all duration-300 ease-in-out ${className} ${isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}
+        className={`absolute right-0 mt-3 origin-top-right rounded-xl bg-gradient-to-br from-blue-500 to-sky-400 dark:from-blue-700 dark:to-sky-600 shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none transition-all duration-300 ease-in-out text-white ${className} ${isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}
         onMouseLeave={onMouseLeave}
       >
         {children}
@@ -73,7 +73,7 @@ const Header: React.FC<HeaderProps> = ({ currentPage, onNavigate, user, onLogout
              <DropdownMenu isOpen={isLangOpen} onMouseLeave={() => setIsLangOpen(false)} className="w-48">
                 <div className="py-1">
                     {languages.map(lang => (
-                      <button key={lang.code} onClick={() => selectLanguage(lang)} className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
+                      <button key={lang.code} onClick={() => selectLanguage(lang)} className="flex items-center w-full text-left px-4 py-2 text-sm text-white hover:bg-white/20">
                         <span className="mr-3 text-lg">{lang.flag}</span>
                         {lang.name}
                       </button>
@@ -92,25 +92,25 @@ const Header: React.FC<HeaderProps> = ({ currentPage, onNavigate, user, onLogout
               <span className="absolute top-1 right-1 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white/20"></span>
             </button>
             <DropdownMenu isOpen={isNotificationsOpen} onMouseLeave={() => setIsNotificationsOpen(false)} className="w-80">
-                <div className="p-3 font-bold text-gray-800 dark:text-white border-b dark:border-gray-700">Notifications</div>
+                <div className="p-3 font-bold border-b border-white/20">Notifications</div>
                 <div className="py-2 max-h-64 overflow-y-auto">
-                    <div className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-start space-x-3">
-                        <TicketIcon className="w-5 h-5 text-blue-500 mt-0.5"/>
+                    <div className="px-4 py-3 text-sm hover:bg-white/20 flex items-start space-x-3">
+                        <TicketIcon className="w-5 h-5 text-yellow-300 mt-0.5"/>
                         <div>
                             <p className="font-semibold">Trip Reminder</p>
-                            <p className="text-xs">Your trip to Rubavu is tomorrow at 07:00.</p>
+                            <p className="text-xs opacity-80">Your trip to Rubavu is tomorrow at 07:00.</p>
                         </div>
                     </div>
-                     <div className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-start space-x-3">
-                         <TagIcon className="w-5 h-5 text-red-500 mt-0.5"/>
+                     <div className="px-4 py-3 text-sm hover:bg-white/20 flex items-start space-x-3">
+                         <TagIcon className="w-5 h-5 text-yellow-300 mt-0.5"/>
                          <div>
-                            <p className="font-semibold text-red-500">Promotion!</p>
-                            <p className="text-xs">Get 10% off on all weekend trips. Use code WEEKEND10.</p>
+                            <p className="font-semibold text-yellow-300">Promotion!</p>
+                            <p className="text-xs opacity-80">Get 10% off on all weekend trips. Use code WEEKEND10.</p>
                         </div>
                     </div>
                 </div>
-                 <div className="p-2 border-t dark:border-gray-700 text-center">
-                    <button className="text-xs text-blue-600 dark:text-blue-400 font-semibold">View All</button>
+                 <div className="p-2 border-t border-white/20 text-center">
+                    <button className="text-xs font-semibold">View All</button>
                 </div>
             </DropdownMenu>
           </div>
@@ -122,20 +122,20 @@ const Header: React.FC<HeaderProps> = ({ currentPage, onNavigate, user, onLogout
                   <img src={user.avatarUrl} alt="User" className="w-8 h-8 rounded-full" />
                 </button>
                 <DropdownMenu isOpen={isUserMenuOpen} onMouseLeave={() => setIsUserMenuOpen(false)}>
-                    <div className="p-4 border-b dark:border-gray-700">
-                        <p className="font-bold text-gray-800 dark:text-white">{user.name}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">{user.email}</p>
+                    <div className="p-4 border-b border-white/20">
+                        <p className="font-bold">{user.name}</p>
+                        <p className="text-xs opacity-80">{user.email}</p>
                     </div>
-                     <div className="p-4 border-b dark:border-gray-700">
-                        <p className="text-xs font-semibold text-gray-500 dark:text-gray-400">Wallet Balance</p>
-                        <p className="font-bold text-xl text-green-600 dark:text-green-400">{new Intl.NumberFormat('fr-RW').format(user.walletBalance)} RWF</p>
+                     <div className="p-4 border-b border-white/20">
+                        <p className="text-xs font-semibold opacity-80">Wallet Balance</p>
+                        <p className="font-bold text-xl text-green-300">{new Intl.NumberFormat('fr-RW').format(user.walletBalance)} RWF</p>
                     </div>
                     <div className="py-2">
-                        <button onClick={() => { onNavigate('profile'); setIsUserMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center"><UserCircleIcon className="w-5 h-5 mr-3"/> {t('usermenu_profile')}</button>
-                        <button onClick={() => { onNavigate('bookings'); setIsUserMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center"><TicketIcon className="w-5 h-5 mr-3"/> {t('usermenu_bookings')}</button>
+                        <button onClick={() => { onNavigate('profile'); setIsUserMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm hover:bg-white/20 flex items-center"><UserCircleIcon className="w-5 h-5 mr-3"/> {t('usermenu_profile')}</button>
+                        <button onClick={() => { onNavigate('bookings'); setIsUserMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm hover:bg-white/20 flex items-center"><TicketIcon className="w-5 h-5 mr-3"/> {t('usermenu_bookings')}</button>
                     </div>
-                     <div className="border-t dark:border-gray-700 p-2">
-                        <button onClick={onLogout} className="w-full text-left px-3 py-2 text-sm font-semibold text-red-600 dark:text-red-400 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20">{t('usermenu_logout')}</button>
+                     <div className="border-t border-white/20 p-2">
+                        <button onClick={onLogout} className="w-full text-left px-3 py-2 text-sm font-semibold text-red-300 rounded-md hover:bg-red-900/20">{t('usermenu_logout')}</button>
                     </div>
                 </DropdownMenu>
               </div>

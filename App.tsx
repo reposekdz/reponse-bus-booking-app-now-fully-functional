@@ -31,13 +31,14 @@ import { LanguageProvider } from './contexts/LanguageContext';
 import DriverProfilePage from './DriverProfilePage';
 import AgentProfilePage from './AgentProfilePage';
 import PassengerProfilePage from './PassengerProfilePage';
+import LostAndFoundPage from './LostAndFoundPage';
 
 
 export type Page = 
   | 'home' | 'login' | 'register' | 'bookings' | 'scheduled' | 'search' 
   | 'seatSelection' | 'payment' | 'confirmation' | 'profile' | 'companies' 
   | 'companyProfile' | 'help' | 'contact' | 'services' | 'packageDelivery' 
-  | 'busCharter' | 'adminDashboard' | 'companyDashboard' | 'driverDashboard' 
+  | 'busCharter' | 'lostAndFound' | 'adminDashboard' | 'companyDashboard' | 'driverDashboard' 
   | 'agentDashboard' | 'adminCompanies' | 'adminDrivers' | 'adminAgents' 
   | 'adminUsers' | 'adminFinancials' | 'adminAds' 
   | 'adminPromotions' | 'companyBuses' | 'companyDrivers' | 'companyRoutes' 
@@ -46,15 +47,16 @@ export type Page =
 
 // Mock User Data
 const mockUsers = {
-  passenger: { name: 'Kalisa Jean', email: 'passenger@rwandabus.rw', role: 'passenger', avatarUrl: 'https://randomuser.me/api/portraits/men/32.jpg', walletBalance: 15000, pin: '1234' },
-  company: { name: 'Volcano Express', email: 'manager@volcano.rw', role: 'company', avatarUrl: 'https://pbs.twimg.com/profile_images/1237839357116452865/p-28c8o-_400x400.jpg', pin: '2024' },
-  admin: { name: 'Admin User', email: 'admin@rwandabus.rw', role: 'admin', avatarUrl: 'https://randomuser.me/api/portraits/women/44.jpg' },
+  passenger: { name: 'Kalisa Jean', email: 'passenger@rwandabus.rw', role: 'passenger', avatarUrl: 'https://randomuser.me/api/portraits/men/32.jpg', coverUrl: 'https://images.unsplash.com/photo-1619534103142-93b3f276c120?q=80&w=2070&auto=format&fit=crop', walletBalance: 15000, pin: '1234' },
+  company: { name: 'Volcano Express', email: 'manager@volcano.rw', role: 'company', avatarUrl: 'https://pbs.twimg.com/profile_images/1237839357116452865/p-28c8o-_400x400.jpg', coverUrl: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?q=80&w=2048&auto=format&fit=crop', pin: '2024' },
+  admin: { name: 'Admin User', email: 'admin@rwandabus.rw', role: 'admin', avatarUrl: 'https://randomuser.me/api/portraits/women/44.jpg', coverUrl: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?q=80&w=2070&auto=format&fit=crop' },
   driver: { 
     id: 'd1', 
     name: 'John Doe', 
     email: 'driver@volcano.rw', 
     role: 'driver', 
     avatarUrl: 'https://randomuser.me/api/portraits/men/4.jpg', 
+    coverUrl: 'https://images.unsplash.com/photo-1533104816-588941750c11?q=80&w=1974&auto=format&fit=crop',
     company: 'Volcano Express', 
     assignedBusId: 'RAD 123 B', 
     phone: '0788111222', 
@@ -81,7 +83,7 @@ const mockUsers = {
         {id: 'TRIP-504', route: 'Kigali - Rubavu', date: '2024-10-29', status: 'Upcoming', passengers: 0},
     ]
   },
-  agent: { id: 'a1', name: 'Jane Smith', email: 'jane.s@agent.rw', role: 'agent', avatarUrl: 'https://randomuser.me/api/portraits/women/5.jpg', location: 'Nyabugogo', commissionRate: 0.05, totalDeposits: 2500000, pin: '5678', phone: '0788777888' }
+  agent: { id: 'a1', name: 'Jane Smith', email: 'jane.s@agent.rw', role: 'agent', avatarUrl: 'https://randomuser.me/api/portraits/women/5.jpg', coverUrl: 'https://images.unsplash.com/photo-1614323992655-037a34c19a31?q=80&w=2070&auto=format&fit=crop', location: 'Nyabugogo', commissionRate: 0.05, totalDeposits: 2500000, pin: '5678', phone: '0788777888' }
 };
 
 const mockNextTrip = {
@@ -172,7 +174,7 @@ const AppContent: React.FC = () => {
       case 'search': return <SearchResultsPage results={allSearchResults} onTripSelect={(trip) => navigate('seatSelection', trip)} />;
       case 'seatSelection': return <SeatSelectionPage onConfirm={() => alert("Proceed to payment")} onBack={() => navigate('search')} tripData={pageData} />;
       case 'bookings': return <BookingsPage onViewTicket={setViewingTicket} />;
-      case 'profile': return <ProfilePage onNavigate={navigate} />;
+      case 'profile': return <ProfilePage onNavigate={navigate} user={user} />;
       case 'scheduled': return <ScheduledTripsPage onSearch={handleSearch}/>;
       case 'companies': return <CompaniesPage onNavigate={navigate} />;
       case 'companyProfile': return <CompanyProfilePage company={pageData} onSelectTrip={handleSearch} />;
@@ -181,6 +183,7 @@ const AppContent: React.FC = () => {
       case 'services': return <ServicesPage onNavigate={navigate} />;
       case 'packageDelivery': return <PackageDeliveryPage onNavigate={navigate} />;
       case 'busCharter': return <BusCharterPage onNavigate={navigate} />;
+      case 'lostAndFound': return <LostAndFoundPage onNavigate={navigate} />;
       case 'bookingSearch': return <BookingSearchPage onSearch={handleSearch} navigate={navigate} />;
       
       case 'adminDashboard': case 'adminCompanies': case 'adminDrivers': case 'adminAgents': case 'adminUsers': case 'adminFinancials': case 'adminAds': case 'adminPromotions':

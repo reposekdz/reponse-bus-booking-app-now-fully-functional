@@ -1,6 +1,6 @@
 import React, { useState, FormEvent } from 'react';
 import { Page } from './App';
-import { ArchiveBoxIcon, BusIcon, BriefcaseIcon, MapIcon, ShieldCheckIcon, CreditCardIcon, ChevronRightIcon, TruckIcon } from './components/icons';
+import { ArchiveBoxIcon, BusIcon, BriefcaseIcon, MapIcon, ShieldCheckIcon, CreditCardIcon, ChevronRightIcon, TruckIcon, QuestionMarkCircleIcon } from './components/icons';
 import PackageTrackingModal from './PackageTrackingModal';
 import { useLanguage } from './contexts/LanguageContext';
 
@@ -29,6 +29,14 @@ const ServicesPage: React.FC<ServicesPageProps> = ({ onNavigate }) => {
           icon: BusIcon,
           page: 'busCharter',
           isFeatured: true,
+        },
+        {
+          id: 'lost-found',
+          title: 'Lost & Found',
+          description: 'Report or find a lost item.',
+          icon: QuestionMarkCircleIcon,
+          page: 'lostAndFound',
+          isFeatured: false,
         },
         {
           id: 'corporate-travel',

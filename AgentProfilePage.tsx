@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { PhoneIcon, EnvelopeIcon, MapPinIcon, CalendarIcon, CogIcon, SearchIcon, ArrowDownLeftIcon } from './components/icons';
+import { PhoneIcon, EnvelopeIcon, MapPinIcon, CalendarIcon, CogIcon, SearchIcon, ArrowDownLeftIcon, CameraIcon } from './components/icons';
 
 const StatCard = ({ title, value, format = 'currency' }) => (
     <div className="bg-gray-100 dark:bg-gray-700/50 p-4 rounded-xl">
@@ -42,10 +42,21 @@ const AgentProfilePage: React.FC<{agent: any; allTransactions: any[]}> = ({ agen
         <div className="bg-gray-100/50 dark:bg-gray-900/50 min-h-full py-12">
             <div className="container mx-auto px-6 max-w-6xl">
                  <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
-                    <div className="h-40 bg-green-600"></div>
+                    <div className="h-40 bg-green-600 relative group">
+                        <img src={agent.coverUrl || 'https://images.unsplash.com/photo-1614323992655-037a34c19a31?q=80&w=2070&auto=format&fit=crop'} alt="Cover" className="w-full h-full object-cover"/>
+                        <div className="absolute inset-0 bg-black/30"></div>
+                         <button className="absolute top-2 right-2 flex items-center text-xs bg-black/40 text-white px-2 py-1 rounded-full hover:bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <CameraIcon className="w-4 h-4 mr-1"/> Edit Cover
+                        </button>
+                    </div>
                      <div className="px-6 pb-6 relative">
                         <div className="flex items-end -mt-16">
-                            <img src={agent.avatarUrl} alt={agent.name} className="w-32 h-32 rounded-full border-4 border-white dark:border-gray-800 object-cover"/>
+                            <div className="relative group">
+                                <img src={agent.avatarUrl} alt={agent.name} className="w-32 h-32 rounded-full border-4 border-white dark:border-gray-800 object-cover"/>
+                                <button className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <CameraIcon className="w-6 h-6"/>
+                                </button>
+                            </div>
                              <div className="ml-6">
                                 <h1 className="text-3xl font-bold text-gray-800 dark:text-white">{agent.name}</h1>
                                 <p className="text-gray-600 dark:text-gray-400">Agent Wemewe</p>

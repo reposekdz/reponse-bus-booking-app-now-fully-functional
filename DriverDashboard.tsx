@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { SunIcon, MoonIcon, CogIcon, UsersIcon, ChartBarIcon, QrCodeIcon, ChartPieIcon, ClipboardDocumentListIcon, WrenchScrewdriverIcon } from './components/icons';
+import { SunIcon, MoonIcon, CogIcon, UsersIcon, ChartBarIcon, QrCodeIcon, ChartPieIcon, ClipboardDocumentListIcon, WrenchScrewdriverIcon, MegaphoneIcon } from './components/icons';
 import { Page } from './App';
 import DriverSettingsPage from './DriverSettingsPage';
 import { mockCompaniesData } from './admin/AdminDashboard';
@@ -30,6 +30,11 @@ const mockCurrentTrip = {
         { id: 5, name: 'Mugisha Frank', seat: 'C4', ticketId: 'VK-83AD5', status: 'booked' },
     ],
 };
+
+const mockAnnouncements = [
+    { id: 1, text: "Reminder: All drivers must complete the new safety training module by Friday.", date: "2024-10-28" },
+    { id: 2, text: "Heavy rain is expected on the Kigali-Huye route this afternoon. Please drive with extra caution.", date: "2024-10-27" }
+];
 
 const DriverDashboard: React.FC<DriverDashboardProps> = ({ onLogout, theme, setTheme, driverData, allCompanies, onPassengerBoarding, navigate }) => {
     const [view, setView] = useState('dashboard');
@@ -156,24 +161,31 @@ const DriverDashboard: React.FC<DriverDashboardProps> = ({ onLogout, theme, setT
             case 'dashboard':
             default:
                  return (
-                    <div>
-                         <h1 className="text-3xl font-bold dark:text-gray-200 mb-6">Dashboard</h1>
+                    <div className="space-y-8">
+                         <h1 className="text-3xl font-bold dark:text-gray-200">Dashboard</h1>
                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             <button onClick={() => setView('boarding')} className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white p-8 rounded-2xl shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all text-left">
                                 <QrCodeIcon className="w-12 h-12 mb-4"/>
                                 <h2 className="text-2xl font-bold">Start Passenger Boarding</h2>
                                 <p className="opacity-80 mt-2">Scan tickets to verify and board passengers for the current trip.</p>
                             </button>
-                             <div className="bg-white dark:bg-gray-800/50 p-8 rounded-2xl shadow-lg">
-                                <h2 className="text-2xl font-bold dark:text-white">Trip Details</h2>
-                                <p className="mt-2 text-gray-600 dark:text-gray-400">More trip details and actions will be shown here.</p>
-                            </div>
                             <button onClick={() => setIsReportModalOpen(true)} className="bg-gradient-to-br from-yellow-500 to-orange-600 text-white p-8 rounded-2xl shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all text-left">
                                 <WrenchScrewdriverIcon className="w-12 h-12 mb-4"/>
                                 <h2 className="text-2xl font-bold">Report Vehicle Issue</h2>
                                 <p className="opacity-80 mt-2">Submit a maintenance request for your assigned bus.</p>
                             </button>
                          </div>
+                         <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-lg">
+                            <h2 className="text-xl font-bold dark:text-white mb-4 flex items-center"><MegaphoneIcon className="w-6 h-6 mr-3 text-indigo-400"/> Company Announcements</h2>
+                             <div className="space-y-4">
+                                {mockAnnouncements.map(ann => (
+                                    <div key={ann.id} className="border-l-4 border-indigo-400 pl-4 py-2">
+                                        <p className="text-sm text-gray-700 dark:text-gray-300">{ann.text}</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">{new Date(ann.date).toDateString()}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                 );
         }

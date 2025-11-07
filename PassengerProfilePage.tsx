@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PhoneIcon, EnvelopeIcon, MapPinIcon, CalendarIcon, WalletIcon, TicketIcon } from './components/icons';
+import { PhoneIcon, EnvelopeIcon, MapPinIcon, CalendarIcon, WalletIcon, TicketIcon, CameraIcon } from './components/icons';
 
 const StatCard = ({ label, value, icon }) => (
     <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-xl flex items-center space-x-3">
@@ -26,10 +26,21 @@ const PassengerProfilePage: React.FC<{ passenger: any }> = ({ passenger }) => {
         <div className="bg-gray-100/50 dark:bg-gray-900/50 min-h-full py-12">
             <div className="container mx-auto px-6 max-w-4xl">
                 <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
-                    <div className="h-40 bg-green-600"></div>
+                    <div className="h-40 bg-green-600 relative group">
+                        <img src={passenger.coverUrl || 'https://images.unsplash.com/photo-1619534103142-93b3f276c120?q=80&w=2070&auto=format&fit=crop'} alt="Cover" className="w-full h-full object-cover"/>
+                        <div className="absolute inset-0 bg-black/30"></div>
+                         <button className="absolute top-2 right-2 flex items-center text-xs bg-black/40 text-white px-2 py-1 rounded-full hover:bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <CameraIcon className="w-4 h-4 mr-1"/> Edit Cover
+                        </button>
+                    </div>
                     <div className="px-6 pb-6">
                         <div className="flex flex-col sm:flex-row items-center -mt-16">
-                            <img src={passenger.avatarUrl} alt={passenger.name} className="w-32 h-32 rounded-full border-4 border-white dark:border-gray-800 object-cover"/>
+                            <div className="relative group">
+                                <img src={passenger.avatarUrl} alt={passenger.name} className="w-32 h-32 rounded-full border-4 border-white dark:border-gray-800 object-cover"/>
+                                <button className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <CameraIcon className="w-6 h-6"/>
+                                </button>
+                            </div>
                             <div className="sm:ml-6 mt-4 sm:mt-16 text-center sm:text-left flex-grow">
                                 <h1 className="text-3xl font-bold text-gray-800 dark:text-white">{passenger.name}</h1>
                                 <div className="mt-2 flex justify-center sm:justify-start flex-wrap gap-x-4 gap-y-1 text-sm text-gray-500 dark:text-gray-400">

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Page } from './App';
 import { ArchiveBoxIcon, ArrowRightIcon, BusIcon, CheckCircleIcon, ChevronRightIcon, UserCircleIcon } from './components/icons';
@@ -125,12 +124,18 @@ const PackageDeliveryPage: React.FC<{ onNavigate: (page: Page) => void }> = ({ o
 
                     {/* Navigation */}
                     <div className="flex justify-between items-center mt-8 border-t dark:border-gray-700 pt-6">
-                        {currentStep > 1 && currentStep <= STEPS.length ? (
-                            <button onClick={currentStep === 4 ? () => onNavigate('services') : handleBack} className="px-6 py-2 border rounded-lg font-semibold dark:border-gray-600">{currentStep === 4 ? 'Done' : 'Back'}</button>
+                        {currentStep > 1 && currentStep < STEPS.length ? (
+                            <button onClick={handleBack} className="px-6 py-2 border rounded-lg font-semibold dark:border-gray-600">Back</button>
                         ) : <div></div>}
-                        
-                        {currentStep < 3 && <button onClick={handleNext} className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700">Next</button>}
-                        {currentStep === 3 && <button onClick={handleConfirm} className="px-6 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700">Confirm & Pay</button>}
+                         {currentStep === 4 ? (
+                             <button onClick={() => onNavigate('services')} className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700">Done</button>
+                         ) : (
+                            currentStep === 3 ? (
+                                <button onClick={handleConfirm} className="px-6 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700">Confirm & Pay</button>
+                            ) : (
+                                <button onClick={handleNext} className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700">Next</button>
+                            )
+                        )}
                     </div>
                 </div>
             </div>

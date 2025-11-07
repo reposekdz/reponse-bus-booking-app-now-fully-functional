@@ -23,8 +23,9 @@ const companyMockData = {
         { id: 'd3', name: 'Mary Anne', assignedBusId: 'RAE 789 A', phone: '0788555666', status: 'On Leave' },
     ],
     buses: [
-        { id: 'b1', plate: 'RAD 123 B', model: 'Yutong Explorer', capacity: 55, status: 'Operational', maintenanceDate: '2024-12-15' },
-        { id: 'b2', plate: 'RAE 789 A', model: 'Coaster', capacity: 30, status: 'On Route', maintenanceDate: '2024-11-30' },
+        { id: 'b1', plate: 'RAD 123 B', model: 'Yutong Explorer', capacity: 55, status: 'On Route', maintenanceDate: '2024-12-15', route: 'Kigali - Rubavu', progress: 75 },
+        { id: 'b2', plate: 'RAE 789 A', model: 'Coaster', capacity: 30, status: 'On Route', maintenanceDate: '2024-11-30', route: 'Kigali - Huye', progress: 40 },
+        { id: 'b3', plate: 'RAB 456 C', model: 'Yutong', capacity: 60, status: 'Idle', maintenanceDate: '2025-01-10', route: '', progress: 0 },
     ],
     routes: [
         { id: 'r1', from: 'Kigali', to: 'Rubavu', distance: '150km', duration: '3.5h', price: 4500, status: 'Active' },
@@ -40,7 +41,7 @@ const CompanyDashboard: React.FC<CompanyDashboardProps> = ({ companyPin }) => {
     const [isPinModalOpen, setIsPinModalOpen] = useState(false);
     
     const { drivers, buses, routes } = companyMockData;
-    const activeBuses = buses.filter(b => b.status === 'On Route').length;
+    const activeBuses = buses.filter(b => b.status === 'On Route');
     const popularRoute = routes.length > 0 ? `${routes[0].from} - ${routes[0].to}` : 'N/A';
     
     const handlePinSuccess = () => {
@@ -54,15 +55,28 @@ const CompanyDashboard: React.FC<CompanyDashboardProps> = ({ companyPin }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatCard title="Total Drivers" value={drivers.length} icon={<UsersIcon />} />
                 <StatCard title="Today's Revenue" value="5.6M RWF" icon={<ChartBarIcon />} />
-                <StatCard title="Active Buses" value={`${activeBuses} / ${buses.length}`} icon={<BusIcon />} />
+                <StatCard title="Active Buses" value={`${activeBuses.length} / ${buses.length}`} icon={<BusIcon />} />
                 <StatCard title="Popular Route" value={popularRoute} icon={<MapIcon />} />
             </div>
              <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-lg">
-                    <h2 className="text-xl font-bold dark:text-white">Live Fleet Status</h2>
-                    <p className="text-gray-500 dark:text-gray-400 mt-4">A map showing live bus locations will be displayed here...</p>
-                    <div className="h-64 bg-gray-200 dark:bg-gray-700/50 mt-4 rounded-lg flex items-center justify-center">
-                        <p className="text-gray-500">Map Area</p>
+                    <h2 className="text-xl font-bold dark:text-white mb-4">Live Fleet Status</h2>
+                    <div className="space-y-4 h-[22rem] overflow-y-auto custom-scrollbar pr-2">
+                        {activeBuses.map(bus => (
+                             <div key={bus.id} className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
+                                <div className="flex justify-between items-center mb-2">
+                                    <p className="font-bold dark:text-white">{bus.plate}</p>
+                                    <p className="text-sm font-semibold text-blue-600 dark:text-blue-400">{bus.route}</p>
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-600">
+                                  <div className="bg-green-600 h-2 rounded-full" style={{width: `${bus.progress}%`}}></div>
+                                </div>
+                                <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                    <span>{bus.progress}% Complete</span>
+                                    <span>On Time</span>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
                  <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-lg">
