@@ -1,3 +1,4 @@
+
 // Merging web translations for mobile use
 export const translations = {
   RW: {

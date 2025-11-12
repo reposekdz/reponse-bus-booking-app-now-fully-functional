@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -49,9 +50,10 @@ import CompanyPassengersScreen from '../screens/company/CompanyPassengersScreen'
 import AdminDashboardScreen from '../screens/admin/AdminDashboardScreen';
 
 import Icon from '../components/Icon';
+import { RootStackParamList } from './types';
 
 
-const Stack = createStackNavigator();
+const Stack = createStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
 const ProfileStack = createStackNavigator();
 

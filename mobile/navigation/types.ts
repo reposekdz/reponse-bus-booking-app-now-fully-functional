@@ -1,3 +1,4 @@
+
 // types.ts
 import { NavigatorScreenParams } from '@react-navigation/native';
 
@@ -31,6 +32,7 @@ export type RootStackParamList = {
   EditProfile: undefined;
   Wallet: undefined;
   Loyalty: undefined;
+  ProfileMain: undefined; // Add this for the ProfileNavigator
 };
 
 // This allows us to use useNavigation with type safety

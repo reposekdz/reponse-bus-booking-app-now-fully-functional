@@ -1,25 +1,58 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useMemo } from 'react';
 import SearchResultCard from './components/SearchResultCard';
-import { allSearchResults } from './BookingSearchPage';
 import { Page } from './App';
 import { StarIcon } from './components/icons';
+import * as api from './services/apiService';
 
 interface FavoritesPageProps {
     onNavigate: (page: Page, data?: any) => void;
 }
 
 const FavoritesPage: React.FC<FavoritesPageProps> = ({ onNavigate }) => {
+    const [allTrips, setAllTrips] = useState<any[]>([]);
     const [favoriteTrips, setFavoriteTrips] = useState<any[]>([]);
 
     const loadFavorites = () => {
         const storedFavorites = localStorage.getItem('favoriteTrips');
-        const favoriteIds: number[] = storedFavorites ? JSON.parse(storedFavorites) : [];
-        const favorited = allSearchResults.filter(trip => favoriteIds.includes(trip.id));
+        const favoriteIds: string[] = storedFavorites ? JSON.parse(storedFavorites) : [];
+        
+        const processedTrips = allTrips.map(trip => ({
+            id: trip._id,
+            company: trip.route.company.name,
+            departureTime: new Date(trip.departureTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
+            arrivalTime: new Date(trip.arrivalTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
+            durationMinutes: trip.route.estimatedDurationMinutes,
+            basePrice: trip.route.basePrice,
+            dynamicPrice: trip.route.basePrice,
+            availableSeats: Object.values(trip.seatMap).filter(s => s === 'available').length,
+            amenities: trip.bus.amenities,
+        }));
+
+        const favorited = processedTrips.filter(trip => favoriteIds.includes(trip.id));
         setFavoriteTrips(favorited);
     };
 
     useEffect(() => {
-        loadFavorites();
+        const fetchAllTrips = async () => {
+            try {
+                // Fetch common routes to act as a pool of all trips for this demo
+                const [kigaliRubavu, kigaliHuye] = await Promise.all([
+                    api.searchTrips('Kigali', 'Rubavu', new Date().toISOString().split('T')[0]),
+                    api.searchTrips('Kigali', 'Huye', new Date().toISOString().split('T')[0]),
+                ]);
+                setAllTrips([...kigaliRubavu, ...kigaliHuye]);
+            } catch (e) {
+                console.error("Failed to fetch trips for favorites", e);
+            }
+        };
+        fetchAllTrips();
+    }, []);
+
+    useEffect(() => {
+        if(allTrips.length > 0) {
+            loadFavorites();
+        }
         // Listen for changes from other tabs/windows
         window.addEventListener('storage', loadFavorites);
         // Listen for changes from the same tab (e.g., from search results page)
@@ -28,11 +61,12 @@ const FavoritesPage: React.FC<FavoritesPageProps> = ({ onNavigate }) => {
             window.removeEventListener('storage', loadFavorites);
             window.removeEventListener('favoritesChanged', loadFavorites);
         };
-    }, []);
+    }, [allTrips]);
 
-    const toggleFavorite = (tripId: number) => {
+    // FIX: Changed tripId from number to string to match backend _id
+    const toggleFavorite = (tripId: string) => {
         const storedFavorites = localStorage.getItem('favoriteTrips');
-        let favoriteIds: number[] = storedFavorites ? JSON.parse(storedFavorites) : [];
+        let favoriteIds: string[] = storedFavorites ? JSON.parse(storedFavorites) : [];
         // On this page, toggling always means removing
         favoriteIds = favoriteIds.filter(id => id !== tripId);
         localStorage.setItem('favoriteTrips', JSON.stringify(favoriteIds));
@@ -55,7 +89,7 @@ const FavoritesPage: React.FC<FavoritesPageProps> = ({ onNavigate }) => {
                              <SearchResultCard 
                                 key={trip.id} 
                                 result={trip} 
-                                onSelect={() => onNavigate('seatSelection', trip)}
+                                onSelect={() => onNavigate('seatSelection', { tripId: trip.id })}
                                 isFavorite={true}
                                 onToggleFavorite={() => toggleFavorite(trip.id)}
                                 style={{ animationDelay: `${index * 100}ms` }}

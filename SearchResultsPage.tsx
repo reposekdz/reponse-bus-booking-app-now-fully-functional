@@ -7,7 +7,7 @@ interface SearchResultsPageProps {
 }
 
 const SearchResultsPage: React.FC<SearchResultsPageProps> = ({ results, onTripSelect }) => {
-  const [favoriteTrips, setFavoriteTrips] = useState<number[]>([]);
+  const [favoriteTrips, setFavoriteTrips] = useState<string[]>([]);
 
   useEffect(() => {
     const storedFavorites = localStorage.getItem('favoriteTrips');
@@ -16,7 +16,7 @@ const SearchResultsPage: React.FC<SearchResultsPageProps> = ({ results, onTripSe
     }
   }, []);
 
-  const toggleFavorite = (tripId: number) => {
+  const toggleFavorite = (tripId: string) => {
     const newFavorites = favoriteTrips.includes(tripId)
       ? favoriteTrips.filter(id => id !== tripId)
       : [...favoriteTrips, tripId];
@@ -44,8 +44,8 @@ const SearchResultsPage: React.FC<SearchResultsPageProps> = ({ results, onTripSe
                 ))
             ) : (
                 <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-xl shadow-lg">
-                    <h3 className="text-xl font-bold text-gray-800 dark:text-white">Nta Ngendo Zibonetse</h3>
-                    <p className="text-gray-500 dark:text-gray-400 mt-2">Gerageza guhindura ibyo washatse.</p>
+                    <h3 className="text-xl font-bold text-gray-800 dark:text-white">No Trips Found</h3>
+                    <p className="text-gray-500 dark:text-gray-400 mt-2">Try adjusting your search filters or date.</p>
                 </div>
             )}
         </div>

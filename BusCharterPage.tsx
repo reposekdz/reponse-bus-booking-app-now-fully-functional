@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Page } from './App';
 import { ArrowRightIcon, CheckCircleIcon, ChevronRightIcon } from './components/icons';
-import { mockCompaniesData } from './admin/AdminDashboard';
+import { mockCompaniesData } from './lib/api';
 
 const STEPS = ['Select Company', 'Trip Details', 'Contact Info', 'Confirmation'];
 

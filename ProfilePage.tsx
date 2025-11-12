@@ -1,24 +1,28 @@
-
 import React, { useState, useRef } from 'react';
 import { Page } from './App';
-import { CameraIcon, TicketIcon, WalletIcon, StarIcon, BellAlertIcon, SparklesIcon, CogIcon, ArrowRightIcon, UserCircleIcon, PhoneIcon, EnvelopeIcon } from './components/icons';
+import { CameraIcon, TicketIcon, WalletIcon, StarIcon, BellAlertIcon, SparklesIcon, CogIcon } from './components/icons';
 import WalletTopUpModal from './components/WalletTopUpModal';
-import { useLanguage } from './contexts/LanguageContext';
+import { useLanguage } from '../contexts/LanguageContext';
+import { useAuth } from '../contexts/AuthContext';
 
 interface ProfilePageProps {
   onNavigate: (page: Page, data?: any) => void;
-  user: any;
-  setUser: (fn: (user: any) => any) => void;
 }
 
-const ProfilePage: React.FC<ProfilePageProps> = ({ onNavigate, user, setUser }) => {
+const ProfilePage: React.FC<ProfilePageProps> = ({ onNavigate }) => {
   const { t } = useLanguage();
+  const { user, setUser: setAuthUser } = useAuth(); // setUser from auth context is not implemented here
   const [isTopUpOpen, setIsTopUpOpen] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
+  
+  // Local state to manage UI changes like photo uploads, since we don't have a backend for it.
+  const [profileData, setProfileData] = useState(user);
+
 
   const handleTopUpSuccess = (amount: number) => {
-    setUser(prev => ({ ...prev, walletBalance: (prev.walletBalance || 0) + amount }));
+    // This is a simulation. In a real app, the user object would be refetched.
+    setProfileData(prev => ({ ...prev, walletBalance: (prev.walletBalance || 0) + amount }));
     setIsTopUpOpen(false);
     alert(`Successfully added ${new Intl.NumberFormat('fr-RW').format(amount)} RWF to your wallet!`);
   };
@@ -30,9 +34,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onNavigate, user, setUser }) 
         reader.onload = () => {
             const url = reader.result as string;
             if (type === 'avatar') {
-                setUser(prev => ({...prev, avatarUrl: url}));
+                setProfileData(prev => ({...prev, avatarUrl: url}));
             } else {
-                setUser(prev => ({...prev, coverUrl: url}));
+                setProfileData(prev => ({...prev, coverUrl: url}));
             }
         };
         reader.readAsDataURL(file);
@@ -40,7 +44,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onNavigate, user, setUser }) 
   };
 
 
-  if (!user) {
+  if (!profileData) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
         <h1 className="text-2xl font-bold mb-4 dark:text-white">You are not logged in.</h1>
@@ -63,7 +67,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onNavigate, user, setUser }) 
             <div className="container mx-auto px-6 max-w-4xl py-12">
                  <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
                     <div className="h-40 bg-blue-600 relative group">
-                        <img src={user.coverUrl} alt="Cover" className="w-full h-full object-cover"/>
+                        <img src={profileData.coverUrl} alt="Cover" className="w-full h-full object-cover"/>
                         <div className="absolute inset-0 bg-black/30"></div>
                          <button onClick={() => coverInputRef.current?.click()} className="absolute top-2 right-2 flex items-center text-xs bg-black/40 text-white px-2 py-1 rounded-full hover:bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity">
                             <CameraIcon className="w-4 h-4 mr-1"/> Edit Cover
@@ -73,26 +77,26 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onNavigate, user, setUser }) 
                     <div className="px-6 pb-6">
                         <div className="flex flex-col sm:flex-row items-center -mt-16">
                             <div className="relative group">
-                                <img src={user.avatarUrl} alt={user.name} className="w-32 h-32 rounded-full border-4 border-white dark:border-gray-800 object-cover"/>
+                                <img src={profileData.avatarUrl} alt={profileData.name} className="w-32 h-32 rounded-full border-4 border-white dark:border-gray-800 object-cover"/>
                                 <button onClick={() => avatarInputRef.current?.click()} className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity">
                                     <CameraIcon className="w-6 h-6"/>
                                 </button>
                                 <input type="file" ref={avatarInputRef} onChange={(e) => handleFileChange(e, 'avatar')} className="hidden" accept="image/*" />
                             </div>
                             <div className="sm:ml-6 mt-4 sm:mt-16 text-center sm:text-left">
-                                <h1 className="text-3xl font-bold text-gray-800 dark:text-white">{user.name}</h1>
-                                <p className="text-gray-600 dark:text-gray-400">{user.email}</p>
+                                <h1 className="text-3xl font-bold text-gray-800 dark:text-white">{profileData.name}</h1>
+                                <p className="text-gray-600 dark:text-gray-400">{profileData.email}</p>
                             </div>
                         </div>
                         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-4 rounded-xl shadow-lg">
                                 <p className="text-sm font-semibold opacity-80">Wallet Balance</p>
-                                <p className="text-3xl font-bold">{new Intl.NumberFormat('fr-RW').format(user.walletBalance)} RWF</p>
+                                <p className="text-3xl font-bold">{new Intl.NumberFormat('fr-RW').format(profileData.walletBalance)} RWF</p>
                                 <button onClick={() => setIsTopUpOpen(true)} className="mt-2 text-xs font-bold bg-white/20 px-3 py-1 rounded-full hover:bg-white/30">Add Funds</button>
                             </div>
                             <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white p-4 rounded-xl shadow-lg">
                                 <p className="text-sm font-semibold opacity-80">Loyalty Points</p>
-                                <p className="text-3xl font-bold">{new Intl.NumberFormat().format(user.loyaltyPoints)}</p>
+                                <p className="text-3xl font-bold">{new Intl.NumberFormat().format(profileData.loyaltyPoints)}</p>
                                 <button onClick={() => onNavigate('loyalty')} className="mt-2 text-xs font-bold bg-white/20 px-3 py-1 rounded-full hover:bg-white/30">View Rewards</button>
                             </div>
                         </div>
@@ -115,7 +119,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onNavigate, user, setUser }) 
             <WalletTopUpModal 
                 onClose={() => setIsTopUpOpen(false)}
                 onSuccess={handleTopUpSuccess}
-                userPin={user.pin}
+                userPin={profileData.pin || '1234'}
             />
         )}
     </>

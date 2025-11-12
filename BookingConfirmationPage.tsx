@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef } from 'react';
 import html2canvas from 'html2canvas';
 import { Page } from './App';
 import { CheckCircleIcon, ArrowUpTrayIcon, TicketIcon, ArrowRightIcon } from './components/icons';
@@ -35,23 +35,8 @@ const QRCode: React.FC<{ value: string; size: number }> = ({ value, size }) => {
 };
 
 
-const BookingConfirmationPage: React.FC<{ bookingDetails: any, onNavigate: (page: Page) => void, setUser: (fn: (user: any) => any) => void }> = ({ bookingDetails, onNavigate, setUser }) => {
+const BookingConfirmationPage: React.FC<{ bookingDetails: any, onNavigate: (page: Page) => void }> = ({ bookingDetails, onNavigate }) => {
     const ticketRef = useRef<HTMLDivElement>(null);
-    const pointsAlreadyAdded = useRef(false);
-
-    useEffect(() => {
-        if (bookingDetails && setUser && !pointsAlreadyAdded.current) {
-            const { pointsEarned, pointsUsed } = bookingDetails;
-            setUser(prevUser => {
-                if (!prevUser) return null;
-                return {
-                    ...prevUser,
-                    loyaltyPoints: (prevUser.loyaltyPoints || 0) + (pointsEarned || 0) - (pointsUsed || 0)
-                };
-            });
-            pointsAlreadyAdded.current = true;
-        }
-    }, [bookingDetails, setUser]);
 
     const handleDownload = () => {
         if (ticketRef.current) {
@@ -65,7 +50,14 @@ const BookingConfirmationPage: React.FC<{ bookingDetails: any, onNavigate: (page
     };
     
     if (!bookingDetails) {
-        return <div className="p-8 text-center">No booking details found. Please try again.</div>
+        // This can happen if the page is refreshed.
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center text-center p-4">
+                 <h1 className="text-2xl font-bold mb-4 dark:text-white">Booking Confirmed!</h1>
+                <p className="text-gray-600 dark:text-gray-400 mb-4">Your booking details have been sent to your email.</p>
+                <button onClick={() => onNavigate('bookings')} className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">View My Bookings</button>
+            </div>
+        )
     }
 
     return (
@@ -75,11 +67,6 @@ const BookingConfirmationPage: React.FC<{ bookingDetails: any, onNavigate: (page
                     <CheckCircleIcon className="w-16 h-16 text-green-500 mx-auto mb-4"/>
                     <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white">Booking Confirmed!</h1>
                     <p className="mt-2 text-lg text-gray-600 dark:text-gray-400">Your trip is scheduled. Your e-ticket is ready below.</p>
-                     {bookingDetails.pointsEarned > 0 && (
-                        <p className="mt-2 text-lg text-green-500 dark:text-green-400 font-semibold">
-                            You earned {bookingDetails.pointsEarned} GoPoints!
-                        </p>
-                    )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -99,10 +86,10 @@ const BookingConfirmationPage: React.FC<{ bookingDetails: any, onNavigate: (page
                             <div className="flex flex-col sm:flex-row mt-6">
                                 <div className="flex-grow space-y-4">
                                      <div><p className="text-xs uppercase text-gray-400">Passenger</p><p className="font-semibold text-lg">{bookingDetails.passengerName}</p></div>
-                                     <div><p className="text-xs uppercase text-gray-400">Date</p><p className="font-semibold text-lg">{new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric'})}</p></div>
+                                     <div><p className="text-xs uppercase text-gray-400">Date</p><p className="font-semibold text-lg">{new Date(bookingDetails.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric'})}</p></div>
                                      <div className="flex space-x-8">
                                         <div><p className="text-xs uppercase text-gray-400">Time</p><p className="font-semibold text-lg">{bookingDetails.departureTime}</p></div>
-                                        <div><p className="text-xs uppercase text-gray-400">Seats</p><p className="font-semibold text-lg">{bookingDetails.seats}</p></div>
+                                        <div><p className="text-xs uppercase text-gray-400">Seats</p><p className="font-semibold text-lg">{Array.isArray(bookingDetails.seats) ? bookingDetails.seats.join(', ') : bookingDetails.seats}</p></div>
                                      </div>
                                 </div>
                                 <div className="flex-shrink-0 mt-6 sm:mt-0 sm:ml-6">

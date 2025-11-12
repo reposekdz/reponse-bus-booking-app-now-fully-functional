@@ -2,11 +2,11 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Page } from '../App';
 import { GoBusLogo, SunIcon, MoonIcon, MenuIcon, XIcon, UserCircleIcon, TicketIcon, LanguageIcon, ChevronDownIcon, WalletIcon, BusIcon, BellIcon, TagIcon, StarIcon, BellAlertIcon, SparklesIcon } from './icons';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useAuth } from '../contexts/AuthContext';
 
 interface HeaderProps {
   currentPage: Page;
   onNavigate: (page: Page) => void;
-  user: any | null;
   onLogout: () => void;
   theme: 'light' | 'dark';
   setTheme: (theme: 'light' | 'dark') => void;
@@ -29,17 +29,29 @@ const DropdownMenu: React.FC<{isOpen: boolean; children: React.ReactNode; classN
     </div>
 );
 
-const Header: React.FC<HeaderProps> = ({ currentPage, onNavigate, user, onLogout, theme, setTheme }) => {
+// Mock notifications
+const mockNotifications = [
+    { id: 1, type: 'reminder', message: 'Your trip to Rubavu is tomorrow at 07:00.', read: false, icon: TicketIcon },
+    { id: 2, type: 'promotion', message: 'Get 10% off on all weekend trips. Use code WEEKEND10.', read: false, icon: TagIcon },
+    { id: 3, type: 'delay', message: 'Trip VK-124 to Huye is delayed by 15 minutes.', read: true, icon: BellAlertIcon },
+];
+
+
+const Header: React.FC<HeaderProps> = ({ currentPage, onNavigate, onLogout, theme, setTheme }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLangOpen, setIsLangOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [notifications, setNotifications] = useState(mockNotifications);
   
   const langRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
 
   const { language, setLanguage, t, languages } = useLanguage();
+  const { user } = useAuth();
+
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   const toggleTheme = () => setTheme(theme === 'light' ? 'dark' : 'light');
 
@@ -47,6 +59,24 @@ const Header: React.FC<HeaderProps> = ({ currentPage, onNavigate, user, onLogout
     setLanguage(lang.code);
     setIsLangOpen(false);
   };
+
+  const markAsRead = (id: number) => {
+      setNotifications(notifications.map(n => n.id === id ? {...n, read: true} : n));
+  };
+  
+  const markAllAsRead = () => {
+      setNotifications(notifications.map(n => ({...n, read: true})));
+  }
+
+  // Simulate receiving a new notification via WebSocket
+  useEffect(() => {
+      const notificationInterval = setInterval(() => {
+          const newNotif = { id: Date.now(), type: 'info', message: `New bus schedule added for Volcano Express.`, read: false, icon: BusIcon };
+          setNotifications(prev => [newNotif, ...prev]);
+      }, 30000); // New notification every 30 seconds
+      
+      return () => clearInterval(notificationInterval);
+  }, []);
 
   const currentLang = languages.find(l => l.code === language);
   
@@ -110,28 +140,27 @@ const Header: React.FC<HeaderProps> = ({ currentPage, onNavigate, user, onLogout
           <div className="relative hidden sm:block" ref={notificationsRef}>
             <button onClick={() => setIsNotificationsOpen(!isNotificationsOpen)} className="p-2 rounded-full hover:bg-white/10 relative">
               <BellIcon className="w-5 h-5" />
-              <span className="absolute top-1 right-1 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white/20"></span>
+              {unreadCount > 0 && (
+                <span className="absolute top-1 right-1 block h-4 w-4 text-xs font-bold flex items-center justify-center rounded-full bg-red-500 ring-2 ring-white/20">{unreadCount}</span>
+              )}
             </button>
             <DropdownMenu isOpen={isNotificationsOpen} className="w-80">
-                <div className="p-3 font-bold border-b border-white/20">Notifications</div>
-                <div className="py-2 max-h-64 overflow-y-auto">
-                    <div className="px-4 py-3 text-sm hover:bg-white/20 flex items-start space-x-3">
-                        <TicketIcon className="w-5 h-5 text-yellow-300 mt-0.5"/>
-                        <div>
-                            <p className="font-semibold">Trip Reminder</p>
-                            <p className="text-xs opacity-80">Your trip to Rubavu is tomorrow at 07:00.</p>
-                        </div>
-                    </div>
-                     <div className="px-4 py-3 text-sm hover:bg-white/20 flex items-start space-x-3">
-                         <TagIcon className="w-5 h-5 text-yellow-300 mt-0.5"/>
-                         <div>
-                            <p className="font-semibold text-yellow-300">Promotion!</p>
-                            <p className="text-xs opacity-80">Get 10% off on all weekend trips. Use code WEEKEND10.</p>
-                        </div>
-                    </div>
+                <div className="p-3 flex justify-between items-center font-bold border-b border-white/20">
+                    <span>Notifications</span>
+                    <button onClick={markAllAsRead} className="text-xs font-semibold text-blue-300 hover:underline">Mark all as read</button>
                 </div>
-                 <div className="p-2 border-t border-white/20 text-center">
-                    <button className="text-xs font-semibold">View All</button>
+                <div className="py-2 max-h-80 overflow-y-auto custom-scrollbar">
+                    {notifications.map(notif => (
+                        <div key={notif.id} className={`px-4 py-3 text-sm flex items-start space-x-3 transition-colors ${!notif.read ? 'bg-blue-900/20' : ''}`}>
+                            <notif.icon className="w-5 h-5 text-yellow-300 mt-0.5"/>
+                            <div className="flex-1">
+                                <p className="font-semibold">{notif.message}</p>
+                            </div>
+                            {!notif.read && (
+                                <button onClick={() => markAsRead(notif.id)} data-tooltip="Mark as read" className="w-3 h-3 mt-1.5 rounded-full bg-blue-400 hover:bg-blue-200"></button>
+                            )}
+                        </div>
+                    ))}
                 </div>
             </DropdownMenu>
           </div>
@@ -145,6 +174,7 @@ const Header: React.FC<HeaderProps> = ({ currentPage, onNavigate, user, onLogout
              <div className="relative" ref={notificationsRef}>
                 <button onClick={() => setIsNotificationsOpen(!isNotificationsOpen)} className="p-2 rounded-full hover:bg-white/10">
                     <BellIcon className="w-5 h-5"/>
+                     {unreadCount > 0 && <span className="absolute top-1 right-1 block h-2 w-2 rounded-full bg-red-500"></span>}
                 </button>
             </div>
           </div>
@@ -160,13 +190,16 @@ const Header: React.FC<HeaderProps> = ({ currentPage, onNavigate, user, onLogout
                         <p className="font-bold">{user.name}</p>
                         <p className="text-xs opacity-80">{user.email}</p>
                     </div>
-                     <div className="p-4 border-b border-white/20">
-                        <p className="text-xs font-semibold opacity-80">Wallet Balance</p>
-                        <p className="font-bold text-xl text-green-300">{new Intl.NumberFormat('fr-RW').format(user.walletBalance)} RWF</p>
-                    </div>
+                     {user.walletBalance !== undefined && (
+                        <button onClick={() => { onNavigate('wallet'); setIsUserMenuOpen(false); }} className="p-4 border-b border-white/20 w-full text-left hover:bg-white/10">
+                            <p className="text-xs font-semibold opacity-80">Wallet Balance</p>
+                            <p className="font-bold text-xl text-green-300">{new Intl.NumberFormat('fr-RW').format(user.walletBalance)} RWF</p>
+                        </button>
+                     )}
                     <div className="py-2">
                         <button onClick={() => { onNavigate('profile'); setIsUserMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm hover:bg-white/20 flex items-center"><UserCircleIcon className="w-5 h-5 mr-3"/> {t('usermenu_profile')}</button>
                         <button onClick={() => { onNavigate('bookings'); setIsUserMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm hover:bg-white/20 flex items-center"><TicketIcon className="w-5 h-5 mr-3"/> {t('usermenu_bookings')}</button>
+                        <button onClick={() => { onNavigate('wallet'); setIsUserMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm hover:bg-white/20 flex items-center"><WalletIcon className="w-5 h-5 mr-3"/> My Wallet</button>
                         <button onClick={() => { onNavigate('loyalty'); setIsUserMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm hover:bg-white/20 flex items-center"><SparklesIcon className="w-5 h-5 mr-3"/> My GoPoints</button>
                         <button onClick={() => { onNavigate('priceAlerts'); setIsUserMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm hover:bg-white/20 flex items-center"><BellAlertIcon className="w-5 h-5 mr-3"/> Price Alerts</button>
                         <button onClick={() => { onNavigate('favorites'); setIsUserMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm hover:bg-white/20 flex items-center"><StarIcon className="w-5 h-5 mr-3"/> My Favorites</button>

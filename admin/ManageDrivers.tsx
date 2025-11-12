@@ -1,20 +1,20 @@
 
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BusIcon, SearchIcon, PlusIcon, PencilSquareIcon, TrashIcon, EyeIcon } from '../components/icons';
 import { Page } from '../App';
-import { mockDriversData, mockCompaniesData } from './AdminDashboard';
+import * as api from '../services/apiService';
 import Modal from '../components/Modal';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 
+// Form component
 const DriverForm = ({ driver, companies, onSave, onCancel }) => {
     const [formData, setFormData] = useState({
         name: '',
+        email: '',
         phone: '',
-        companyId: companies[0]?.id || '',
-        assignedBusId: '',
-        status: 'Active',
-        avatarUrl: 'https://randomuser.me/api/portraits/lego/1.jpg',
+        companyId: companies[0]?._id || '',
         ...driver
     });
 
@@ -25,7 +25,9 @@ const DriverForm = ({ driver, companies, onSave, onCancel }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        onSave(formData);
+        // For new drivers, we add a default password. Backend should handle this better.
+        const payload = driver ? formData : { ...formData, password: 'password' };
+        onSave(payload);
     };
 
     return (
@@ -34,6 +36,10 @@ const DriverForm = ({ driver, companies, onSave, onCancel }) => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Driver Name</label>
                 <input type="text" name="name" value={formData.name} onChange={handleChange} className="mt-1 w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" required />
             </div>
+             <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+                <input type="email" name="email" value={formData.email} onChange={handleChange} className="mt-1 w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" required />
+            </div>
             <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Phone</label>
                 <input type="text" name="phone" value={formData.phone} onChange={handleChange} className="mt-1 w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" required />
@@ -41,10 +47,10 @@ const DriverForm = ({ driver, companies, onSave, onCancel }) => {
             <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Company</label>
                 <select name="companyId" value={formData.companyId} onChange={handleChange} className="mt-1 w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600">
-                    {companies.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    {companies.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
                 </select>
             </div>
-            <div className="flex justify-end space-x-3 pt-4">
+             <div className="flex justify-end space-x-3 pt-4">
                 <button type="button" onClick={onCancel} className="px-4 py-2 text-sm font-semibold border rounded-lg dark:border-gray-600">Cancel</button>
                 <button type="submit" className="px-4 py-2 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700">Save Driver</button>
             </div>
@@ -54,36 +60,72 @@ const DriverForm = ({ driver, companies, onSave, onCancel }) => {
 
 
 const ManageDrivers: React.FC<{ navigate: (page: Page, data?: any) => void; }> = ({ navigate }) => {
-    const [drivers, setDrivers] = useState(mockDriversData);
+    const [drivers, setDrivers] = useState([]);
+    const [companies, setCompanies] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentDriver, setCurrentDriver] = useState(null);
+
+    const fetchAllData = async () => {
+        setIsLoading(true);
+        try {
+            const [driversData, companiesData] = await Promise.all([api.adminGetAllDrivers(), api.getCompanies()]);
+            setDrivers(driversData);
+            setCompanies(companiesData);
+            setError(null);
+        } catch (err) {
+            setError("Failed to fetch data. Please try again later.");
+            console.error(err);
+        } finally {
+            setIsLoading(false);
+        }
+    };
     
-    const getCompanyName = (companyId: string) => mockCompaniesData.find(c => c.id === companyId)?.name || companyId;
+    useEffect(() => {
+        fetchAllData();
+    }, []);
     
     const openModal = (driver = null) => {
         setCurrentDriver(driver);
         setIsModalOpen(true);
     };
 
-    const handleSave = (driverData) => {
-        if (currentDriver) {
-            setDrivers(drivers.map(d => d.id === currentDriver.id ? { ...d, ...driverData } : d));
-        } else {
-            setDrivers([...drivers, { ...driverData, id: `driver-${Date.now()}` }]);
-        }
+    const handleSave = async (driverData) => {
         setIsModalOpen(false);
+        setIsLoading(true);
+        try {
+            if (currentDriver) {
+                await api.adminUpdateDriver(currentDriver._id, driverData);
+            } else {
+                await api.adminCreateDriver(driverData);
+            }
+            await fetchAllData();
+        } catch (err) {
+            setError(`Failed to save driver: ${err.message}`);
+        } finally {
+            setIsLoading(false);
+        }
     };
     
-    const handleDelete = (id) => {
+    const handleDelete = async (id) => {
         if(window.confirm('Are you sure you want to delete this driver?')) {
-            setDrivers(drivers.filter(d => d.id !== id));
+            setIsLoading(true);
+            try {
+                await api.adminDeleteDriver(id);
+                await fetchAllData();
+            } catch (err) {
+                setError(`Failed to delete driver: ${err.message}`);
+            } finally {
+                setIsLoading(false);
+            }
         }
     };
-
-
+    
     return (
         <div>
+            {isLoading && <LoadingSpinner />}
             <h1 className="text-3xl font-bold dark:text-gray-200 mb-6">Manage Drivers</h1>
             <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-lg">
                  <div className="flex justify-between items-center mb-4">
@@ -102,21 +144,22 @@ const ManageDrivers: React.FC<{ navigate: (page: Page, data?: any) => void; }> =
                     </button>
                 </div>
 
+                {error && <div className="text-red-500 bg-red-100 p-3 rounded-md mb-4">{error}</div>}
+
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left">
                         <thead className="text-xs text-gray-500 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                             <tr>
                                 <th className="p-3">Driver Name</th>
                                 <th className="p-3">Company</th>
-                                <th className="p-3">Rating</th>
-                                <th className="p-3">On-Time %</th>
+                                <th className="p-3">Phone</th>
                                 <th className="p-3">Status</th>
                                 <th className="p-3">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {drivers.filter(d => d.name.toLowerCase().includes(searchTerm.toLowerCase())).map(driver => (
-                                <tr key={driver.id} className="border-t dark:border-gray-700">
+                                <tr key={driver._id} className="border-t dark:border-gray-700">
                                     <td className="p-3 font-semibold dark:text-white">
                                         <div className="flex items-center space-x-3">
                                             <img src={driver.avatarUrl} alt={driver.name} className="w-8 h-8 rounded-full object-cover"/>
@@ -125,18 +168,17 @@ const ManageDrivers: React.FC<{ navigate: (page: Page, data?: any) => void; }> =
                                             </button>
                                         </div>
                                     </td>
-                                    <td>{getCompanyName(driver.companyId)}</td>
-                                    <td className="font-semibold dark:text-gray-300">{driver.performance.averageRating || 'N/A'}/5</td>
-                                    <td className="font-semibold text-green-600 dark:text-green-400">{driver.performance.onTimeRate || 'N/A'}%</td>
+                                    <td>{driver.company?.name || 'N/A'}</td>
+                                    <td>{driver.phone || 'N/A'}</td>
                                     <td>
-                                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${driver.status === 'Active' ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300'}`}>
+                                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${driver.status === 'Active' ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300'}`}>
                                             {driver.status}
                                         </span>
                                     </td>
                                     <td className="flex space-x-1 p-3">
                                         <button onClick={() => navigate('driverProfile', driver)} className="p-1 text-gray-500 hover:text-green-600" title="View Profile"><EyeIcon className="w-5 h-5"/></button>
                                         <button onClick={() => openModal(driver)} className="p-1 text-gray-500 hover:text-blue-600"><PencilSquareIcon className="w-5 h-5"/></button>
-                                        <button onClick={() => handleDelete(driver.id)} className="p-1 text-gray-500 hover:text-red-600"><TrashIcon className="w-5 h-5"/></button>
+                                        <button onClick={() => handleDelete(driver._id)} className="p-1 text-gray-500 hover:text-red-600"><TrashIcon className="w-5 h-5"/></button>
                                     </td>
                                 </tr>
                             ))}
@@ -145,7 +187,7 @@ const ManageDrivers: React.FC<{ navigate: (page: Page, data?: any) => void; }> =
                 </div>
             </div>
              <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={currentDriver ? "Edit Driver" : "Add New Driver"}>
-                <DriverForm driver={currentDriver} companies={mockCompaniesData} onSave={handleSave} onCancel={() => setIsModalOpen(false)} />
+                <DriverForm driver={currentDriver} companies={companies} onSave={handleSave} onCancel={() => setIsModalOpen(false)} />
             </Modal>
         </div>
     );

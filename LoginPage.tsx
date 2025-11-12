@@ -1,15 +1,30 @@
 import React, { useState } from 'react';
 import type { Page } from './App';
-import { EyeIcon, EyeOffIcon, LockClosedIcon, GoogleIcon, FacebookIcon } from './components/icons';
+import { EyeIcon, EyeOffIcon, LockClosedIcon, GoogleIcon } from './components/icons';
+import { useAuth } from './contexts/AuthContext';
 
 interface LoginPageProps {
   onNavigate: (page: Page) => void;
-  onLogin: (role: 'passenger' | 'company' | 'admin' | 'driver' | 'agent') => void;
 }
 
-const LoginPage: React.FC<LoginPageProps> = ({ onNavigate, onLogin }) => {
+const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
   const [showPassword, setShowPassword] = useState(false);
-  const [role, setRole] = useState<'passenger' | 'company' | 'admin' | 'driver' | 'agent'>('passenger');
+  const [email, setEmail] = useState('passenger@gobus.rw');
+  const [password, setPassword] = useState('password');
+  const [error, setError] = useState('');
+
+  const { login, isLoading } = useAuth();
+
+  const handleLogin = async (e: React.FormEvent) => {
+      e.preventDefault();
+      setError('');
+      try {
+          await login({ email, password });
+          // The App component will handle navigation based on the user's role
+      } catch (err) {
+          setError(err.message || 'Login failed. Please check your credentials.');
+      }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50 dark:bg-gray-900">
@@ -20,38 +35,33 @@ const LoginPage: React.FC<LoginPageProps> = ({ onNavigate, onLogin }) => {
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Ikaze!</h2>
           <p className="text-gray-600 dark:text-gray-400 mb-8">Injira muri konti yawe kugirango ukomeze.</p>
           
-          <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); onLogin(role); }}>
+          <form className="space-y-6" onSubmit={handleLogin}>
             <div className="relative">
               <label htmlFor="email-address" className="sr-only">Imeri</label>
-              <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-                <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                  <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-                </svg>
-              </span>
-              <input id="email-address" name="email" type="email" autoComplete="email" required className="w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500/50 transition" placeholder="Imeri" defaultValue={`${role}@rwandabus.rw`} />
+              <input id="email-address" name="email" type="email" autoComplete="email" required 
+                className="w-full pl-4 pr-3 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500/50 transition" 
+                placeholder="Imeri" 
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+              />
             </div>
             <div className="relative">
               <label htmlFor="password" className="sr-only">Ijambobanga</label>
-              <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-                <LockClosedIcon className="h-5 w-5 text-gray-400" />
-              </span>
-              <input id="password" name="password" type={showPassword ? 'text' : 'password'} autoComplete="current-password" required className="w-full pl-10 pr-10 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500/50 transition" placeholder="Ijambobanga" defaultValue="password" />
+              <input id="password" name="password" type={showPassword ? 'text' : 'password'} autoComplete="current-password" required 
+                className="w-full pl-4 pr-10 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500/50 transition" 
+                placeholder="Ijambobanga" 
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+              />
               <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 dark:text-gray-400">
                 {showPassword ? <EyeOffIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
               </button>
             </div>
-             <div className="text-xs text-gray-500">For Demo: select role to login as.</div>
-             <select value={role} onChange={e => setRole(e.target.value as any)} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:text-white">
-                <option value="passenger">Passenger</option>
-                <option value="company">Company</option>
-                <option value="driver">Driver</option>
-                <option value="agent">Agent</option>
-                <option value="admin">Admin</option>
-             </select>
+             <p className="text-xs text-gray-400">Demo Emails: passenger@gobus.rw, company@gobus.rw, driver1@gobus.rw, admin@gobus.rw (password: "password")</p>
+             {error && <p className="text-red-500 text-sm font-semibold">{error}</p>}
             <div>
-              <button type="submit" className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-md text-[#0033A0] bg-gradient-to-r from-yellow-400 to-yellow-500 hover:saturate-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-all duration-300 shadow-lg transform hover:-translate-y-0.5">
-                Injira
+              <button type="submit" disabled={isLoading} className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-md text-[#0033A0] bg-gradient-to-r from-yellow-400 to-yellow-500 hover:saturate-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-all duration-300 shadow-lg transform hover:-translate-y-0.5 disabled:opacity-50">
+                {isLoading ? 'Logging in...' : 'Injira'}
               </button>
             </div>
           </form>

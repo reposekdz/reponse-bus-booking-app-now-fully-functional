@@ -1,9 +1,10 @@
 
+
 import React, { useState, useMemo } from 'react';
 import StarRating from './components/StarRating';
 import { SearchIcon, ChevronRightIcon, StarIcon } from './components/icons';
 import type { Page } from './App';
-import { mockCompaniesData } from './admin/AdminDashboard';
+import { mockCompaniesData } from './lib/api';
 
 interface CompaniesPageProps {
   onNavigate: (page: Page, data?: any) => void;

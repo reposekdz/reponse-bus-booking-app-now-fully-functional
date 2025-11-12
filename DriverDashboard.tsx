@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { SunIcon, MoonIcon, CogIcon, UsersIcon, ChartBarIcon, QrCodeIcon, ChartPieIcon, ClipboardDocumentListIcon, WrenchScrewdriverIcon, MegaphoneIcon, CalendarIcon, ChatBubbleLeftRightIcon, CheckCircleIcon } from './components/icons';
+import { SunIcon, MoonIcon, CogIcon, UsersIcon, ChartBarIcon, QrCodeIcon, ChartPieIcon, ClipboardDocumentListIcon, WrenchScrewdriverIcon, MegaphoneIcon, CalendarIcon, ChatBubbleLeftRightIcon, CheckCircleIcon, StarIcon, ShieldCheckIcon } from './components/icons';
 import { Page } from './App';
 import DriverSettingsPage from './DriverSettingsPage';
-import { mockCompaniesData } from './admin/AdminDashboard';
+import { mockCompaniesData } from './lib/api';
 import DriverPerformance from './components/DriverPerformance';
 import DriverTripHistory from './components/DriverTripHistory';
 import VehicleReportModal from './components/VehicleReportModal';
@@ -36,17 +36,24 @@ const mockAnnouncements = [
     { id: 2, text: "Heavy rain is expected on the Kigali-Huye route this afternoon. Please drive with extra caution.", date: "2024-10-27" }
 ];
 
-const mockMessages = [
-    { id: 1, from: 'Manager', text: 'John, please call me when you reach the Nyabugogo terminal.', time: '10:15 AM'},
-    { id: 2, from: 'You', text: 'Will do.', time: '10:16 AM'},
-];
-
 const checklistItems = [
     { id: 'tires', label: 'Check Tire Pressure' },
     { id: 'fuel', label: 'Verify Fuel Level' },
     { id: 'lights', label: 'Test Headlights & Signals' },
     { id: 'clean', label: 'Interior is Clean' },
 ];
+
+const StatCard = ({ title, value, icon: Icon }) => (
+    <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-lg flex items-center space-x-4">
+        <div className="p-3 bg-blue-100 dark:bg-blue-900/50 rounded-full">
+            <Icon className="w-7 h-7 text-blue-500" />
+        </div>
+        <div>
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">{value}</p>
+        </div>
+    </div>
+);
 
 const PreTripChecklist = ({ onComplete }) => {
     const [checkedItems, setCheckedItems] = useState<string[]>([]);
@@ -206,6 +213,14 @@ const DriverDashboard: React.FC<DriverDashboardProps> = ({ onLogout, theme, setT
                  return (
                     <div className="space-y-8">
                          <h1 className="text-3xl font-bold dark:text-gray-200">Dashboard</h1>
+
+                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <StatCard title="On-Time Rate" value={`${driverData.performance.onTimeRate}%`} icon={ChartPieIcon} />
+                            <StatCard title="Average Rating" value={`${driverData.performance.averageRating}/5`} icon={StarIcon} />
+                            <StatCard title="Safety Score" value={`${driverData.performance.safetyScore}%`} icon={ShieldCheckIcon} />
+                            <StatCard title="Total Trips" value={driverData.performance.totalTrips} icon={ClipboardDocumentListIcon} />
+                        </div>
+                        
                          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             <div className="lg:col-span-1">
                                 <PreTripChecklist onComplete={() => alert("Checklist confirmed! Trip can now start.")} />
@@ -246,19 +261,27 @@ const DriverDashboard: React.FC<DriverDashboardProps> = ({ onLogout, theme, setT
                                     ))}
                                 </div>
                             </div>
-                             <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-lg flex flex-col">
-                                <h2 className="text-xl font-bold dark:text-white mb-4 flex items-center"><ChatBubbleLeftRightIcon className="w-6 h-6 mr-3 text-purple-400"/> Direct Messages</h2>
-                                <div className="flex-grow space-y-3">
-                                    {mockMessages.map(msg => (
-                                        <div key={msg.id} className={`p-2 rounded-lg max-w-[80%] ${msg.from === 'Manager' ? 'bg-gray-200 dark:bg-gray-700 self-start' : 'bg-blue-500 text-white self-end'}`}>
-                                            <p className="text-sm">{msg.text}</p>
-                                            <p className={`text-xs mt-1 ${msg.from === 'Manager' ? 'text-gray-500 dark:text-gray-400' : 'text-blue-100'} text-right`}>{msg.time}</p>
+                            <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-lg">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h2 className="text-xl font-bold dark:text-white flex items-center"><ClipboardDocumentListIcon className="w-6 h-6 mr-3 text-purple-400"/> Recent History</h2>
+                                    <button onClick={() => setView('history')} className="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline">View All</button>
+                                </div>
+                                <div className="space-y-3">
+                                    {driverData.tripHistory.filter(trip => trip.status === 'Completed').slice(0, 3).map(trip => (
+                                        <div key={trip.id} className="flex justify-between items-center p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50">
+                                            <div>
+                                                <p className="font-semibold text-sm dark:text-white">{trip.route}</p>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400">{new Date(trip.date).toLocaleDateString()}</p>
+                                            </div>
+                                            <div className="text-right">
+                                                <span className="px-2 py-1 text-xs rounded-full font-bold bg-green-200 text-green-800 dark:bg-green-900 dark:text-green-300">Completed</span>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{trip.passengers} passengers</p>
+                                            </div>
                                         </div>
                                     ))}
-                                </div>
-                                <div className="mt-4 flex space-x-2">
-                                    <input type="text" placeholder="Reply to manager..." className="flex-grow p-2 text-sm border rounded-lg dark:bg-gray-700 dark:border-gray-600" />
-                                    <button className="px-4 bg-blue-600 text-white font-semibold rounded-lg">Send</button>
+                                    {driverData.tripHistory.filter(trip => trip.status === 'Completed').length === 0 && (
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">No completed trips found.</p>
+                                    )}
                                 </div>
                             </div>
                          </div>

@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext, ReactNode } from 'react';
 import { translations } from '../translations';
 
@@ -18,6 +19,7 @@ interface LanguageContextType {
 
 const defaultLanguage: LanguageCode = 'RW';
 
+// NOTE: This context is imported from the web folder. In a real monorepo, it would be in a shared package.
 export const LanguageContext = createContext<LanguageContextType>({
   language: defaultLanguage,
   setLanguage: () => {},

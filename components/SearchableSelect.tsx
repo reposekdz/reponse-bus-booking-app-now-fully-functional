@@ -1,5 +1,6 @@
+
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { LocationMarkerIcon, ChevronDownIcon } from './icons';
+import { MapPinIcon, ChevronDownIcon } from './icons';
 
 interface SearchableSelectProps {
   options: string[];
@@ -39,7 +40,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({ options, value, onC
 
   return (
     <div className="relative" ref={wrapperRef}>
-        <LocationMarkerIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 z-10" />
+        <MapPinIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 z-10" />
         <input
             type="text"
             className={formInputBaseClass}
