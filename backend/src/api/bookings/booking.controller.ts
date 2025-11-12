@@ -3,7 +3,7 @@ import * as bookingService from './booking.service';
 import asyncHandler from '../../utils/asyncHandler';
 
 // FIX: Removed explicit types to allow for correct type inference.
-export const createBooking = asyncHandler(async (req: any, res: Response) => {
+export const createBooking = asyncHandler(async (req: any, res) => {
     const bookingDetails = {
         tripId: req.body.tripId,
         seats: req.body.seats,
@@ -20,7 +20,7 @@ export const createBooking = asyncHandler(async (req: any, res: Response) => {
 });
 
 // FIX: Removed explicit types to allow for correct type inference.
-export const getMyBookings = asyncHandler(async (req: any, res: Response) => {
+export const getMyBookings = asyncHandler(async (req: any, res) => {
     const bookings = await bookingService.getBookingsForUser(req.user!._id);
 
     res.status(200).json({

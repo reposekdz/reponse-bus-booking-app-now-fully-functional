@@ -76,26 +76,6 @@ const AppContent: React.FC = () => {
   const { user, logout, isLoading } = useAuth();
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [viewingTicket, setViewingTicket] = useState<any | null>(null);
-  const [isSeeded, setIsSeeded] = useState(false);
-
-  // This will seed the database on first load for demonstration purposes.
-  useEffect(() => {
-      const seedDb = async () => {
-          try {
-              console.log("Seeding database...");
-              await api.seedDatabase();
-              console.log("Database seeded successfully.");
-              setIsSeeded(true);
-          } catch(e) {
-              console.warn("Database may already be seeded.", e.message);
-              setIsSeeded(true); // Assume it's okay
-          }
-      };
-      if (!isSeeded) {
-          seedDb();
-      }
-  }, [isSeeded]);
-  
 
   useEffect(() => {
     if (theme === 'dark') {
@@ -124,7 +104,7 @@ const AppContent: React.FC = () => {
       navigate('bookingSearch', { from, to, date });
   }
 
-  if (isLoading || !isSeeded) {
+  if (isLoading) {
       return <div className="min-h-screen flex items-center justify-center dark:bg-gray-900 dark:text-white">Loading Application...</div>;
   }
 

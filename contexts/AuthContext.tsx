@@ -1,13 +1,14 @@
 
+
 import React, { createContext, useState, useContext, ReactNode, useEffect, useCallback } from 'react';
 import * as api from '../services/apiService';
 
 interface AuthContextType {
   user: any | null;
   token: string | null;
-  // FIX: Add setUser to the context type to allow components to update the user state.
   setUser: React.Dispatch<React.SetStateAction<any | null>>;
   login: (credentials: any) => Promise<void>;
+  register: (userData: any) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
 }
@@ -45,6 +46,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     api.setAuthToken(newToken);
     setUser(userData);
   };
+  
+  const register = async (userData) => {
+    const { token: newToken, data: newUser } = await api.register(userData);
+    localStorage.setItem('authToken', newToken);
+    setToken(newToken);
+    api.setAuthToken(newToken);
+    setUser(newUser);
+  };
 
   const logout = () => {
     localStorage.removeItem('authToken');
@@ -54,8 +63,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   return (
-    // FIX: Expose setUser in the provider's value.
-    <AuthContext.Provider value={{ user, setUser, token, login, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, setUser, token, login, register, logout, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

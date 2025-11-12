@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import cors from 'cors';
 import apiRouter from './routes';
 import { errorHandler } from './middleware/error.middleware';
@@ -14,14 +14,14 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/v1', apiRouter);
 
 // Health Check
-// FIX: Removed explicit Request and Response types to allow for correct type inference from express.
-app.get('/health', (req, res) => {
+// FIX: Add explicit Request and Response types to resolve overload ambiguity.
+app.get('/health', (req: Request, res: Response) => {
     res.status(200).json({ status: 'UP' });
 });
 
 // 404 Handler
-// FIX: Removed explicit Request and Response types to allow for correct type inference from express.
-app.use((req, res) => {
+// FIX: Add explicit Request and Response types to resolve overload ambiguity.
+app.use((req: Request, res: Response) => {
     res.status(404).json({ message: 'Not Found' });
 });
 

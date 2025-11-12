@@ -1,4 +1,5 @@
 
+
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 // A more detailed User type for the mobile app
@@ -30,11 +31,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // In a real app, you'd also clear any stored tokens here
   };
 
-  return (
-    <AuthContext.Provider value={{ user, setUser, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  // FIX: Using React.createElement instead of JSX to avoid parsing errors in a .ts file.
+  return React.createElement(AuthContext.Provider, { value: { user, setUser, logout } }, children);
 };
 
 export const useAuth = (): AuthContextType => {

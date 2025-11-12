@@ -3,7 +3,7 @@ import * as tripService from './trip.service';
 import asyncHandler from '../../utils/asyncHandler';
 
 // FIX: Removed explicit types to allow for correct type inference.
-export const searchTrips = asyncHandler(async (req: Request, res: Response) => {
+export const searchTrips = asyncHandler(async (req, res) => {
     const { from, to, date } = req.query;
 
     const query = {
@@ -21,7 +21,7 @@ export const searchTrips = asyncHandler(async (req: Request, res: Response) => {
     });
 });
 
-export const getTripById = asyncHandler(async (req: any, res: any) => {
+export const getTripById = asyncHandler(async (req, res) => {
     const trip = await tripService.findTripById(req.params.id);
     res.status(200).json({
         success: true,

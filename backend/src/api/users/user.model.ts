@@ -96,10 +96,10 @@ UserSchema.pre('save', async function (next) {
 });
 
 // Sign JWT and return
-// FIX: Removed 'this: IUser' typing and added non-null assertion for JWT secret.
+// FIX: Removed 'this: IUser' typing and explicitly cast expiresIn to string to resolve overload issue.
 UserSchema.methods.getSignedJwtToken = function () {
-    return jwt.sign({ id: this._id }, config.jwt.secret!, {
-        expiresIn: config.jwt.expiresIn,
+    return jwt.sign({ id: this._id }, config.jwt.secret, {
+        expiresIn: config.jwt.expiresIn as string,
     });
 };
 

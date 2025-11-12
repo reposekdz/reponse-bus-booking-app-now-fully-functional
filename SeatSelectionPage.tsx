@@ -20,9 +20,10 @@ const Seat: React.FC<{ status: SeatStatus; id: string; onSelect: (id: string) =>
   return <button onClick={() => isSelectable && onSelect(id)} className={seatClass} disabled={!isSelectable}>{id}</button>;
 };
 
-const generateSeatGrid = (seatMap: Map<string, string>, capacity: number) => {
+// FIX: Changed seatMap type from Map<string, string> to an object and used Object.keys()
+const generateSeatGrid = (seatMap: { [key: string]: string }, capacity: number) => {
     const grid: any[][] = [];
-    const seats = Array.from(seatMap.keys()).sort((a,b) => parseInt(a.slice(0, -1)) - parseInt(b.slice(0, -1)) || a.charCodeAt(a.length - 1) - b.charCodeAt(b.length - 1));
+    const seats = Object.keys(seatMap).sort((a,b) => parseInt(a.slice(0, -1)) - parseInt(b.slice(0, -1)) || a.charCodeAt(a.length - 1) - b.charCodeAt(b.length - 1));
     
     let row: any[] = [];
     let currentRowNum = "1";

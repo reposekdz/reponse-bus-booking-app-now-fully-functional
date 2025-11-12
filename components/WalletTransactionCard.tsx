@@ -9,7 +9,14 @@ const TransactionIcon = ({ type }) => {
 
 const WalletTransactionCard: React.FC<{ transaction: any }> = ({ transaction }) => {
     const isCredit = transaction.type === 'top-up' || transaction.type === 'refund';
-    const amount = isCredit ? transaction.amount : -transaction.amount;
+    const amount = transaction.amount;
+
+    const handleCopyHash = () => {
+        if (transaction.hash) {
+            navigator.clipboard.writeText(transaction.hash);
+            alert('Transaction hash copied!');
+        }
+    };
 
     return (
         <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50">
@@ -17,7 +24,14 @@ const WalletTransactionCard: React.FC<{ transaction: any }> = ({ transaction }) 
                 <TransactionIcon type={transaction.type} />
                 <div>
                     <p className="font-semibold text-sm capitalize dark:text-white">{transaction.description || transaction.type.replace('-', ' ')}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{new Date(transaction.createdAt).toLocaleString()}</p>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center">
+                        <span>{new Date(transaction.createdAt).toLocaleString()}</span>
+                        {transaction.hash && 
+                            <button onClick={handleCopyHash} className="ml-2 font-mono text-blue-500 text-[10px] hover:underline" title="Copy transaction hash">
+                                [{transaction.hash.substring(0, 8)}...]
+                            </button>
+                        }
+                    </div>
                 </div>
             </div>
             <p className={`font-bold text-lg ${isCredit ? 'text-green-600' : 'text-gray-800 dark:text-gray-200'}`}>

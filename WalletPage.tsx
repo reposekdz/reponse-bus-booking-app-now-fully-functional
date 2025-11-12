@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Page } from './App';
 import { WalletIcon } from './components/icons';
 import WalletTopUpModal from './components/WalletTopUpModal';
@@ -39,6 +39,13 @@ const WalletPage: React.FC<{ onNavigate: (page: Page) => void }> = ({ onNavigate
             alert(`Top-up failed: ${error.message}`);
         }
     };
+    
+    const stats = useMemo(() => {
+        if (!history) return { totalSpent: 0, totalTopUps: 0 };
+        const totalSpent = history.filter(tx => tx.amount < 0).reduce((sum, tx) => sum + tx.amount, 0);
+        const totalTopUps = history.filter(tx => tx.amount > 0).reduce((sum, tx) => sum + tx.amount, 0);
+        return { totalSpent, totalTopUps };
+    }, [history]);
 
     return (
         <>
@@ -51,8 +58,8 @@ const WalletPage: React.FC<{ onNavigate: (page: Page) => void }> = ({ onNavigate
                 </header>
                 <main className="container mx-auto px-6 py-8">
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        {/* Balance Card */}
-                        <div className="lg:col-span-1">
+                        {/* Left Column: Balance and Stats */}
+                        <div className="lg:col-span-1 space-y-8">
                             <div className="bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-2xl shadow-xl p-8">
                                 <WalletIcon className="w-10 h-10 mb-4 opacity-70"/>
                                 <p className="text-lg opacity-80">Current Balance</p>
@@ -61,15 +68,28 @@ const WalletPage: React.FC<{ onNavigate: (page: Page) => void }> = ({ onNavigate
                                     Add Funds
                                 </button>
                             </div>
+                             <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
+                                <h3 className="font-bold mb-4 dark:text-white">This Month's Summary</h3>
+                                <div className="space-y-3">
+                                    <div className="flex justify-between text-sm items-center">
+                                        <span className="text-gray-500 dark:text-gray-400">Total Spent</span>
+                                        <span className="font-semibold text-red-500">{new Intl.NumberFormat('fr-RW').format(stats.totalSpent)} RWF</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm items-center">
+                                        <span className="text-gray-500 dark:text-gray-400">Total Top-ups</span>
+                                        <span className="font-semibold text-green-600">{new Intl.NumberFormat('fr-RW').format(stats.totalTopUps)} RWF</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        {/* History */}
+                        {/* Right Column: History */}
                         <div className="lg:col-span-2 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
                              <h2 className="text-xl font-bold dark:text-white mb-4">Transaction History</h2>
                              {isLoading ? (
                                 <p>Loading history...</p>
                              ) : (
-                                <div className="space-y-3 max-h-96 overflow-y-auto custom-scrollbar pr-2">
+                                <div className="space-y-3 max-h-[30rem] overflow-y-auto custom-scrollbar pr-2">
                                     {history.length > 0 ? (
                                         history.map(tx => <WalletTransactionCard key={tx._id} transaction={tx} />)
                                     ) : (

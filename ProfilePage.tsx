@@ -2,8 +2,8 @@ import React, { useState, useRef } from 'react';
 import { Page } from './App';
 import { CameraIcon, TicketIcon, WalletIcon, StarIcon, BellAlertIcon, SparklesIcon, CogIcon } from './components/icons';
 import WalletTopUpModal from './components/WalletTopUpModal';
-import { useLanguage } from '../contexts/LanguageContext';
-import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from './contexts/LanguageContext';
+import { useAuth } from './contexts/AuthContext';
 
 interface ProfilePageProps {
   onNavigate: (page: Page, data?: any) => void;
@@ -55,6 +55,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onNavigate }) => {
 
   const profileOptions: { label: string, icon: React.FC<React.SVGProps<SVGSVGElement>>, page: Page }[] = [
     { label: 'My Bookings', icon: TicketIcon, page: 'bookings' },
+    { label: 'My Wallet', icon: WalletIcon, page: 'wallet' },
     { label: 'My GoPoints', icon: SparklesIcon, page: 'loyalty' },
     { label: 'My Favorites', icon: StarIcon, page: 'favorites' },
     { label: 'Price Alerts', icon: BellAlertIcon, page: 'priceAlerts' },

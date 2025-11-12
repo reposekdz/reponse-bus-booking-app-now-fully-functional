@@ -5,8 +5,8 @@ import User from '../api/users/user.model';
 import { AppError } from '../utils/AppError';
 import asyncHandler from '../utils/asyncHandler';
 
-// FIX: This function uses asyncHandler which correctly types req, res, and next.
-export const protect = asyncHandler(async (req, res, next) => {
+// FIX: Use `req: any` to allow access to custom `user` property and resolve header errors.
+export const protect = asyncHandler(async (req: any, res: Response, next: NextFunction) => {
     let token;
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
         token = req.headers.authorization.split(' ')[1];
@@ -33,7 +33,7 @@ export const protect = asyncHandler(async (req, res, next) => {
 
 export const authorize = (...roles: string[]) => {
     // FIX: Removed explicit types from middleware function parameters to allow for correct type inference.
-    return (req: any, res: any, next: NextFunction) => {
+    return (req: any, res: Response, next: NextFunction) => {
         if (!req.user || !roles.includes(req.user.role)) {
             return next(new AppError(`User role '${req.user?.role}' is not authorized to access this route`, 403));
         }
