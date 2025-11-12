@@ -5,7 +5,7 @@ import User from '../api/users/user.model';
 import { AppError } from '../utils/AppError';
 import asyncHandler from '../utils/asyncHandler';
 
-// FIX: Removed explicit types from middleware function parameters to allow for correct type inference.
+// FIX: This function uses asyncHandler which correctly types req, res, and next.
 export const protect = asyncHandler(async (req, res, next) => {
     let token;
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {

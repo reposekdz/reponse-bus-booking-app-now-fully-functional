@@ -46,7 +46,7 @@ UserSchema.pre('save', async function (next) {
 // Sign JWT and return
 UserSchema.methods.getSignedJwtToken = function () {
     // FIX: The error here is related to expiresIn type, which is fixed in config. The non-null assertion is not required if the secret is guaranteed to be in env.
-    return jwt.sign({ id: this._id }, config.jwt.secret, {
+    return jwt.sign({ id: this._id }, config.jwt.secret!, {
         expiresIn: config.jwt.expiresIn,
     });
 };

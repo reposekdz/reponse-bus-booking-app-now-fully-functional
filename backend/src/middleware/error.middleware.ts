@@ -3,7 +3,7 @@ import { AppError } from '../utils/AppError';
 import logger from '../utils/logger';
 
 // FIX: Removed explicit types from middleware function parameters to allow for correct type inference.
-export const errorHandler = (err: Error | AppError, req: any, res: any, next: NextFunction) => {
+export const errorHandler = (err: AppError | Error, req: Request, res: Response, next: NextFunction) => {
     let statusCode = 500;
     let message = 'Something went wrong';
 

@@ -3,7 +3,7 @@ import * as tripService from './trip.service';
 import asyncHandler from '../../utils/asyncHandler';
 
 // FIX: Removed explicit types to allow for correct type inference.
-export const searchTrips = asyncHandler(async (req, res) => {
+export const searchTrips = asyncHandler(async (req: Request, res: Response) => {
     const { from, to, date } = req.query;
 
     const query = {

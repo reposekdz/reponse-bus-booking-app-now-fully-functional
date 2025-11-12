@@ -30,7 +30,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // In a real app, you'd also clear any stored tokens here
   };
 
-  return React.createElement(AuthContext.Provider, { value: { user, setUser, logout } }, children);
+  return (
+    <AuthContext.Provider value={{ user, setUser, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
 export const useAuth = (): AuthContextType => {
