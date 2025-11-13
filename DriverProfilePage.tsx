@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { PhoneIcon, EnvelopeIcon, MapPinIcon, CalendarIcon, BriefcaseIcon, ShieldCheckIcon, ClipboardDocumentListIcon, ChartPieIcon, CameraIcon, BellAlertIcon } from './components/icons';
 import * as api from './services/apiService';
 import LoadingSpinner from './components/LoadingSpinner';
+import DriverPerformance from './components/DriverPerformance';
 
 const StatCard = ({ label, value, icon }) => (
     <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-xl flex items-center space-x-3">
@@ -44,7 +45,7 @@ const DriverProfilePage: React.FC<DriverProfilePageProps> = ({ driver }) => {
     const [isLoadingHistory, setIsLoadingHistory] = useState(false);
     
     useEffect(() => {
-        if (driver?.id) {
+        if (driver?.id && activeTab === 'history') {
             const fetchHistory = async () => {
                 setIsLoadingHistory(true);
                 try {
@@ -58,7 +59,7 @@ const DriverProfilePage: React.FC<DriverProfilePageProps> = ({ driver }) => {
             };
             fetchHistory();
         }
-    }, [driver?.id]);
+    }, [driver?.id, activeTab]);
 
 
     if (!driver || !driver.name) {
@@ -82,6 +83,12 @@ const DriverProfilePage: React.FC<DriverProfilePageProps> = ({ driver }) => {
             return status.text === 'Expired' || status.text === 'Expiring Soon';
         });
     }, [documents]);
+
+    const TabButton = ({ tabName, label }) => (
+        <button onClick={() => setActiveTab(tabName)} className={`py-2 px-3 text-sm font-semibold rounded-md transition-colors ${activeTab === tabName ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
+            {label}
+        </button>
+    );
 
     return (
         <div className="bg-gray-100/50 dark:bg-gray-900/50 min-h-full py-12">
@@ -127,12 +134,11 @@ const DriverProfilePage: React.FC<DriverProfilePageProps> = ({ driver }) => {
                     </div>
 
                     <div className="p-6">
-                        <div className="border-b dark:border-gray-700 mb-4">
-                            <nav className="flex space-x-6">
-                                <button onClick={() => setActiveTab('details')} className={`py-2 px-1 text-sm font-semibold ${activeTab === 'details' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500'}`}>Details</button>
-                                <button onClick={() => setActiveTab('history')} className={`py-2 px-1 text-sm font-semibold ${activeTab === 'history' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500'}`}>Trip History</button>
-                                <button onClick={() => setActiveTab('documents')} className={`py-2 px-1 text-sm font-semibold ${activeTab === 'documents' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500'}`}>Documents</button>
-                            </nav>
+                        <div className="mb-4 bg-gray-100 dark:bg-gray-900/50 p-1 rounded-lg flex space-x-1">
+                            <TabButton tabName="details" label="Details" />
+                            <TabButton tabName="performance" label="Performance" />
+                            <TabButton tabName="history" label="Trip History" />
+                            <TabButton tabName="documents" label="Documents" />
                         </div>
                         
                         {activeTab === 'details' && (
@@ -152,6 +158,10 @@ const DriverProfilePage: React.FC<DriverProfilePageProps> = ({ driver }) => {
                                     </div>
                                 </div>
                             </div>
+                        )}
+                        
+                        {activeTab === 'performance' && (
+                            <DriverPerformance performanceData={performance} />
                         )}
 
                         {activeTab === 'history' && (
@@ -174,10 +184,10 @@ const DriverProfilePage: React.FC<DriverProfilePageProps> = ({ driver }) => {
                         
                         {activeTab === 'documents' && (
                             <div className="space-y-3 animate-fade-in">
-                                {documents.map((doc: any) => {
+                                {documents.map((doc: any, i) => {
                                     const status = getDocumentStatus(doc.expiry);
                                     return (
-                                        <div key={doc._id} className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg flex justify-between items-center">
+                                        <div key={i} className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg flex justify-between items-center">
                                             <div className="flex items-center space-x-3">
                                                 <ClipboardDocumentListIcon className="w-6 h-6 text-gray-400"/>
                                                 <div>

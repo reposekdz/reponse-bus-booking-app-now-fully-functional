@@ -32,16 +32,16 @@ const WalletPage: React.FC<{ onNavigate: (page: Page) => void }> = ({ onNavigate
     const handleTopUpSuccess = async (amount: number) => {
         setIsTopUpOpen(false);
         try {
-            const updatedUser = await api.topUpWallet(amount);
-            setUser(prevUser => ({...prevUser, walletBalance: updatedUser.walletBalance }));
+            const response = await api.topUpWallet(amount);
+            setUser(prevUser => ({...prevUser, walletBalance: response.data.walletBalance }));
             alert(`Successfully added ${new Intl.NumberFormat('fr-RW').format(amount)} RWF to your wallet!`);
             fetchHistory();
-        } catch (error) {
+        } catch (error: any) {
             alert(`Top-up failed: ${error.message}`);
         }
     };
     
-     const handleSendSuccess = (updatedBalance) => {
+     const handleSendSuccess = (updatedBalance: number) => {
         setIsSendMoneyOpen(false);
         setUser(prevUser => ({ ...prevUser, walletBalance: updatedBalance }));
         alert(`Money sent successfully!`);

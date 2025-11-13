@@ -1,35 +1,39 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import html2canvas from 'html2canvas';
+import QRCode from 'qrcode';
 import { Page } from './App';
 import { CheckCircleIcon, ArrowUpTrayIcon, TicketIcon, ArrowRightIcon } from './components/icons';
 
-// Simple hash function to generate a "unique" pattern from a string
-const simpleHash = (str: string) => {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash |= 0; // Convert to 32bit integer
-  }
-  return hash;
-};
+const RealQRCode: React.FC<{ ticketData: any; size: number }> = ({ ticketData, size }) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
-const QRCode: React.FC<{ value: string; size: number }> = ({ value, size }) => {
-  if (!value) return null;
-  const hash = simpleHash(value);
-  const gridSize = 15;
+  useEffect(() => {
+    if (canvasRef.current && ticketData) {
+      const qrDataString = JSON.stringify({
+        bookingId: ticketData.bookingId,
+        passenger: ticketData.passengerName,
+        route: `${ticketData.from} to ${ticketData.to}`,
+        datetime: `${new Date(ticketData.createdAt).toLocaleDateString()} at ${ticketData.departureTime}`,
+        seats: Array.isArray(ticketData.seats) ? ticketData.seats.join(', ') : ticketData.seats,
+      });
+
+      QRCode.toCanvas(canvasRef.current, qrDataString, {
+        width: size,
+        margin: 1,
+        color: {
+          dark: '#002B7F',
+          light: '#FFFFFFFF',
+        },
+        errorCorrectionLevel: 'H',
+      }, (error) => {
+        if (error) console.error('QR Code generation failed:', error);
+      });
+    }
+  }, [ticketData, size]);
 
   return (
-    <div className="p-2 bg-white" style={{ width: size, height: size }}>
-      <div className="grid grid-cols-15 w-full h-full">
-        {Array.from({ length: gridSize * gridSize }).map((_, i) => {
-          const bit = (hash >> (i % 31)) & 1;
-          return (
-            <div key={i} className={`w-full h-full ${bit === 1 ? 'bg-black' : 'bg-white'}`}></div>
-          );
-        })}
-      </div>
-      <style>{`.grid-cols-15 { grid-template-columns: repeat(15, minmax(0, 1fr)); }`}</style>
+    <div className="p-2 bg-white">
+      <canvas ref={canvasRef} style={{ width: size, height: size }} />
     </div>
   );
 };
@@ -93,7 +97,7 @@ const BookingConfirmationPage: React.FC<{ bookingDetails: any, onNavigate: (page
                                      </div>
                                 </div>
                                 <div className="flex-shrink-0 mt-6 sm:mt-0 sm:ml-6">
-                                    <QRCode value={bookingDetails.bookingId} size={140} />
+                                    <RealQRCode ticketData={bookingDetails} size={140} />
                                 </div>
                             </div>
                          </div>

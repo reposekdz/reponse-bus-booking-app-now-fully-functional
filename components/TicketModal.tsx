@@ -64,10 +64,12 @@ const TicketModal: React.FC<{ ticket: any; onClose: () => void, isActive?: boole
                      <BusIcon className="w-8 h-8"/>
                      <h2 className="text-2xl font-bold">{t('ticket_modal_title')}</h2>
                 </div>
-                <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse"></div>
-                    <span className="text-xs font-bold tracking-wider">LIVE</span>
-                </div>
+                {isActive && (
+                    <div className="flex items-center space-x-2">
+                        <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse"></div>
+                        <span className="text-xs font-bold tracking-wider">LIVE</span>
+                    </div>
+                )}
             </div>
             <p className="text-sm opacity-80 mt-1">{ticket.company}</p>
         </header>

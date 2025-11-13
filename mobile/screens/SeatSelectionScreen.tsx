@@ -1,31 +1,67 @@
 // New screen for interactive seat selection.
 
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BusSeat, { SeatStatus } from '../components/BusSeat';
+import * as api from '../../services/apiService';
 
-type Seat = {
-    id: string;
-    status: SeatStatus;
-};
+const generateSeatGrid = (seatMap: { [key: string]: string }, capacity: number) => {
+    const grid: any[][] = [];
+    if (!seatMap || Object.keys(seatMap).length === 0) return grid;
 
-const generateSeats = (): Seat[][] => {
-    return Array.from({ length: 12 }, (_, i) => [
-        { id: `A${i+1}`, status: Math.random() > 0.7 ? 'occupied' : 'available' },
-        { id: `B${i+1}`, status: Math.random() > 0.8 ? 'occupied' : 'available' },
-        { id: `aisle-${i}`, status: 'aisle' },
-        { id: `C${i+1}`, status: Math.random() > 0.6 ? 'occupied' : 'available' },
-        { id: `D${i+1}`, status: Math.random() > 0.75 ? 'occupied' : 'available' },
-    ]);
-};
+    const seats = Object.keys(seatMap).sort((a,b) => parseInt(a.slice(0, -1)) - parseInt(b.slice(0, -1)) || a.charCodeAt(a.length - 1) - b.charCodeAt(b.length - 1));
+    
+    let row: any[] = [];
+    let currentRowNum = "1";
+    seats.forEach(seatId => {
+        const rowNum = seatId.slice(0, -1);
+        if (rowNum !== currentRowNum) {
+            grid.push(row);
+            row = [];
+            currentRowNum = rowNum;
+        }
+        
+        // Add aisle placeholder
+        if(seatId.endsWith('C') && !row.some(s => s.id === 'aisle')) {
+            row.push({id: `aisle-${rowNum}`, status: 'aisle'});
+        }
+
+        row.push({
+            id: seatId,
+            status: seatMap[seatId],
+        });
+    });
+    grid.push(row); // push the last row
+    return grid;
+}
+
 
 export default function SeatSelectionScreen({ route, navigation }) {
-    // const { trip } = route.params; // In a real app
-    const trip = { price: 4500, company: 'Volcano Express' };
+    const { trip: initialTrip } = route.params;
     
-    const [seats, setSeats] = useState(generateSeats());
+    const [tripDetails, setTripDetails] = useState(null);
+    const [seatGrid, setSeatGrid] = useState<any[][]>([]);
     const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState('');
+
+    useEffect(() => {
+        const fetchTripDetails = async () => {
+            setIsLoading(true);
+            try {
+                const data = await api.getTripDetails(initialTrip.id);
+                setTripDetails(data);
+                const grid = generateSeatGrid(data.seatMap, data.bus.capacity);
+                setSeatGrid(grid);
+            } catch (e) {
+                setError('Failed to load seat map.');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchTripDetails();
+    }, [initialTrip.id]);
 
     const handleSelectSeat = (seatId: string) => {
         if (selectedSeats.includes(seatId)) {
@@ -35,7 +71,33 @@ export default function SeatSelectionScreen({ route, navigation }) {
         }
     };
     
-    const totalPrice = selectedSeats.length * trip.price;
+    const totalPrice = selectedSeats.length * (tripDetails?.route.basePrice || 0);
+
+    const renderContent = () => {
+        if (isLoading) {
+            return <ActivityIndicator size="large" style={{ marginTop: 50 }} />;
+        }
+        if (error) {
+            return <Text style={styles.errorText}>{error}</Text>;
+        }
+        return (
+            <View style={styles.busContainer}>
+                <View style={styles.driverArea}><Text>Driver</Text></View>
+                {seatGrid.map((row, rowIndex) => (
+                    <View key={rowIndex} style={styles.seatRow}>
+                        {row.map(seat => (
+                            <BusSeat 
+                                key={seat.id} 
+                                seatId={seat.id}
+                                status={selectedSeats.includes(seat.id) ? 'selected' : seat.status} 
+                                onPress={handleSelectSeat}
+                            />
+                        ))}
+                    </View>
+                ))}
+            </View>
+        );
+    };
 
     return (
         <SafeAreaView style={styles.container}>
@@ -45,26 +107,14 @@ export default function SeatSelectionScreen({ route, navigation }) {
             </View>
             
             <ScrollView contentContainerStyle={styles.scrollContainer}>
-                <View style={styles.busContainer}>
-                    <View style={styles.driverArea}><Text>Driver</Text></View>
-                    {seats.map((row, rowIndex) => (
-                        <View key={rowIndex} style={styles.seatRow}>
-                            {row.map(seat => (
-                                <BusSeat 
-                                    key={seat.id} 
-                                    seatId={seat.id}
-                                    status={selectedSeats.includes(seat.id) ? 'selected' : seat.status} 
-                                    onPress={handleSelectSeat}
-                                />
-                            ))}
-                        </View>
-                    ))}
-                </View>
-                 <View style={styles.legendContainer}>
-                    <View style={styles.legendItem}><View style={[styles.legendBox, styles.available]} /><Text>Available</Text></View>
-                    <View style={styles.legendItem}><View style={[styles.legendBox, styles.occupied]} /><Text>Occupied</Text></View>
-                    <View style={styles.legendItem}><View style={[styles.legendBox, styles.selected]} /><Text>Selected</Text></View>
-                </View>
+                {renderContent()}
+                 {!isLoading && !error && (
+                    <View style={styles.legendContainer}>
+                        <View style={styles.legendItem}><View style={[styles.legendBox, styles.available]} /><Text>Available</Text></View>
+                        <View style={styles.legendItem}><View style={[styles.legendBox, styles.occupied]} /><Text>Occupied</Text></View>
+                        <View style={styles.legendItem}><View style={[styles.legendBox, styles.selected]} /><Text>Selected</Text></View>
+                    </View>
+                )}
             </ScrollView>
             
             <View style={styles.footer}>
@@ -134,4 +184,9 @@ const styles = StyleSheet.create({
     },
     disabledButton: { backgroundColor: '#9CA3AF' },
     confirmButtonText: { color: 'white', fontWeight: 'bold', fontSize: 16 },
+    errorText: {
+        textAlign: 'center',
+        color: 'red',
+        marginTop: 50,
+    }
 });

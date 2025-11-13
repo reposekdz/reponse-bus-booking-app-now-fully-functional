@@ -1,4 +1,3 @@
-
 // Merging web translations for mobile use
 export const translations = {
   RW: {
@@ -27,6 +26,7 @@ export const translations = {
     'mobile_profile_settings': 'Iboneza',
     'mobile_profile_help': 'Ubufasha',
     'mobile_profile_logout': 'Sohoka',
+    'mobile_profile_loyalty': 'GoPoints Zanjye',
     // Wallet
     'mobile_wallet_title': 'Ikofi Yanjye',
     'mobile_wallet_balance': 'Amafaranga asigaye',
@@ -43,6 +43,11 @@ export const translations = {
     'mobile_service_lost_desc': 'Menyesha cyangwa shakisha ikintu cyatakaye.',
     // Driver History
     'mobile_driver_history_title': 'Amateka y\'Ingendo',
+    // Loyalty
+    'mobile_loyalty_title': 'GoPoints',
+    'mobile_loyalty_balance_label': 'Ingingo Zisigaye',
+    'mobile_loyalty_history_title': 'Amateka y\'Ingingo',
+    'mobile_loyalty_empty': 'Nta mateka y\'ingingo arahari.',
   },
   EN: {
     'form_from': 'From',
@@ -70,6 +75,7 @@ export const translations = {
     'mobile_profile_settings': 'Settings',
     'mobile_profile_help': 'Help Center',
     'mobile_profile_logout': 'Log Out',
+    'mobile_profile_loyalty': 'My GoPoints',
      // Wallet
     'mobile_wallet_title': 'My Wallet',
     'mobile_wallet_balance': 'Current Balance',
@@ -86,6 +92,11 @@ export const translations = {
     'mobile_service_lost_desc': 'Report or find a lost item.',
     // Driver History
     'mobile_driver_history_title': 'Trip History',
+    // Loyalty
+    'mobile_loyalty_title': 'GoPoints',
+    'mobile_loyalty_balance_label': 'Current Balance',
+    'mobile_loyalty_history_title': 'Points History',
+    'mobile_loyalty_empty': 'No points history yet.',
   },
   FR: {
     'form_from': 'De',
@@ -113,6 +124,7 @@ export const translations = {
     'mobile_profile_settings': 'Paramètres',
     'mobile_profile_help': 'Centre d\'Aide',
     'mobile_profile_logout': 'Déconnexion',
+    'mobile_profile_loyalty': 'Mes GoPoints',
     // Wallet
     'mobile_wallet_title': 'Mon Portefeuille',
     'mobile_wallet_balance': 'Solde Actuel',
@@ -129,5 +141,10 @@ export const translations = {
     'mobile_service_lost_desc': 'Signalez ou retrouvez un objet perdu.',
      // Driver History
     'mobile_driver_history_title': 'Historique des Trajets',
+    // Loyalty
+    'mobile_loyalty_title': 'GoPoints',
+    'mobile_loyalty_balance_label': 'Solde Actuel',
+    'mobile_loyalty_history_title': 'Historique des Points',
+    'mobile_loyalty_empty': 'Aucun historique de points.',
   }
 };

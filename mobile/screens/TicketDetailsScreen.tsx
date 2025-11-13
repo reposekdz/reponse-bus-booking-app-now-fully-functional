@@ -1,14 +1,40 @@
 // New screen to display a single ticket's details and QR code.
 
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import QRCode from 'qrcode';
 
-const QRPlaceholder = () => (
-    <View style={styles.qrContainer}>
-        <Text style={styles.qrText}>QR CODE</Text>
-    </View>
-);
+const RealQRCode: React.FC<{ value: any; size: number }> = ({ value, size }) => {
+    const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+
+    useEffect(() => {
+        const generateQR = async () => {
+            try {
+                const dataString = JSON.stringify(value);
+                const url = await QRCode.toDataURL(dataString, {
+                    width: size,
+                    margin: 1,
+                    color: { dark: '#002B7F' }
+                });
+                setQrDataUrl(url);
+            } catch (err) {
+                console.error('Failed to generate QR code', err);
+            }
+        };
+        generateQR();
+    }, [value, size]);
+
+    return (
+        <View style={[styles.qrContainer, { width: size, height: size }]}>
+            {qrDataUrl ? (
+                <Image source={{ uri: qrDataUrl }} style={{ width: size, height: size }} />
+            ) : (
+                <Text style={styles.qrText}>Loading QR...</Text>
+            )}
+        </View>
+    );
+};
 
 const InfoRow = ({ label, value }) => (
     <View style={styles.infoRow}>
@@ -36,7 +62,7 @@ export default function TicketDetailsScreen({ route, navigation }) {
                     </View>
                 </View>
                 <View style={styles.ticketMiddle}>
-                    <QRPlaceholder />
+                    <RealQRCode value={ticket} size={200} />
                     <Text style={styles.scanText}>Present this QR code for scanning</Text>
                 </View>
                 <View style={styles.ticketBottom}>
@@ -93,8 +119,6 @@ const styles = StyleSheet.create({
         borderStyle: 'dashed',
     },
     qrContainer: {
-        width: 200,
-        height: 200,
         backgroundColor: '#F3F4F6',
         justifyContent: 'center',
         alignItems: 'center',

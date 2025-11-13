@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeftIcon, ArrowRightIcon } from './components/icons';
-import * as api from '../services/apiService';
-import { useAuth } from '../contexts/AuthContext';
+import * as api from './services/apiService';
+import { useAuth } from './contexts/AuthContext';
 
 type SeatStatus = 'available' | 'occupied' | 'selected';
 
 const Seat: React.FC<{ status: SeatStatus; id: string; onSelect: (id: string) => void; }> = ({ status, id, onSelect }) => {
-  const isSelectable = status === 'available' || status === 'selected';
+  const isSelectable = status !== 'occupied';
   
   let seatClass = 'w-10 h-10 rounded-md flex items-center justify-center font-bold text-xs cursor-pointer transition-all duration-200';
   if (status === 'available') {
@@ -20,7 +20,6 @@ const Seat: React.FC<{ status: SeatStatus; id: string; onSelect: (id: string) =>
   return <button onClick={() => isSelectable && onSelect(id)} className={seatClass} disabled={!isSelectable}>{id}</button>;
 };
 
-// FIX: Changed seatMap type from Map<string, string> to an object and used Object.keys()
 const generateSeatGrid = (seatMap: { [key: string]: string }, capacity: number) => {
     const grid: any[][] = [];
     const seats = Object.keys(seatMap).sort((a,b) => parseInt(a.slice(0, -1)) - parseInt(b.slice(0, -1)) || a.charCodeAt(a.length - 1) - b.charCodeAt(b.length - 1));
@@ -71,7 +70,7 @@ const SeatSelectionPage: React.FC<SeatSelectionPageProps> = ({ tripId, onConfirm
             setTrip(tripData);
             const grid = generateSeatGrid(tripData.seatMap, tripData.bus.capacity);
             setSeatGrid(grid);
-        } catch (err) {
+        } catch (err: any) {
             setError(err.message || "Failed to load trip details.");
         } finally {
             setIsLoading(false);
@@ -81,10 +80,16 @@ const SeatSelectionPage: React.FC<SeatSelectionPageProps> = ({ tripId, onConfirm
   }, [tripId]);
   
   const handleSelectSeat = (id: string) => {
-    setSelectedSeats(prev => 
-      prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
+    // This check is redundant if the button is disabled, but adds robustness.
+    const seatInGrid = seatGrid.flat().find(s => s.id === id);
+    if (seatInGrid?.status === 'occupied') {
+        return; // Don't allow selecting occupied seats
+    }
+
+    setSelectedSeats(prev =>
+        prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
     );
-  };
+};
   
   const totalPrice = selectedSeats.length * (trip?.route.basePrice || 0);
 
