@@ -4,12 +4,13 @@ import asyncHandler from '../../utils/asyncHandler';
 
 // FIX: Removed explicit types to allow for correct type inference.
 export const searchTrips = asyncHandler(async (req, res) => {
-    const { from, to, date } = req.query;
+    const { from, to, date, companyId } = req.query;
 
     const query = {
         from: from as string,
         to: to as string,
         date: date as string,
+        companyId: companyId as string | undefined,
     };
     
     const trips = await tripService.findTrips(query);

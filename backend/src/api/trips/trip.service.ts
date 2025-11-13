@@ -8,6 +8,7 @@ interface TripQuery {
     from: string;
     to: string;
     date: string;
+    companyId?: string;
 }
 
 // Function to get available seats for multiple trips efficiently
@@ -34,13 +35,13 @@ async function getAvailableSeatsForTrips(tripIds: number[]) {
 
 
 export const findTrips = async (query: TripQuery) => {
-    const { from, to, date } = query;
+    const { from, to, date, companyId } = query;
 
     if (!from || !to || !date) {
         throw new AppError('Please provide from, to, and date query parameters.', 400);
     }
     
-    const [trips] = await pool.query(`
+    let sql = `
         SELECT 
             t.id, t.departure_time, t.arrival_time,
             r.base_price, r.estimated_duration_minutes,
@@ -53,7 +54,15 @@ export const findTrips = async (query: TripQuery) => {
         JOIN buses b ON t.bus_id = b.id
         JOIN users d ON t.driver_id = d.id
         WHERE r.origin = ? AND r.destination = ? AND DATE(t.departure_time) = ? AND t.status = 'Scheduled'
-    `, [from, to, date]);
+    `;
+    const params: (string|number)[] = [from, to, date];
+
+    if (companyId) {
+        sql += ' AND c.id = ?';
+        params.push(companyId);
+    }
+    
+    const [trips] = await pool.query(sql, params);
 
     const tripIds = (trips as any[]).map(t => t.id);
     const availableSeatsMap = await getAvailableSeatsForTrips(tripIds);

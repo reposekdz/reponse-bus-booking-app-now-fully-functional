@@ -1,3 +1,4 @@
+
 // services/apiService.ts - REAL BACKEND API CLIENT
 
 const BASE_URL = '/api/v1';
@@ -44,8 +45,11 @@ export const updatePassword = (passwords: any) => apiFetch('/auth/updatepassword
 
 
 // --- TRIPS ---
-export const searchTrips = async (from: string, to: string, date: string) => {
+export const searchTrips = async (from: string, to: string, date: string, companyId?: string) => {
     const params = new URLSearchParams({ from, to, date });
+    if (companyId) {
+        params.append('companyId', companyId);
+    }
     const { data } = await apiFetch(`/trips/search?${params.toString()}`);
     return data;
 };

@@ -1,7 +1,4 @@
 
-
-
-
 import React, { useState, useMemo, useEffect } from 'react';
 import StarRating from './components/StarRating';
 import { SearchIcon, ChevronRightIcon, StarIcon } from './components/icons';
@@ -14,9 +11,9 @@ interface CompaniesPageProps {
   onNavigate: (page: Page, data?: any) => void;
 }
 
-const FeaturedCompanyCard: React.FC<{ company: any, onSelect: () => void }> = ({ company, onSelect }) => (
+const FeaturedCompanyCard: React.FC<{ company: any, onSelect: (company: any) => void }> = ({ company, onSelect }) => (
     <button 
-        onClick={onSelect} 
+        onClick={() => onSelect(company)} 
         className="group relative w-full h-64 rounded-xl overflow-hidden shadow-lg transform hover:-translate-y-1 transition-all duration-300"
     >
         <img src={company.cover_url} alt={company.name} className="absolute inset-0 w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"/>
@@ -41,9 +38,9 @@ const FeaturedCompanyCard: React.FC<{ company: any, onSelect: () => void }> = ({
 );
 
 
-const CompanyCard: React.FC<{ company: any, onSelect: () => void }> = ({ company, onSelect }) => (
+const CompanyCard: React.FC<{ company: any, onSelect: (company: any) => void }> = ({ company, onSelect }) => (
     <button 
-        onClick={onSelect} 
+        onClick={() => onSelect(company)} 
         className="w-full text-left bg-white dark:bg-gray-800 rounded-xl shadow-md p-5 flex items-center space-x-5 border-2 border-transparent hover:border-blue-500/50 hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300"
     >
         <div className="flex-shrink-0 h-20 w-20 bg-white dark:from-gray-700 dark:to-gray-600 rounded-full flex items-center justify-center shadow-inner">
@@ -105,6 +102,10 @@ const CompaniesPage: React.FC<CompaniesPageProps> = ({ onNavigate }) => {
         }
       });
   }, [searchTerm, sortOrder, ratingFilter, regularCompanies]);
+
+  const handleCompanySelect = (company: any) => {
+      onNavigate('companyProfile', company);
+  }
   
 
   return (
@@ -128,7 +129,7 @@ const CompaniesPage: React.FC<CompaniesPageProps> = ({ onNavigate }) => {
                         <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">Top Rated & Popular</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             {featuredCompanies.map(company => (
-                                <FeaturedCompanyCard key={company.id} company={company} onSelect={() => onNavigate('companyProfile', {id: company.id, name: company.name, logoText: company.name.substring(0,4).toUpperCase()})} />
+                                <FeaturedCompanyCard key={company.id} company={company} onSelect={handleCompanySelect} />
                             ))}
                         </div>
                     </section>
@@ -168,7 +169,7 @@ const CompaniesPage: React.FC<CompaniesPageProps> = ({ onNavigate }) => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {filteredAndSortedCompanies.length > 0 ? (
                                 filteredAndSortedCompanies.map(company => (
-                                <CompanyCard key={company.id} company={company} onSelect={() => onNavigate('companyProfile', {id: company.id, name: company.name, logoText: company.name.substring(0,4).toUpperCase()})} />
+                                <CompanyCard key={company.id} company={company} onSelect={handleCompanySelect} />
                                 ))
                             ) : (
                                 <p className="md:col-span-2 text-center text-gray-500 dark:text-gray-400">No companies match your search.</p>

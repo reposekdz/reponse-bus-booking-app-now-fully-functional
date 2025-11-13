@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { ClockIcon, MapPinIcon, ChevronRightIcon, BusIcon, WifiIcon, AcIcon, PowerIcon, StarIcon, UsersIcon, MapIcon, BriefcaseIcon, TvIcon, ShieldCheckIcon, ArrowRightIcon, CameraIcon, EnvelopeIcon, XIcon, PaperAirplaneIcon, TagIcon, ArchiveBoxIcon, PhoneIcon } from './components/icons';
 import FleetDetailModal from './components/FleetDetailModal';
@@ -56,8 +57,8 @@ const AmenityIcon: React.FC<{ amenity: string; withText?: boolean }> = ({ amenit
 
 
 interface CompanyProfilePageProps {
-  company: { id: string, name: string; logoText: string };
-  onSelectTrip: (from?: string, to?: string) => void;
+  company: { id: string; name: string; logoText: string };
+  onSelectTrip: (from?: string, to?: string, date?: string, passengers?: any, companyId?: string) => void;
 }
 
 const PhotoViewerModal: React.FC<{ images: string[], startIndex: number, onClose: () => void }> = ({ images, startIndex, onClose }) => {
@@ -267,7 +268,7 @@ const CompanyProfilePage: React.FC<CompanyProfilePageProps> = ({ company: initia
                                             </div>
                                         </div>
                                         <div className="text-lg font-bold text-green-600 dark:text-green-400">{trip.price}</div>
-                                        <button onClick={() => onSelectTrip(fromLocation, toLocation)} className="px-4 py-2 text-sm font-semibold rounded-md bg-gradient-to-r from-yellow-400 to-yellow-500 text-[#0033A0] hover:from-yellow-500 hover:to-yellow-600 transition-all">Book Ticket</button>
+                                        <button onClick={() => onSelectTrip(fromLocation, toLocation, new Date().toISOString().split('T')[0], undefined, company.id)} className="px-4 py-2 text-sm font-semibold rounded-md bg-gradient-to-r from-yellow-400 to-yellow-500 text-[#0033A0] hover:from-yellow-500 hover:to-yellow-600 transition-all">Book Ticket</button>
                                     </div>
                                 ))
                             ) : (

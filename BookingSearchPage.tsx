@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { ArrowRightIcon, FilterIcon, StarIcon, WifiIcon, AcIcon, PowerIcon, BuildingOfficeIcon, XIcon, CalendarIcon } from './components/icons';
 import SearchResultsPage from './SearchResultsPage';
@@ -12,7 +13,7 @@ const allAmenities = ['WiFi', 'AC', 'Charging'];
 const allLocations = ['Kigali', 'Rubavu', 'Musanze', 'Huye', 'Rusizi', 'Nyagatare', 'Muhanga'];
 
 interface BookingSearchPageProps {
-  searchParams: { from?: string; to?: string; date?: string; passengers?: { adults: number; children: number; } };
+  searchParams: { from?: string; to?: string; date?: string; passengers?: { adults: number; children: number; }, companyId?: string };
   onNavigate: (page: Page, data?: any) => void;
 }
 
@@ -78,6 +79,7 @@ const BookingSearchPage: React.FC<BookingSearchPageProps> = ({ searchParams, onN
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [companies, setCompanies] = useState<any[]>([]);
+  const [companyName, setCompanyName] = useState('');
   
   const [sortOrder, setSortOrder] = useState('fastest');
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
@@ -94,7 +96,7 @@ const BookingSearchPage: React.FC<BookingSearchPageProps> = ({ searchParams, onN
       setIsLoading(true);
       setError('');
       try {
-          const data = await api.searchTrips(fromLocation, toLocation, journeyDate);
+          const data = await api.searchTrips(fromLocation, toLocation, journeyDate, searchParams?.companyId);
           setResults(data);
       } catch (err) {
           setError((err as Error).message || 'Failed to fetch trips.');
@@ -114,7 +116,19 @@ const BookingSearchPage: React.FC<BookingSearchPageProps> = ({ searchParams, onN
         }
     };
     fetchCompanies();
-  }, [fromLocation, toLocation, journeyDate]);
+  }, [fromLocation, toLocation, journeyDate, searchParams?.companyId]);
+
+  useEffect(() => {
+    if (searchParams?.companyId && companies.length > 0) {
+        const company = companies.find(c => c.id.toString() === searchParams.companyId);
+        if (company) {
+            setCompanyName(company.name);
+        }
+    } else {
+        setCompanyName('');
+    }
+  }, [searchParams?.companyId, companies]);
+
 
   const loadFavorites = () => {
     const storedFavorites = localStorage.getItem('favoriteTrips');
@@ -201,6 +215,7 @@ const BookingSearchPage: React.FC<BookingSearchPageProps> = ({ searchParams, onN
                 <div className="flex justify-between items-center mb-6">
                     <div>
                         <h1 className="text-2xl sm:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">{fromLocation} <ArrowRightIcon className="inline w-6 sm:w-8 h-6 sm:h-8 mx-2"/> {toLocation}</h1>
+                        {companyName && <p className="text-lg text-gray-500 dark:text-gray-400">Filtered by: <span className="font-bold">{companyName}</span></p>}
                         <p className="mt-2 text-md sm:text-lg text-gray-600 dark:text-gray-400">{new Date(journeyDate).toDateString()}, {totalPassengers} passenger(s) - {isLoading ? '...' : `${filteredAndSortedResults.length} trips found`}</p>
                     </div>
                 </div>
