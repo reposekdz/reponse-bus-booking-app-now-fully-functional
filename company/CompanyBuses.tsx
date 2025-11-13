@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BusIcon, SearchIcon, PlusIcon, PencilSquareIcon, TrashIcon } from '../components/icons';
 import Modal from '../components/Modal';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 const BusForm = ({ bus, onSave, onCancel }) => {
     const [formData, setFormData] = useState({
@@ -72,6 +73,8 @@ const CompanyBuses: React.FC<CompanyBusesProps> = ({ companyId }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentBus, setCurrentBus] = useState<any | null>(null);
+    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 
     const openModal = (bus = null) => {
         setCurrentBus(bus);
@@ -87,10 +90,16 @@ const CompanyBuses: React.FC<CompanyBusesProps> = ({ companyId }) => {
         setIsModalOpen(false);
     };
 
-    const handleDelete = (id: string) => {
-        if (window.confirm("Are you sure you want to delete this bus?")) {
-            setBuses(buses.filter(b => b.id !== id));
-        }
+    const handleDeleteClick = (id: string) => {
+        setItemToDelete(id);
+        setIsConfirmModalOpen(true);
+    };
+
+    const handleConfirmDelete = () => {
+        if (!itemToDelete) return;
+        setBuses(buses.filter(b => b.id !== itemToDelete));
+        setIsConfirmModalOpen(false);
+        setItemToDelete(null);
     };
 
     return (
@@ -139,7 +148,7 @@ const CompanyBuses: React.FC<CompanyBusesProps> = ({ companyId }) => {
                                     <td>{new Date(bus.maintenanceDate).toLocaleDateString()}</td>
                                     <td className="flex space-x-2 p-3">
                                         <button onClick={() => openModal(bus)} className="p-1 text-gray-500 hover:text-blue-600"><PencilSquareIcon className="w-5 h-5"/></button>
-                                        <button onClick={() => handleDelete(bus.id)} className="p-1 text-gray-500 hover:text-red-600"><TrashIcon className="w-5 h-5"/></button>
+                                        <button onClick={() => handleDeleteClick(bus.id)} className="p-1 text-gray-500 hover:text-red-600"><TrashIcon className="w-5 h-5"/></button>
                                     </td>
                                 </tr>
                             ))}
@@ -151,6 +160,13 @@ const CompanyBuses: React.FC<CompanyBusesProps> = ({ companyId }) => {
             <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={currentBus ? "Edit Bus" : "Add New Bus"}>
                 <BusForm bus={currentBus} onSave={handleSave} onCancel={() => setIsModalOpen(false)} />
             </Modal>
+            <ConfirmationModal
+                isOpen={isConfirmModalOpen}
+                onClose={() => setIsConfirmModalOpen(false)}
+                onConfirm={handleConfirmDelete}
+                title="Delete Bus"
+                message="Are you sure you want to delete this bus? This action cannot be undone."
+            />
         </div>
     );
 };

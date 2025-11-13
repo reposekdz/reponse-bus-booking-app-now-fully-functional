@@ -3,6 +3,7 @@ import { BuildingOfficeIcon, SearchIcon, PlusIcon, PencilSquareIcon, TrashIcon }
 import * as api from '../services/apiService';
 import Modal from '../components/Modal';
 import LoadingSpinner from '../components/LoadingSpinner';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 // Form for adding/editing a company
 const CompanyForm = ({ company, onSave, onCancel }) => {
@@ -62,6 +63,8 @@ const ManageCompanies: React.FC = () => {
     const [error, setError] = useState<string|null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentCompany, setCurrentCompany] = useState<any | null>(null);
+    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 
     const fetchCompanies = async () => {
         try {
@@ -101,17 +104,24 @@ const ManageCompanies: React.FC = () => {
         }
     };
     
-    const handleDelete = async (id: string) => {
-        if (window.confirm("Are you sure you want to delete this company? This will also delete associated routes, buses, and trips.")) {
-            setIsLoading(true);
-            try {
-                await api.adminDeleteCompany(id);
-                await fetchCompanies();
-            } catch(e) {
-                 setError(e.message || 'Failed to delete company.');
-            } finally {
-                setIsLoading(false);
-            }
+    const handleDeleteClick = (id: string) => {
+        setItemToDelete(id);
+        setIsConfirmModalOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!itemToDelete) return;
+        
+        setIsLoading(true);
+        setIsConfirmModalOpen(false);
+        try {
+            await api.adminDeleteCompany(itemToDelete);
+            await fetchCompanies();
+        } catch(e) {
+             setError(e.message || 'Failed to delete company.');
+        } finally {
+            setIsLoading(false);
+            setItemToDelete(null);
         }
     };
 
@@ -167,7 +177,7 @@ const ManageCompanies: React.FC = () => {
                                     </td>
                                     <td className="flex space-x-2 p-3">
                                         <button onClick={() => openModal(company)} className="p-1 text-gray-500 hover:text-blue-600"><PencilSquareIcon className="w-5 h-5"/></button>
-                                        <button onClick={() => handleDelete(company._id)} className="p-1 text-gray-500 hover:text-red-600"><TrashIcon className="w-5 h-5"/></button>
+                                        <button onClick={() => handleDeleteClick(company._id)} className="p-1 text-gray-500 hover:text-red-600"><TrashIcon className="w-5 h-5"/></button>
                                     </td>
                                 </tr>
                             ))}
@@ -178,6 +188,14 @@ const ManageCompanies: React.FC = () => {
              <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={currentCompany ? "Edit Company" : "Add New Company"}>
                 <CompanyForm company={currentCompany} onSave={handleSave} onCancel={() => setIsModalOpen(false)} />
             </Modal>
+             <ConfirmationModal
+                isOpen={isConfirmModalOpen}
+                onClose={() => setIsConfirmModalOpen(false)}
+                onConfirm={handleConfirmDelete}
+                title="Delete Company"
+                message="Are you sure you want to delete this company? This will also delete associated routes, buses, and trips. This action cannot be undone."
+                isLoading={isLoading}
+            />
         </div>
     );
 };

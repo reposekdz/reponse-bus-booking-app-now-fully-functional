@@ -6,6 +6,7 @@ import { Page } from '../App';
 import * as api from '../services/apiService';
 import Modal from '../components/Modal';
 import LoadingSpinner from '../components/LoadingSpinner';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 
 // Form component
@@ -73,6 +74,8 @@ const ManageDrivers: React.FC<{ navigate: (page: Page, data?: any) => void; }> =
     const [error, setError] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentDriver, setCurrentDriver] = useState(null);
+    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 
     const fetchAllData = async () => {
         setIsLoading(true);
@@ -115,17 +118,24 @@ const ManageDrivers: React.FC<{ navigate: (page: Page, data?: any) => void; }> =
         }
     };
     
-    const handleDelete = async (id) => {
-        if(window.confirm('Are you sure you want to delete this driver?')) {
-            setIsLoading(true);
-            try {
-                await api.adminDeleteDriver(id);
-                await fetchAllData();
-            } catch (err) {
-                setError(`Failed to delete driver: ${(err as Error).message}`);
-            } finally {
-                setIsLoading(false);
-            }
+    const handleDeleteClick = (id: string) => {
+        setItemToDelete(id);
+        setIsConfirmModalOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!itemToDelete) return;
+
+        setIsLoading(true);
+        setIsConfirmModalOpen(false);
+        try {
+            await api.adminDeleteDriver(itemToDelete);
+            await fetchAllData();
+        } catch (err) {
+            setError(`Failed to delete driver: ${(err as Error).message}`);
+        } finally {
+            setIsLoading(false);
+            setItemToDelete(null);
         }
     };
     
@@ -184,7 +194,7 @@ const ManageDrivers: React.FC<{ navigate: (page: Page, data?: any) => void; }> =
                                     <td className="flex space-x-1 p-3">
                                         <button onClick={() => navigate('driverProfile', driver)} className="p-1 text-gray-500 hover:text-green-600" title="View Profile"><EyeIcon className="w-5 h-5"/></button>
                                         <button onClick={() => openModal(driver)} className="p-1 text-gray-500 hover:text-blue-600"><PencilSquareIcon className="w-5 h-5"/></button>
-                                        <button onClick={() => handleDelete(driver._id)} className="p-1 text-gray-500 hover:text-red-600"><TrashIcon className="w-5 h-5"/></button>
+                                        <button onClick={() => handleDeleteClick(driver._id)} className="p-1 text-gray-500 hover:text-red-600"><TrashIcon className="w-5 h-5"/></button>
                                     </td>
                                 </tr>
                             ))}
@@ -199,6 +209,14 @@ const ManageDrivers: React.FC<{ navigate: (page: Page, data?: any) => void; }> =
                     <p>Please add a company before adding a driver.</p>
                 )}
             </Modal>
+            <ConfirmationModal
+                isOpen={isConfirmModalOpen}
+                onClose={() => setIsConfirmModalOpen(false)}
+                onConfirm={handleConfirmDelete}
+                title="Delete Driver"
+                message="Are you sure you want to delete this driver? This action is permanent and cannot be undone."
+                isLoading={isLoading}
+            />
         </div>
     );
 };

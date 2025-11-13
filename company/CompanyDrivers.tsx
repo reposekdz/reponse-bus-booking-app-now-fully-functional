@@ -4,6 +4,7 @@ import Modal from '../components/Modal';
 import * as api from '../services/apiService';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { Page } from '../App';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 
 const DriverForm = ({ driver, onSave, onCancel }) => {
@@ -74,6 +75,8 @@ const CompanyDrivers: React.FC<CompanyDriversProps> = ({ companyId, navigate }) 
     const [currentDriver, setCurrentDriver] = useState<any | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string|null>(null);
+    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 
     const fetchDrivers = async () => {
         setIsLoading(true);
@@ -113,20 +116,24 @@ const CompanyDrivers: React.FC<CompanyDriversProps> = ({ companyId, navigate }) 
         }
     };
 
-    const handleDelete = (id: string) => {
-        if (window.confirm("Are you sure you want to delete this driver?")) {
-            const deleteAsync = async () => {
-                setIsLoading(true);
-                try {
-                    await api.companyDeleteDriver(id);
-                    fetchDrivers();
-                } catch (err) {
-                    setError(err.message || 'Failed to delete driver.');
-                } finally {
-                    setIsLoading(false);
-                }
-            };
-            deleteAsync();
+    const handleDeleteClick = (id: string) => {
+        setItemToDelete(id);
+        setIsConfirmModalOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!itemToDelete) return;
+        
+        setIsLoading(true);
+        setIsConfirmModalOpen(false);
+        try {
+            await api.companyDeleteDriver(itemToDelete);
+            fetchDrivers();
+        } catch (err) {
+            setError(err.message || 'Failed to delete driver.');
+        } finally {
+            setIsLoading(false);
+            setItemToDelete(null);
         }
     };
     
@@ -178,7 +185,7 @@ const CompanyDrivers: React.FC<CompanyDriversProps> = ({ companyId, navigate }) 
                                     <td className="flex space-x-2 p-3">
                                         <button onClick={() => navigate('companyDriverProfile', driver)} className="p-1 text-gray-500 hover:text-green-600" title="View Profile"><EyeIcon className="w-5 h-5"/></button>
                                         <button onClick={() => openModal(driver)} className="p-1 text-gray-500 hover:text-blue-600"><PencilSquareIcon className="w-5 h-5"/></button>
-                                        <button onClick={() => handleDelete(driver._id)} className="p-1 text-gray-500 hover:text-red-600"><TrashIcon className="w-5 h-5"/></button>
+                                        <button onClick={() => handleDeleteClick(driver._id)} className="p-1 text-gray-500 hover:text-red-600"><TrashIcon className="w-5 h-5"/></button>
                                     </td>
                                 </tr>
                             ))}
@@ -190,6 +197,14 @@ const CompanyDrivers: React.FC<CompanyDriversProps> = ({ companyId, navigate }) 
             <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={currentDriver ? "Edit Driver" : "Add New Driver"}>
                 <DriverForm driver={currentDriver} onSave={handleSave} onCancel={() => setIsModalOpen(false)} />
             </Modal>
+             <ConfirmationModal
+                isOpen={isConfirmModalOpen}
+                onClose={() => setIsConfirmModalOpen(false)}
+                onConfirm={handleConfirmDelete}
+                title="Delete Driver"
+                message="Are you sure you want to delete this driver? This action cannot be undone."
+                isLoading={isLoading}
+            />
         </div>
     );
 };

@@ -3,6 +3,7 @@ import { MapIcon, PlusIcon, PencilSquareIcon, TrashIcon } from '../components/ic
 import * as api from '../services/apiService';
 import Modal from '../components/Modal';
 import LoadingSpinner from '../components/LoadingSpinner';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 const DestinationForm = ({ destination, onSave, onCancel }) => {
     const [formData, setFormData] = useState({
@@ -62,6 +63,8 @@ const ManageDestinations: React.FC = () => {
     const [error, setError] = useState<string|null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentDestination, setCurrentDestination] = useState<any | null>(null);
+    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState<number | null>(null);
 
     const fetchData = async () => {
         setIsLoading(true);
@@ -98,14 +101,21 @@ const ManageDestinations: React.FC = () => {
         }
     };
     
-    const handleDelete = async (id: number) => {
-        if (window.confirm("Are you sure?")) {
-            try {
-                await api.adminDeleteDestination(id);
-                fetchData();
-            } catch (e) {
-                setError(e.message);
-            }
+    const handleDeleteClick = (id: number) => {
+        setItemToDelete(id);
+        setIsConfirmModalOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (itemToDelete === null) return;
+        try {
+            await api.adminDeleteDestination(itemToDelete);
+            fetchData();
+        } catch (e) {
+            setError(e.message);
+        } finally {
+            setIsConfirmModalOpen(false);
+            setItemToDelete(null);
         }
     };
 
@@ -132,7 +142,7 @@ const ManageDestinations: React.FC = () => {
                             </div>
                             <div className="p-2 bg-gray-100 dark:bg-gray-700 flex justify-end space-x-2">
                                 <button onClick={() => openModal(dest)} className="p-1 text-gray-500 hover:text-blue-600"><PencilSquareIcon className="w-5 h-5"/></button>
-                                <button onClick={() => handleDelete(dest.id)} className="p-1 text-gray-500 hover:text-red-600"><TrashIcon className="w-5 h-5"/></button>
+                                <button onClick={() => handleDeleteClick(dest.id)} className="p-1 text-gray-500 hover:text-red-600"><TrashIcon className="w-5 h-5"/></button>
                             </div>
                         </div>
                     ))}
@@ -141,6 +151,13 @@ const ManageDestinations: React.FC = () => {
              <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={currentDestination ? "Edit Destination" : "Add New Destination"}>
                 <DestinationForm destination={currentDestination} onSave={handleSave} onCancel={() => setIsModalOpen(false)} />
             </Modal>
+             <ConfirmationModal
+                isOpen={isConfirmModalOpen}
+                onClose={() => setIsConfirmModalOpen(false)}
+                onConfirm={handleConfirmDelete}
+                title="Delete Destination"
+                message="Are you sure you want to delete this featured destination? This action cannot be undone."
+            />
         </div>
     );
 };

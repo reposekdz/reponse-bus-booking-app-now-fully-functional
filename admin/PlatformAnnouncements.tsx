@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { MegaphoneIcon, PlusIcon, TrashIcon } from '../components/icons';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 const initialAnnouncements = [
     { id: 1, text: "Reminder: All drivers must complete the new safety training module by Friday.", target: "Drivers", date: "2024-10-28" },
@@ -10,6 +11,8 @@ const PlatformAnnouncements: React.FC = () => {
     const [announcements, setAnnouncements] = useState(initialAnnouncements);
     const [newMessage, setNewMessage] = useState('');
     const [targetRole, setTargetRole] = useState('All');
+    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState<number | null>(null);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -27,10 +30,16 @@ const PlatformAnnouncements: React.FC = () => {
         setTargetRole('All');
     };
 
-    const handleDelete = (id: number) => {
-        if (window.confirm("Are you sure you want to delete this announcement?")) {
-            setAnnouncements(announcements.filter(ann => ann.id !== id));
-        }
+    const handleDeleteClick = (id: number) => {
+        setItemToDelete(id);
+        setIsConfirmModalOpen(true);
+    };
+
+    const handleConfirmDelete = () => {
+        if (itemToDelete === null) return;
+        setAnnouncements(announcements.filter(ann => ann.id !== itemToDelete));
+        setIsConfirmModalOpen(false);
+        setItemToDelete(null);
     };
 
     return (
@@ -48,7 +57,7 @@ const PlatformAnnouncements: React.FC = () => {
                                         <span>To: <span className="font-semibold">{ann.target}</span></span>
                                         <span>{new Date(ann.date).toLocaleDateString()}</span>
                                     </div>
-                                    <button onClick={() => handleDelete(ann.id)} className="absolute top-2 right-2 p-1 bg-white dark:bg-gray-800 rounded-full text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button onClick={() => handleDeleteClick(ann.id)} className="absolute top-2 right-2 p-1 bg-white dark:bg-gray-800 rounded-full text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <TrashIcon className="w-4 h-4" />
                                     </button>
                                 </div>
@@ -91,6 +100,13 @@ const PlatformAnnouncements: React.FC = () => {
                     </div>
                 </div>
             </div>
+            <ConfirmationModal
+                isOpen={isConfirmModalOpen}
+                onClose={() => setIsConfirmModalOpen(false)}
+                onConfirm={handleConfirmDelete}
+                title="Delete Announcement"
+                message="Are you sure you want to delete this announcement? This action cannot be undone."
+            />
         </div>
     );
 };

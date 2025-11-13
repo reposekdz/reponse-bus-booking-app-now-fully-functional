@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { MapIcon, SearchIcon, PlusIcon, PencilSquareIcon, TrashIcon } from '../components/icons';
 import Modal from '../components/Modal';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 const RouteForm = ({ route, onSave, onCancel }) => {
     const [formData, setFormData] = useState({
@@ -67,6 +68,8 @@ const CompanyRoutes: React.FC<CompanyRoutesProps> = ({ companyId }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentRoute, setCurrentRoute] = useState<any | null>(null);
+    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 
     const openModal = (route = null) => {
         setCurrentRoute(route);
@@ -82,10 +85,16 @@ const CompanyRoutes: React.FC<CompanyRoutesProps> = ({ companyId }) => {
         setIsModalOpen(false);
     };
 
-     const handleDelete = (id: string) => {
-        if (window.confirm("Are you sure you want to delete this route?")) {
-            setRoutes(routes.filter(r => r.id !== id));
-        }
+     const handleDeleteClick = (id: string) => {
+        setItemToDelete(id);
+        setIsConfirmModalOpen(true);
+    };
+
+    const handleConfirmDelete = () => {
+        if (!itemToDelete) return;
+        setRoutes(routes.filter(r => r.id !== itemToDelete));
+        setIsConfirmModalOpen(false);
+        setItemToDelete(null);
     };
 
     return (
@@ -126,7 +135,7 @@ const CompanyRoutes: React.FC<CompanyRoutesProps> = ({ companyId }) => {
                                     </td>
                                     <td className="flex space-x-2 p-3">
                                         <button onClick={() => openModal(route)} className="p-1 text-gray-500 hover:text-blue-600"><PencilSquareIcon className="w-5 h-5"/></button>
-                                        <button onClick={() => handleDelete(route.id)} className="p-1 text-gray-500 hover:text-red-600"><TrashIcon className="w-5 h-5"/></button>
+                                        <button onClick={() => handleDeleteClick(route.id)} className="p-1 text-gray-500 hover:text-red-600"><TrashIcon className="w-5 h-5"/></button>
                                     </td>
                                 </tr>
                             ))}
@@ -138,6 +147,13 @@ const CompanyRoutes: React.FC<CompanyRoutesProps> = ({ companyId }) => {
             <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={currentRoute ? "Edit Route" : "Add New Route"}>
                 <RouteForm route={currentRoute} onSave={handleSave} onCancel={() => setIsModalOpen(false)} />
             </Modal>
+             <ConfirmationModal
+                isOpen={isConfirmModalOpen}
+                onClose={() => setIsConfirmModalOpen(false)}
+                onConfirm={handleConfirmDelete}
+                title="Delete Route"
+                message="Are you sure you want to delete this route? This action cannot be undone."
+            />
         </div>
     );
 };

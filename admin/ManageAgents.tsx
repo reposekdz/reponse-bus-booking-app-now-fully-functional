@@ -4,6 +4,7 @@ import Modal from '../components/Modal';
 import { Page } from '../App';
 import * as api from '../services/apiService';
 import LoadingSpinner from '../components/LoadingSpinner';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 const AgentForm = ({ agent, onSave, onCancel }) => {
     const [formData, setFormData] = useState({
@@ -85,6 +86,8 @@ const ManageAgents: React.FC<{ navigate: (page: Page, data?: any) => void; }> = 
     const [currentAgent, setCurrentAgent] = useState<any | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string|null>(null);
+    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 
     const fetchAgents = async () => {
         setIsLoading(true);
@@ -125,17 +128,24 @@ const ManageAgents: React.FC<{ navigate: (page: Page, data?: any) => void; }> = 
         }
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm("Are you sure you want to delete this agent?")) {
-            setIsLoading(true);
-            try {
-                await api.adminDeleteAgent(id);
-                await fetchAgents();
-            } catch(e) {
-                setError((e as Error).message);
-            } finally {
-                setIsLoading(false);
-            }
+    const handleDeleteClick = (id: string) => {
+        setItemToDelete(id);
+        setIsConfirmModalOpen(true);
+    };
+    
+    const handleConfirmDelete = async () => {
+        if (!itemToDelete) return;
+        
+        setIsLoading(true);
+        setIsConfirmModalOpen(false);
+        try {
+            await api.adminDeleteAgent(itemToDelete);
+            await fetchAgents();
+        } catch(e) {
+            setError((e as Error).message);
+        } finally {
+            setIsLoading(false);
+            setItemToDelete(null);
         }
     };
     
@@ -185,7 +195,7 @@ const ManageAgents: React.FC<{ navigate: (page: Page, data?: any) => void; }> = 
                                     <td className="flex space-x-1 p-3">
                                         <button onClick={() => navigate('agentProfile', agent)} className="p-1 text-gray-500 hover:text-green-600" title="View Profile"><EyeIcon className="w-5 h-5"/></button>
                                         <button onClick={() => openModal(agent)} className="p-1 text-gray-500 hover:text-blue-600" title="Edit"><PencilSquareIcon className="w-5 h-5"/></button>
-                                        <button onClick={() => handleDelete(agent.id)} className="p-1 text-gray-500 hover:text-red-600" title="Delete"><TrashIcon className="w-5 h-5"/></button>
+                                        <button onClick={() => handleDeleteClick(agent.id)} className="p-1 text-gray-500 hover:text-red-600" title="Delete"><TrashIcon className="w-5 h-5"/></button>
                                     </td>
                                 </tr>
                             ))}
@@ -197,6 +207,14 @@ const ManageAgents: React.FC<{ navigate: (page: Page, data?: any) => void; }> = 
              <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={currentAgent ? "Edit Agent" : "Add New Agent"}>
                 <AgentForm agent={currentAgent} onSave={handleSave} onCancel={() => setIsModalOpen(false)} />
             </Modal>
+             <ConfirmationModal
+                isOpen={isConfirmModalOpen}
+                onClose={() => setIsConfirmModalOpen(false)}
+                onConfirm={handleConfirmDelete}
+                title="Delete Agent"
+                message="Are you sure you want to delete this agent? This action is permanent and cannot be undone."
+                isLoading={isLoading}
+            />
         </div>
     );
 };

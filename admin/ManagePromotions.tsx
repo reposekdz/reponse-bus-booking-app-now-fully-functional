@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { TagIcon, PlusIcon, PencilSquareIcon, TrashIcon } from '../components/icons';
 import Modal from '../components/Modal';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 const mockPromotions = [
     { id: 'VOLC01', title: 'Gura Itike ya Gatatu ku buntu!', code: 'GENDANEZA', discount: '100% off 3rd ticket', expiryDate: '2024-11-30', status: 'Active' },
@@ -70,6 +71,8 @@ const ManagePromotions: React.FC = () => {
     const [promotions, setPromotions] = useState(mockPromotions);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentPromo, setCurrentPromo] = useState<any | null>(null);
+    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 
     const openModal = (promo = null) => {
         setCurrentPromo(promo);
@@ -85,10 +88,16 @@ const ManagePromotions: React.FC = () => {
         setIsModalOpen(false);
     };
 
-     const handleDelete = (id: string) => {
-        if (window.confirm("Are you sure you want to delete this promotion?")) {
-            setPromotions(promotions.filter(p => p.id !== id));
-        }
+     const handleDeleteClick = (id: string) => {
+        setItemToDelete(id);
+        setIsConfirmModalOpen(true);
+    };
+
+    const handleConfirmDelete = () => {
+        if (!itemToDelete) return;
+        setPromotions(promotions.filter(p => p.id !== itemToDelete));
+        setIsConfirmModalOpen(false);
+        setItemToDelete(null);
     };
 
     return (
@@ -124,7 +133,7 @@ const ManagePromotions: React.FC = () => {
                                     </td>
                                     <td className="flex space-x-2 p-3">
                                         <button onClick={() => openModal(promo)} className="p-1 text-gray-500 hover:text-blue-600"><PencilSquareIcon className="w-5 h-5"/></button>
-                                        <button onClick={() => handleDelete(promo.id)} className="p-1 text-gray-500 hover:text-red-600"><TrashIcon className="w-5 h-5"/></button>
+                                        <button onClick={() => handleDeleteClick(promo.id)} className="p-1 text-gray-500 hover:text-red-600"><TrashIcon className="w-5 h-5"/></button>
                                     </td>
                                 </tr>
                             ))}
@@ -135,6 +144,13 @@ const ManagePromotions: React.FC = () => {
              <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={currentPromo ? 'Edit Promotion' : 'Create New Promotion'}>
                 <PromotionForm promo={currentPromo} onSave={handleSave} onCancel={() => setIsModalOpen(false)} />
             </Modal>
+            <ConfirmationModal
+                isOpen={isConfirmModalOpen}
+                onClose={() => setIsConfirmModalOpen(false)}
+                onConfirm={handleConfirmDelete}
+                title="Delete Promotion"
+                message="Are you sure you want to delete this promotion? This action cannot be undone."
+            />
         </div>
     );
 };

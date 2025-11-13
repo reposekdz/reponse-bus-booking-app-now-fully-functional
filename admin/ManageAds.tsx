@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { MegaphoneIcon, PlusIcon, PencilSquareIcon, TrashIcon } from '../components/icons';
 import Modal from '../components/Modal';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 const mockAds = [
     { id: 1, title: 'Gura Isabune ya MENYA NEZA!', description: 'Isuku n\'ubuzima. Boneka mu maduka yose.', type: 'banner', status: 'Active' },
@@ -67,6 +68,8 @@ const ManageAds: React.FC = () => {
     const [ads, setAds] = useState(mockAds);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentAd, setCurrentAd] = useState<any | null>(null);
+    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState<number | null>(null);
 
     const openModal = (ad = null) => {
         setCurrentAd(ad);
@@ -82,10 +85,16 @@ const ManageAds: React.FC = () => {
         setIsModalOpen(false);
     };
 
-    const handleDelete = (id: number) => {
-        if (window.confirm("Are you sure you want to delete this ad?")) {
-            setAds(ads.filter(ad => ad.id !== id));
-        }
+    const handleDeleteClick = (id: number) => {
+        setItemToDelete(id);
+        setIsConfirmModalOpen(true);
+    };
+
+    const handleConfirmDelete = () => {
+        if (itemToDelete === null) return;
+        setAds(ads.filter(ad => ad.id !== itemToDelete));
+        setIsConfirmModalOpen(false);
+        setItemToDelete(null);
     };
 
     return (
@@ -117,7 +126,7 @@ const ManageAds: React.FC = () => {
                                     </td>
                                     <td className="flex space-x-2 p-3">
                                         <button onClick={() => openModal(ad)} className="p-1 text-gray-500 hover:text-blue-600"><PencilSquareIcon className="w-5 h-5"/></button>
-                                        <button onClick={() => handleDelete(ad.id)} className="p-1 text-gray-500 hover:text-red-600"><TrashIcon className="w-5 h-5"/></button>
+                                        <button onClick={() => handleDeleteClick(ad.id)} className="p-1 text-gray-500 hover:text-red-600"><TrashIcon className="w-5 h-5"/></button>
                                     </td>
                                 </tr>
                             ))}
@@ -128,6 +137,13 @@ const ManageAds: React.FC = () => {
             <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={currentAd ? 'Edit Ad' : 'Create New Ad'}>
                 <AdForm ad={currentAd} onSave={handleSave} onCancel={() => setIsModalOpen(false)} />
             </Modal>
+            <ConfirmationModal
+                isOpen={isConfirmModalOpen}
+                onClose={() => setIsConfirmModalOpen(false)}
+                onConfirm={handleConfirmDelete}
+                title="Delete Ad"
+                message="Are you sure you want to delete this advertisement? This action cannot be undone."
+            />
         </div>
     );
 };
