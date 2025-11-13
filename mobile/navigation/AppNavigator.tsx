@@ -1,9 +1,10 @@
 
+
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useAuth } from '../hooks/useAuth';
-import { useLanguage } from '../contexts/LanguageContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 // Import Screens
 import LoginScreen from '../screens/LoginScreen';
@@ -23,6 +24,7 @@ import LostAndFoundScreen from '../screens/LostAndFoundScreen';
 import PackageDeliveryScreen from '../screens/PackageDeliveryScreen';
 import ReportLostItemScreen from '../screens/ReportLostItemScreen';
 import LoyaltyScreen from '../screens/LoyaltyScreen';
+import PaymentScreen from '../screens/PaymentScreen';
 
 
 // Agent Screens
@@ -167,7 +169,12 @@ function AdminTabs() {
 }
 
 function AppStack() {
-    const { user } = useAuth();
+    const { user, isLoading } = useAuth();
+    
+    if (isLoading) {
+        // You can return a loading splash screen here
+        return null;
+    }
 
     switch(user?.role) {
         case 'passenger': return <PassengerTabs />;
@@ -181,7 +188,12 @@ function AppStack() {
 
 
 export default function AppNavigator() {
-    const { user } = useAuth();
+    const { user, isLoading } = useAuth();
+
+    if (isLoading) {
+        return null; // Or a splash screen
+    }
+
     return (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
             {user ? (
@@ -190,6 +202,7 @@ export default function AppNavigator() {
                     {/* Screens accessible after login */}
                     <Stack.Screen name="SearchResults" component={SearchResultsScreen} />
                     <Stack.Screen name="SeatSelection" component={SeatSelectionScreen} />
+                    <Stack.Screen name="Payment" component={PaymentScreen} />
                     <Stack.Screen name="BookingConfirmation" component={BookingConfirmationScreen} />
                     <Stack.Screen name="TicketDetails" component={TicketDetailsScreen} />
                     <Stack.Screen name="DriverBoarding" component={BoardingScreen} />

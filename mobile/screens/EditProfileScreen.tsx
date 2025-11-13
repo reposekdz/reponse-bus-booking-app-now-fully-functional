@@ -23,7 +23,8 @@ export default function EditProfileScreen({ navigation }) {
             </View>
             <ScrollView contentContainerStyle={styles.content}>
                 <View style={styles.avatarContainer}>
-                    <Image source={{ uri: user?.avatarUrl }} style={styles.avatar} />
+                    {/* FIX: Changed avatarUrl to avatar_url to match User type definition. */}
+                    <Image source={{ uri: user?.avatar_url }} style={styles.avatar} />
                     <TouchableOpacity>
                         <Text style={styles.changeText}>Change Photo</Text>
                     </TouchableOpacity>

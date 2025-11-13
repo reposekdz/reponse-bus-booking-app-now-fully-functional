@@ -1,6 +1,10 @@
-import React, { useState } from 'react';
+
+
+import React, { useState, useEffect } from 'react';
 import { CurrencyDollarIcon, TagIcon, BriefcaseIcon, ChartBarIcon } from '../components/icons';
 import DateRangePicker from '../components/DateRangePicker';
+import * as api from '../services/apiService';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const StatCard = ({ title, value, icon }) => (
     <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-lg">
@@ -16,15 +20,33 @@ const StatCard = ({ title, value, icon }) => (
     </div>
 );
 
-const mockTransactions = [
-    { id: 'TXN123', type: 'Ticket Sale', company: 'Volcano Express', amount: 4500, date: '2024-10-28' },
-    { id: 'TXN124', type: 'Agent Commission', agent: 'Jane Smith', amount: -225, date: '2024-10-28' },
-    { id: 'TXN125', type: 'Company Payout', company: 'RITCO', amount: -1850000, date: '2024-10-27' },
-    { id: 'TXN126', type: 'Ticket Sale', company: 'Horizon Express', amount: 3500, date: '2024-10-27' },
-];
 
 const AdminFinancials: React.FC = () => {
     const [activeRange, setActiveRange] = useState('30 Days');
+    const [financialData, setFinancialData] = useState<any>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string|null>(null);
+
+    useEffect(() => {
+        const fetchFinancials = async () => {
+            setIsLoading(true);
+            try {
+                const data = await api.adminGetFinancials();
+                setFinancialData(data);
+            } catch (e: any) {
+                setError(e.message || 'Failed to load financial data.');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchFinancials();
+    }, [activeRange]);
+
+    if (isLoading || !financialData) {
+        return <LoadingSpinner />;
+    }
+    
+    const { stats, transactions } = financialData;
 
     return (
         <div>
@@ -33,11 +55,13 @@ const AdminFinancials: React.FC = () => {
                 <DateRangePicker onRangeChange={setActiveRange} activeRange={activeRange} />
             </div>
 
+            {error && <p className="text-red-500 mb-4">{error}</p>}
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-                <StatCard title="Total Revenue" value="25.8M RWF" icon={<CurrencyDollarIcon className="w-6 h-6 text-blue-600"/>} />
-                <StatCard title="Commissions Paid" value="1.2M RWF" icon={<BriefcaseIcon className="w-6 h-6 text-blue-600"/>} />
-                <StatCard title="Company Payouts" value="18.5M RWF" icon={<ChartBarIcon className="w-6 h-6 text-blue-600"/>} />
-                <StatCard title="Promotions Used" value="85,000 RWF" icon={<TagIcon className="w-6 h-6 text-blue-600"/>} />
+                <StatCard title="Total Revenue" value={`${new Intl.NumberFormat('fr-RW').format(stats.totalRevenue)} RWF`} icon={<CurrencyDollarIcon className="w-6 h-6 text-blue-600"/>} />
+                <StatCard title="Commissions Paid" value={`${new Intl.NumberFormat('fr-RW').format(stats.commissionsPaid)} RWF`} icon={<BriefcaseIcon className="w-6 h-6 text-blue-600"/>} />
+                <StatCard title="Company Payouts" value={`${new Intl.NumberFormat('fr-RW').format(stats.companyPayouts)} RWF`} icon={<ChartBarIcon className="w-6 h-6 text-blue-600"/>} />
+                <StatCard title="Promotions Used" value={`${new Intl.NumberFormat('fr-RW').format(stats.promotionsUsed)} RWF`} icon={<TagIcon className="w-6 h-6 text-blue-600"/>} />
             </div>
             
             <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-lg">
@@ -47,19 +71,17 @@ const AdminFinancials: React.FC = () => {
                         <thead className="text-xs text-gray-500 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                             <tr>
                                 <th className="p-3">Date</th>
-                                <th className="p-3">Transaction ID</th>
-                                <th className="p-3">Type</th>
+                                <th className="p-3">Transaction Type</th>
                                 <th className="p-3">Details</th>
                                 <th className="p-3 text-right">Amount (RWF)</th>
                             </tr>
                         </thead>
                         <tbody>
-                           {mockTransactions.map(tx => (
-                               <tr key={tx.id} className="border-t dark:border-gray-700">
+                           {transactions.map((tx: any, index: number) => (
+                               <tr key={index} className="border-t dark:border-gray-700">
                                    <td className="p-3 whitespace-nowrap">{new Date(tx.date).toLocaleDateString()}</td>
-                                   <td className="font-mono">{tx.id}</td>
                                    <td>{tx.type}</td>
-                                   <td>{tx.company || tx.agent}</td>
+                                   <td>{tx.details}</td>
                                    <td className={`font-mono text-right font-semibold ${tx.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>
                                        {new Intl.NumberFormat('fr-RW').format(tx.amount)}
                                     </td>

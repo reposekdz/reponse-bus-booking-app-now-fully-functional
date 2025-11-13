@@ -1,5 +1,14 @@
 import { Router } from 'express';
-import { getCompanies, getCompanyById, getMyDrivers, createDriverForMyCompany, updateDriverForMyCompany, deleteDriverForMyCompany, getCompanyDetails, getDriverHistoryForCompany, addGalleryImage, deleteGalleryImage, getMyDashboard } from './company.controller';
+import { 
+    getCompanies, getCompanyById, getMyDrivers, createDriverForMyCompany, updateDriverForMyCompany, 
+    deleteDriverForMyCompany, getCompanyDetails, getDriverHistoryForCompany, addGalleryImage, 
+    deleteGalleryImage, getMyDashboard,
+    // New imports
+    getMyBuses, createBus, updateBus, deleteBus,
+    getMyRoutes, createRoute, updateRoute, deleteRoute,
+    getMyPassengers,
+    getMyFinancials
+} from './company.controller';
 import { protect, authorize } from '../../middleware/auth.middleware';
 
 const router = Router();
@@ -29,6 +38,28 @@ router.route('/my-gallery')
 
 router.route('/my-gallery/:id')
     .delete(deleteGalleryImage);
+
+// Bus Management for Company
+router.route('/mybuses')
+    .get(getMyBuses)
+    .post(createBus);
+
+router.route('/mybuses/:id')
+    .put(updateBus)
+    .delete(deleteBus);
+
+// Route Management for Company
+router.route('/myroutes')
+    .get(getMyRoutes)
+    .post(createRoute);
+
+router.route('/myroutes/:id')
+    .put(updateRoute)
+    .delete(deleteRoute);
+    
+// Passenger & Financials
+router.get('/mypassengers', getMyPassengers);
+router.get('/myfinancials', getMyFinancials);
 
 
 export default router;

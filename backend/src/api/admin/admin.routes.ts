@@ -18,6 +18,7 @@ import {
     deleteDriver,
     getDashboardAnalytics,
     getDriverHistoryForAdmin,
+    getAdminFinancials
 } from './admin.controller';
 import { updateSetting } from '../settings/settings.controller';
 import { createDestination, updateDestination, deleteDestination } from '../destinations/destinations.controller';
@@ -30,6 +31,9 @@ router.use(protect, authorize('admin'));
 
 // Dashboard
 router.get('/analytics', getDashboardAnalytics);
+
+// Financials Page
+router.get('/financials', getAdminFinancials);
 
 // Company management
 router.route('/companies')

@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { SunIcon, MoonIcon, CogIcon, UsersIcon, ChartBarIcon, QrCodeIcon, ChartPieIcon, ClipboardDocumentListIcon, WrenchScrewdriverIcon, MegaphoneIcon, CalendarIcon, ChatBubbleLeftRightIcon, CheckCircleIcon, StarIcon, ShieldCheckIcon, MenuIcon, XIcon, ArrowRightIcon, BusIcon } from './components/icons';
 import { Page } from './App';
 import * as api from './services/apiService';
 import LoadingSpinner from './components/LoadingSpinner';
+import { useSocket } from './contexts/SocketContext';
 
 interface DriverDashboardProps {
     onLogout: () => void;
@@ -154,6 +155,8 @@ const DriverDashboard: React.FC<DriverDashboardProps> = ({ onLogout, theme, setT
     const [error, setError] = useState('');
     const [isAvailable, setIsAvailable] = useState(driverData.status === 'Active');
     const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+    const socket = useSocket();
+    const watchIdRef = useRef<number | null>(null);
 
     const handleToggleAvailability = async () => {
         setIsUpdatingStatus(true);
@@ -169,7 +172,6 @@ const DriverDashboard: React.FC<DriverDashboardProps> = ({ onLogout, theme, setT
         }
     };
 
-
     useEffect(() => {
         const fetchTrips = async () => {
             setIsLoading(true);
@@ -184,6 +186,34 @@ const DriverDashboard: React.FC<DriverDashboardProps> = ({ onLogout, theme, setT
         };
         fetchTrips();
     }, []);
+    
+    // Real-time location tracking effect
+    useEffect(() => {
+        if (socket && selectedTrip?.status === 'Departed') {
+            watchIdRef.current = navigator.geolocation.watchPosition(
+                (position) => {
+                    const { latitude, longitude } = position.coords;
+                    socket.emit('updateDriverLocation', { lat: latitude, lng: longitude });
+                },
+                (error) => {
+                    console.error("Geolocation error:", error);
+                },
+                // FIX: Removed 'distanceFilter' as it's not a standard property in PositionOptions.
+                { enableHighAccuracy: true }
+            );
+
+            return () => {
+                if (watchIdRef.current !== null) {
+                    navigator.geolocation.clearWatch(watchIdRef.current);
+                }
+            };
+        } else {
+             if (watchIdRef.current !== null) {
+                navigator.geolocation.clearWatch(watchIdRef.current);
+             }
+        }
+    }, [socket, selectedTrip]);
+
 
     const toggleTheme = () => setTheme(theme === 'light' ? 'dark' : 'light');
 

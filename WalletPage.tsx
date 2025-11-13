@@ -41,9 +41,9 @@ const WalletPage: React.FC<{ onNavigate: (page: Page) => void }> = ({ onNavigate
         }
     };
     
-     const handleSendSuccess = (updatedBalance: number) => {
+     const handleSendSuccess = (newBalance: number) => {
         setIsSendMoneyOpen(false);
-        setUser(prevUser => ({ ...prevUser, walletBalance: updatedBalance }));
+        setUser(prevUser => ({ ...prevUser, walletBalance: newBalance }));
         alert(`Money sent successfully!`);
         fetchHistory(); // Refresh transaction history
     };

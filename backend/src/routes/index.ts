@@ -17,6 +17,7 @@ import priceAlertRoutes from '../api/price-alerts/price-alerts.routes';
 import lostAndFoundRoutes from '../api/lost-and-found/lost-and-found.routes';
 import packageRoutes from '../api/packages/packages.routes';
 import charterRoutes from '../api/charters/charters.routes';
+import userRoutes from '../api/users/user.routes';
 
 const router = Router();
 
@@ -39,6 +40,7 @@ router.use('/price-alerts', priceAlertRoutes);
 router.use('/lost-and-found', lostAndFoundRoutes);
 router.use('/packages', packageRoutes);
 router.use('/charters', charterRoutes);
+router.use('/users', userRoutes);
 
 
 export default router;

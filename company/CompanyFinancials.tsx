@@ -1,7 +1,10 @@
 
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { WalletIcon, ChartBarIcon, UsersIcon } from '../components/icons';
 import DateRangePicker from '../components/DateRangePicker';
+import * as api from '../services/apiService';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const StatCard = ({ title, value, icon }) => (
     <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-lg">
@@ -16,13 +19,6 @@ const StatCard = ({ title, value, icon }) => (
         </div>
     </div>
 );
-
-const mockTransactions = [
-    { id: 'PAYOUT-05', type: 'Driver Payout', driver: 'John Doe', amount: -450000, date: '2024-10-25' },
-    { id: 'SALE-831', type: 'Ticket Revenue', route: 'Kigali - Rubavu', amount: 120500, date: '2024-10-25' },
-    { id: 'SALE-832', type: 'Ticket Revenue', route: 'Kigali - Musanze', amount: 85000, date: '2024-10-24' },
-    { id: 'PAYOUT-04', type: 'Driver Payout', driver: 'Mary Anne', amount: -425000, date: '2024-09-25' },
-];
 
 const BarChart = ({ data, dataKey, labelKey, title, colorClass }) => {
     const maxValue = Math.max(...data.map(d => d[dataKey]));
@@ -47,10 +43,30 @@ const BarChart = ({ data, dataKey, labelKey, title, colorClass }) => {
 
 const CompanyFinancials: React.FC = () => {
     const [activeRange, setActiveRange] = useState('30 Days');
+    const [transactions, setTransactions] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string|null>(null);
+    
+    useEffect(() => {
+        const fetchFinancials = async () => {
+            setIsLoading(true);
+            try {
+                const data = await api.companyGetMyFinancials();
+                setTransactions(data);
+            } catch (err: any) {
+                setError(err.message || 'Failed to load financial data.');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchFinancials();
+    }, [activeRange]); // Re-fetch if range changes in the future
     
     const dailyRevenue = [
         { day: 'W1', revenue: 1200000 }, { day: 'W2', revenue: 1500000 }, { day: 'W3', revenue: 1350000 }, { day: 'W4', revenue: 1550000 }
     ];
+
+    if (isLoading) return <LoadingSpinner />;
 
     return (
         <div>
@@ -72,16 +88,18 @@ const CompanyFinancials: React.FC = () => {
                  <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-lg">
                     <h2 className="text-xl font-bold dark:text-white mb-4">Transaction History</h2>
                     <button onClick={() => alert("Downloading report...")} className="w-full text-center py-2 bg-gray-200 dark:bg-gray-700 font-semibold rounded-lg mb-4">Export Report</button>
+                    {error && <p className="text-red-500">{error}</p>}
                     <div className="overflow-y-auto max-h-80 custom-scrollbar pr-2">
-                        {mockTransactions.map(tx => (
+                        {transactions.map(tx => (
                            <div key={tx.id} className="border-b dark:border-gray-700 py-2">
                                <div className="flex justify-between items-center">
                                    <p className="font-semibold text-sm dark:text-gray-200">{tx.type}</p>
                                    <p className={`font-mono text-sm font-semibold ${tx.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>{new Intl.NumberFormat('fr-RW').format(tx.amount)}</p>
                                </div>
-                               <p className="text-xs text-gray-500">{tx.driver || tx.route}</p>
+                               <p className="text-xs text-gray-500">{tx.details}</p>
                            </div>
                        ))}
+                       {transactions.length === 0 && !isLoading && <p className="text-center text-gray-500 py-4">No completed transactions found.</p>}
                     </div>
                 </div>
             </div>

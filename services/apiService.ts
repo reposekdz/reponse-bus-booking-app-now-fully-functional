@@ -1,4 +1,3 @@
-
 // services/apiService.ts - REAL BACKEND API CLIENT
 
 const BASE_URL = '/api/v1';
@@ -105,15 +104,16 @@ export const getAllDestinations = async () => {
 };
 
 
+// --- USER PROFILE ---
+export const updateAvatar = (avatarData: string) => apiFetch('/users/me/avatar', { method: 'PUT', body: JSON.stringify({ avatarData }) });
+
+
 // --- WALLET ---
 export const getWalletHistory = async () => {
     const { data } = await apiFetch('/wallet/history');
     return data;
 };
-export const topUpWallet = async (amount: number) => {
-    const { data } = await apiFetch('/wallet/topup', { method: 'POST', body: JSON.stringify({ amount }) });
-    return data;
-};
+export const topUpWallet = (amount: number) => apiFetch('/wallet/topup', { method: 'POST', body: JSON.stringify({ amount }) });
 export const setWalletPin = (pin: string) => apiFetch('/wallet/set-pin', { method: 'PUT', body: JSON.stringify({ pin }) });
 export const walletTransfer = (data: any) => apiFetch('/wallet/transfer', { method: 'POST', body: JSON.stringify(data) });
 
@@ -165,6 +165,10 @@ export const adminGetDashboardAnalytics = async () => {
     const { data } = await apiFetch('/admin/analytics');
     return data;
 };
+export const adminGetFinancials = async () => {
+    const { data } = await apiFetch('/admin/financials');
+    return data;
+};
 
 export const adminUpdateSetting = (key: string, value: string) => apiFetch(`/admin/settings/${key}`, { method: 'PUT', body: JSON.stringify({ value }) });
 
@@ -189,6 +193,30 @@ export const getCompanyDashboard = async () => {
     const { data } = await apiFetch('/companies/my-dashboard');
     return data;
 }
+export const companyGetMyBuses = async () => {
+    const { data } = await apiFetch('/companies/mybuses');
+    return data;
+};
+export const companyCreateBus = (busData: any) => apiFetch('/companies/mybuses', { method: 'POST', body: JSON.stringify(busData) });
+export const companyUpdateBus = (id: string, busData: any) => apiFetch(`/companies/mybuses/${id}`, { method: 'PUT', body: JSON.stringify(busData) });
+export const companyDeleteBus = (id: string) => apiFetch(`/companies/mybuses/${id}`, { method: 'DELETE' });
+
+export const companyGetMyRoutes = async () => {
+    const { data } = await apiFetch('/companies/myroutes');
+    return data;
+};
+export const companyCreateRoute = (routeData: any) => apiFetch('/companies/myroutes', { method: 'POST', body: JSON.stringify(routeData) });
+export const companyUpdateRoute = (id: string, routeData: any) => apiFetch(`/companies/myroutes/${id}`, { method: 'PUT', body: JSON.stringify(routeData) });
+export const companyDeleteRoute = (id: string) => apiFetch(`/companies/myroutes/${id}`, { method: 'DELETE' });
+
+export const companyGetMyPassengers = async () => {
+    const { data } = await apiFetch('/companies/mypassengers');
+    return data;
+};
+export const companyGetMyFinancials = async () => {
+    const { data } = await apiFetch('/companies/myfinancials');
+    return data;
+};
 
 
 // --- DRIVER ---

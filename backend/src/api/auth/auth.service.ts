@@ -6,8 +6,8 @@ import { AppError } from '../../utils/AppError';
 import { User } from '../../types';
 import * as mysql from 'mysql2/promise';
 
-const generateToken = (userId: number) => {
-    return jwt.sign({ id: userId }, config.jwt.secret, {
+const generateToken = (user: { id: number, company_id?: number, role: string }) => {
+    return jwt.sign({ id: user.id, companyId: user.company_id, role: user.role }, config.jwt.secret, {
         expiresIn: config.jwt.expiresIn,
     } as SignOptions);
 };
@@ -52,7 +52,7 @@ export const registerUser = async (userData: any) => {
     const user = rows[0];
     delete user.password_hash;
     
-    const token = generateToken(userId);
+    const token = generateToken(user);
 
     return { user, token };
 };
@@ -78,11 +78,12 @@ export const loginUser = async (loginData: any) => {
     if (user.role === 'passenger') {
         const [walletRows] = await pool.query<any[] & mysql.RowDataPacket[]>('SELECT balance FROM wallets WHERE user_id = ?', [user.id]);
         if (walletRows.length > 0) {
-            user.walletBalance = parseFloat(walletRows[0].balance);
+            // FIX: Changed to snake_case to match type definitions and API consistency.
+            user.wallet_balance = parseFloat(walletRows[0].balance);
         }
     }
 
-    const token = generateToken(user.id);
+    const token = generateToken(user);
     delete user.password_hash;
     
     return { user, token };

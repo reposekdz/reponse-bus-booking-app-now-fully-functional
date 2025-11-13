@@ -45,14 +45,14 @@ const RegistrationSuccessPage: React.FC<{ onNavigate: (page: Page) => void }> = 
     const handleSetPin = async () => {
         const pinString = pin.join('');
         if (pinString.length !== 4) {
-            setError(t('reg_success_pin_length_error'));
+            setError('PIN must be 4 digits.');
             return;
         }
         setIsLoading(true);
         setError('');
         try {
             await api.setWalletPin(pinString);
-            alert(t('reg_success_pin_set_success'));
+            alert('PIN set successfully! You can now use your wallet.');
             onNavigate('home');
         } catch (err: any) {
             setError(err.message || 'Failed to set PIN.');

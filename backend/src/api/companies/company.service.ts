@@ -203,3 +203,83 @@ export const deleteGalleryImage = async (companyId: number, imageId: number) => 
     }
     return;
 };
+
+// --- Bus Management by Company ---
+export const getBusesByCompany = async (companyId: number) => {
+    const [rows] = await pool.query('SELECT * FROM buses WHERE company_id = ?', [companyId]);
+    return rows;
+};
+
+export const createBusForCompany = async (busData: any, companyId: number) => {
+    const { plate, model, capacity, status, maintenanceDate } = busData;
+    const [result] = await pool.query<mysql.ResultSetHeader>('INSERT INTO buses (company_id, plate_number, model, capacity, status, maintenanceDate) VALUES (?, ?, ?, ?, ?, ?)', [companyId, plate, model, capacity, status, maintenanceDate]);
+    return { id: result.insertId, ...busData };
+};
+
+export const updateBusForCompany = async (busId: string, busData: any, companyId: number) => {
+    const { plate, model, capacity, status, maintenanceDate } = busData;
+    const [result] = await pool.query<mysql.OkPacket>('UPDATE buses SET plate_number = ?, model = ?, capacity = ?, status = ?, maintenanceDate = ? WHERE id = ? AND company_id = ?', [plate, model, capacity, status, maintenanceDate, busId, companyId]);
+    if (result.affectedRows === 0) throw new AppError('Bus not found or permission denied', 404);
+    return { id: busId, ...busData };
+};
+
+export const deleteBusForCompany = async (busId: string, companyId: number) => {
+    const [result] = await pool.query<mysql.OkPacket>('DELETE FROM buses WHERE id = ? AND company_id = ?', [busId, companyId]);
+    if (result.affectedRows === 0) throw new AppError('Bus not found or permission denied', 404);
+};
+
+// --- Route Management by Company ---
+export const getRoutesByCompany = async (companyId: number) => {
+    const [rows] = await pool.query('SELECT *, id, origin as `from`, destination as `to`, base_price as price, estimated_duration_minutes as duration FROM routes WHERE company_id = ?', [companyId]);
+    return rows;
+};
+
+export const createRouteForCompany = async (routeData: any, companyId: number) => {
+    const { from, to, price, duration } = routeData;
+    const durationMinutes = parseFloat(duration) * 60; // Assuming duration is in hours (e.g., "3.5h")
+    const [result] = await pool.query<mysql.ResultSetHeader>('INSERT INTO routes (company_id, origin, destination, base_price, estimated_duration_minutes) VALUES (?, ?, ?, ?, ?)', [companyId, from, to, price, durationMinutes]);
+    return { id: result.insertId, ...routeData };
+};
+
+export const updateRouteForCompany = async (routeId: string, routeData: any, companyId: number) => {
+    const { from, to, price, duration, status } = routeData;
+    const durationMinutes = parseFloat(duration) * 60;
+    const [result] = await pool.query<mysql.OkPacket>('UPDATE routes SET origin = ?, destination = ?, base_price = ?, estimated_duration_minutes = ?, status = ? WHERE id = ? AND company_id = ?', [from, to, price, durationMinutes, status || 'Active', routeId, companyId]);
+    if (result.affectedRows === 0) throw new AppError('Route not found or permission denied', 404);
+    return { id: routeId, ...routeData };
+};
+
+export const deleteRouteForCompany = async (routeId: string, companyId: number) => {
+    const [result] = await pool.query<mysql.OkPacket>('DELETE FROM routes WHERE id = ? AND company_id = ?', [routeId, companyId]);
+    if (result.affectedRows === 0) throw new AppError('Route not found or permission denied', 404);
+};
+
+// --- Passenger & Financials ---
+export const getPassengersForCompany = async (companyId: number) => {
+    const [rows] = await pool.query(`
+        SELECT u.id, u.name, u.email, u.phone_number, b.booking_id as ticketId, r.origin, r.destination, t.departure_time as date, s.seat_number as seat
+        FROM bookings b
+        JOIN users u ON b.user_id = u.id
+        JOIN trips t ON b.trip_id = t.id
+        JOIN routes r ON t.route_id = r.id
+        JOIN seats s ON b.id = s.booking_id
+        WHERE r.company_id = ?
+        ORDER BY t.departure_time DESC
+        LIMIT 100
+    `, [companyId]);
+    // Transform route for frontend
+    return (rows as any[]).map(r => ({...r, route: `${r.origin} - ${r.destination}`}));
+};
+
+export const getFinancialsForCompany = async (companyId: number) => {
+    const [transactions] = await pool.query(`
+        SELECT b.id, 'Ticket Revenue' as type, CONCAT(r.origin, ' - ', r.destination) as details, b.total_price as amount, b.created_at as date
+        FROM bookings b
+        JOIN trips t ON b.trip_id = t.id
+        JOIN routes r ON t.route_id = r.id
+        WHERE r.company_id = ? AND b.status = 'Completed'
+        ORDER BY b.created_at DESC
+        LIMIT 100
+    `, [companyId]);
+    return transactions;
+};

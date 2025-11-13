@@ -50,7 +50,7 @@ const SendMoneyModal: React.FC<SendMoneyModalProps> = ({ onClose, onSuccess, cur
 
     return (
         <>
-            <Modal isOpen={true} onClose={onClose} title="Send Money">
+            <Modal isOpen={!isLoading} onClose={onClose} title="Send Money">
                 <form onSubmit={handleSendAttempt} className="space-y-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Recipient's Serial Code</label>

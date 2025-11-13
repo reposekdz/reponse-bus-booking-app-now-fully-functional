@@ -1,36 +1,53 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { UsersIcon, SearchIcon, EyeIcon } from '../components/icons';
 import PassengerDetailModal from '../components/PassengerDetailModal';
+import * as api from '../services/apiService';
+import LoadingSpinner from '../components/LoadingSpinner';
 
-const mockPassengers = [
-  { id: 1, name: 'Kalisa Jean', route: 'Kigali - Rubavu', date: '2024-10-25', ticketId: 'VK-83AD1', seat: 'A5', phone: '0788123456', email: 'kalisa.j@email.com' },
-  { id: 2, name: 'Mugisha Frank', route: 'Kigali - Musanze', date: '2024-10-25', ticketId: 'VK-91BC2', seat: 'C2', phone: '0788234567', email: 'mugisha.f@email.com' },
-  { id: 3, name: 'Irakoze Grace', route: 'Kigali - Rubavu', date: '2024-10-24', ticketId: 'VK-76DE3', seat: 'B4', phone: '0788345678', email: 'irakoze.g@email.com' },
-  { id: 4, name: 'Umutoni Aline', route: 'Kigali - Huye', date: '2024-10-23', ticketId: 'VK-65EF4', seat: 'A1', phone: '0788456789', email: 'umutoni.a@email.com' },
-  { id: 5, name: 'Gatete David', route: 'Huye - Kigali', date: '2024-10-22', ticketId: 'VK-54FG5', seat: 'D1', phone: '0788567890', email: 'gatete.d@email.com' },
-];
 
 const CompanyPassengers: React.FC = () => {
+    const [passengers, setPassengers] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string|null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [routeFilter, setRouteFilter] = useState('All');
     const [selectedPassenger, setSelectedPassenger] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     
-    const uniqueRoutes = useMemo(() => ['All', ...new Set(mockPassengers.map(p => p.route))], []);
+    useEffect(() => {
+        const fetchPassengers = async () => {
+            setIsLoading(true);
+            try {
+                const data = await api.companyGetMyPassengers();
+                setPassengers(data);
+            } catch (e: any) {
+                setError(e.message || 'Failed to load passengers.');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchPassengers();
+    }, []);
+
+    const uniqueRoutes = useMemo(() => ['All', ...new Set(passengers.map(p => p.route))], [passengers]);
 
     const filteredPassengers = useMemo(() => {
-        return mockPassengers.filter(p => 
-            p.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        return passengers.filter(p => 
+            (p.name.toLowerCase().includes(searchTerm.toLowerCase()) || (p.email && p.email.toLowerCase().includes(searchTerm.toLowerCase()))) &&
             (routeFilter === 'All' || p.route === routeFilter)
         );
-    }, [searchTerm, routeFilter]);
+    }, [searchTerm, routeFilter, passengers]);
 
-    const viewPassengerDetails = (passenger) => {
+    const viewPassengerDetails = (passenger: any) => {
         // In a real app, you might fetch more detailed history here
-        const history = mockPassengers.filter(p => p.email === passenger.email);
+        const history = passengers.filter(p => p.email === passenger.email);
         setSelectedPassenger({ ...passenger, history });
         setIsModalOpen(true);
     };
+
+    if (isLoading) {
+        return <LoadingSpinner />;
+    }
 
     return (
         <div>
@@ -55,6 +72,8 @@ const CompanyPassengers: React.FC = () => {
                         {uniqueRoutes.map(route => <option key={route} value={route}>{route}</option>)}
                     </select>
                 </div>
+
+                {error && <p className="text-red-500">{error}</p>}
 
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left">

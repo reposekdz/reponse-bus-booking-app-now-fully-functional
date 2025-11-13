@@ -1,14 +1,14 @@
-
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, ActivityIndicator, Alert } from 'react-native';
 import { useAuth, User } from '../hooks/useAuth';
 
+// FIX: Changed property names to snake_case (avatar_url, wallet_balance) to match the User type.
 const mockUsers: { [key: string]: User } = {
-  passenger: { name: 'Kalisa Jean', email: 'passenger@rwandabus.rw', role: 'passenger', avatarUrl: 'https://randomuser.me/api/portraits/men/32.jpg', walletBalance: 15000 },
-  company: { name: 'Volcano Express', email: 'manager@volcano.rw', role: 'company', avatarUrl: 'https://pbs.twimg.com/profile_images/1237839357116452865/p-28c8o-_400x400.jpg' },
-  admin: { name: 'Admin User', email: 'admin@rwandabus.rw', role: 'admin', avatarUrl: 'https://randomuser.me/api/portraits/women/44.jpg' },
-  driver: { name: 'John Doe', email: 'driver@volcano.rw', role: 'driver', avatarUrl: 'https://randomuser.me/api/portraits/men/4.jpg' },
-  agent: { name: 'Jane Smith', email: 'jane.s@agent.rw', role: 'agent', avatarUrl: 'https://randomuser.me/api/portraits/women/5.jpg' }
+  passenger: { name: 'Kalisa Jean', email: 'passenger@rwandabus.rw', role: 'passenger', avatar_url: 'https://randomuser.me/api/portraits/men/32.jpg', wallet_balance: 15000 },
+  company: { name: 'Volcano Express', email: 'manager@volcano.rw', role: 'company', avatar_url: 'https://pbs.twimg.com/profile_images/1237839357116452865/p-28c8o-_400x400.jpg' },
+  admin: { name: 'Admin User', email: 'admin@rwandabus.rw', role: 'admin', avatar_url: 'https://randomuser.me/api/portraits/women/44.jpg' },
+  driver: { name: 'John Doe', email: 'driver@volcano.rw', role: 'driver', avatar_url: 'https://randomuser.me/api/portraits/men/4.jpg' },
+  agent: { name: 'Jane Smith', email: 'jane.s@agent.rw', role: 'agent', avatar_url: 'https://randomuser.me/api/portraits/women/5.jpg' }
 };
 
 export default function LoginScreen({ navigation }) {

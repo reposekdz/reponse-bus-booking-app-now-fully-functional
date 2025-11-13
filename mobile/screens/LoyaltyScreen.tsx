@@ -33,7 +33,8 @@ export default function LoyaltyScreen({ navigation }) {
 
             <View style={styles.balanceCard}>
                 <Text style={styles.balanceLabel}>Current Balance</Text>
-                <Text style={styles.balanceAmount}>{new Intl.NumberFormat().format(user?.loyaltyPoints || 0)}</Text>
+                {/* FIX: Changed loyaltyPoints to loyalty_points to match User type definition. */}
+                <Text style={styles.balanceAmount}>{new Intl.NumberFormat().format(user?.loyalty_points || 0)}</Text>
                 <Text style={styles.balanceSub}>GoPoints</Text>
             </View>
             

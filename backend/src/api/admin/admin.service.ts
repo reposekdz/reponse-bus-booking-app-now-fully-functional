@@ -199,3 +199,30 @@ export const getDashboardAnalytics = async () => {
         highValueTransactions
     };
 };
+
+export const getFinancialsData = async () => {
+    // These queries would be more complex with date ranges in a real app
+    const [[{ totalRevenue }]] = await pool.query<any[] & mysql.RowDataPacket[]>("SELECT SUM(total_price) as totalRevenue FROM bookings WHERE status != 'Cancelled'");
+    const [[{ commissionsPaid }]] = await pool.query<any[] & mysql.RowDataPacket[]>("SELECT SUM(amount) as commissionsPaid FROM wallet_transactions WHERE type = 'commission'");
+    
+    // Mocking these as they are not directly available in schema
+    const companyPayouts = 18500000;
+    const promotionsUsed = 85000;
+
+    const [transactions] = await pool.query(`
+        (SELECT 'Ticket Sale' as type, CONCAT(c.name, ': ', r.origin, '-', r.destination) as details, b.total_price as amount, b.created_at as date FROM bookings b JOIN trips t ON b.trip_id = t.id JOIN routes r ON t.route_id = r.id JOIN companies c ON r.company_id = c.id ORDER BY b.created_at DESC LIMIT 5)
+        UNION
+        (SELECT 'Agent Commission' as type, CONCAT('Agent #', u.id) as details, wt.amount, wt.created_at as date FROM wallet_transactions wt JOIN wallets w ON wt.wallet_id = w.id JOIN users u ON w.user_id = u.id WHERE wt.type = 'commission' ORDER BY wt.created_at DESC LIMIT 5)
+        ORDER BY date DESC
+    `);
+
+    return {
+        stats: {
+            totalRevenue: totalRevenue || 0,
+            commissionsPaid: commissionsPaid || 0,
+            companyPayouts,
+            promotionsUsed
+        },
+        transactions
+    }
+};

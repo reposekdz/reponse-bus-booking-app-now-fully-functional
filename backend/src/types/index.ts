@@ -10,4 +10,9 @@ export interface User {
     company_id?: number;
     created_at: string;
     updated_at: string;
+    // FIX: Added optional properties to match database schema and dynamic properties.
+    pin?: string;
+    serial_code?: string;
+    loyalty_points?: number;
+    wallet_balance?: number; // This is joined, not a column
 }

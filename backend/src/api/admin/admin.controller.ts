@@ -84,3 +84,8 @@ export const getDashboardAnalytics = asyncHandler(async (req, res) => {
     const analytics = await adminService.getDashboardAnalytics();
     res.status(200).json({ success: true, data: analytics });
 });
+
+export const getAdminFinancials = asyncHandler(async (req, res) => {
+    const data = await adminService.getFinancialsData();
+    res.status(200).json({ success: true, data });
+});

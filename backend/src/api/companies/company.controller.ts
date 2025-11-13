@@ -63,3 +63,56 @@ export const deleteGalleryImage = asyncHandler(async (req: any, res: any) => {
     await companyService.deleteGalleryImage(req.user.company_id, parseInt(req.params.id));
     res.status(200).json({ success: true, data: {} });
 });
+
+// --- Bus Management ---
+export const getMyBuses = asyncHandler(async (req: any, res: any) => {
+    const buses = await companyService.getBusesByCompany(req.user.company_id);
+    res.status(200).json({ success: true, data: buses });
+});
+
+export const createBus = asyncHandler(async (req: any, res: any) => {
+    const bus = await companyService.createBusForCompany(req.body, req.user.company_id);
+    res.status(201).json({ success: true, data: bus });
+});
+
+export const updateBus = asyncHandler(async (req: any, res: any) => {
+    const bus = await companyService.updateBusForCompany(req.params.id, req.body, req.user.company_id);
+    res.status(200).json({ success: true, data: bus });
+});
+
+export const deleteBus = asyncHandler(async (req: any, res: any) => {
+    await companyService.deleteBusForCompany(req.params.id, req.user.company_id);
+    res.status(200).json({ success: true, data: {} });
+});
+
+// --- Route Management ---
+export const getMyRoutes = asyncHandler(async (req: any, res: any) => {
+    const routes = await companyService.getRoutesByCompany(req.user.company_id);
+    res.status(200).json({ success: true, data: routes });
+});
+
+export const createRoute = asyncHandler(async (req: any, res: any) => {
+    const route = await companyService.createRouteForCompany(req.body, req.user.company_id);
+    res.status(201).json({ success: true, data: route });
+});
+
+export const updateRoute = asyncHandler(async (req: any, res: any) => {
+    const route = await companyService.updateRouteForCompany(req.params.id, req.body, req.user.company_id);
+    res.status(200).json({ success: true, data: route });
+});
+
+export const deleteRoute = asyncHandler(async (req: any, res: any) => {
+    await companyService.deleteRouteForCompany(req.params.id, req.user.company_id);
+    res.status(200).json({ success: true, data: {} });
+});
+
+// --- Passenger & Financials ---
+export const getMyPassengers = asyncHandler(async (req: any, res: any) => {
+    const passengers = await companyService.getPassengersForCompany(req.user.company_id);
+    res.status(200).json({ success: true, data: passengers });
+});
+
+export const getMyFinancials = asyncHandler(async (req: any, res: any) => {
+    const financials = await companyService.getFinancialsForCompany(req.user.company_id);
+    res.status(200).json({ success: true, data: financials });
+});

@@ -1,17 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapIcon, SearchIcon, PlusIcon, PencilSquareIcon, TrashIcon } from '../components/icons';
 import Modal from '../components/Modal';
 import ConfirmationModal from '../components/ConfirmationModal';
+import * as api from '../services/apiService';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const RouteForm = ({ route, onSave, onCancel }) => {
     const [formData, setFormData] = useState({
-        from: '',
-        to: '',
-        distance: '',
-        duration: '',
-        price: 0,
-        status: 'Active',
-        ...route
+        from: route?.from || '',
+        to: route?.to || '',
+        price: route?.price || 0,
+        duration: route?.duration ? (route.duration / 60).toFixed(2) : '', // convert minutes to hours
+        status: route?.status || 'Active',
     });
 
     const handleChange = (e) => {
@@ -42,8 +42,8 @@ const RouteForm = ({ route, onSave, onCancel }) => {
                     <input type="number" name="price" value={formData.price} onChange={handleChange} className="mt-1 w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" required />
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Duration (e.g., 3.5h)</label>
-                    <input type="text" name="duration" value={formData.duration} onChange={handleChange} className="mt-1 w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" />
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Duration (in hours)</label>
+                    <input type="number" step="0.1" name="duration" value={formData.duration} onChange={handleChange} className="mt-1 w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" placeholder="e.g., 3.5"/>
                 </div>
             </div>
             <div className="flex justify-end space-x-3 pt-4">
@@ -54,35 +54,58 @@ const RouteForm = ({ route, onSave, onCancel }) => {
     );
 };
 
-const initialRoutes = [
-    { id: 'r1', from: 'Kigali', to: 'Rubavu', distance: '150km', duration: '3.5h', price: 4500, status: 'Active' },
-    { id: 'r2', from: 'Kigali', to: 'Musanze', distance: '90km', duration: '2h', price: 3500, status: 'Active' },
-];
 
 interface CompanyRoutesProps {
     companyId: string;
 }
 
 const CompanyRoutes: React.FC<CompanyRoutesProps> = ({ companyId }) => {
-    const [routes, setRoutes] = useState(initialRoutes);
+    const [routes, setRoutes] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentRoute, setCurrentRoute] = useState<any | null>(null);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
     const [itemToDelete, setItemToDelete] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string|null>(null);
+
+    const fetchRoutes = async () => {
+        setIsLoading(true);
+        try {
+            const data = await api.companyGetMyRoutes();
+            setRoutes(data);
+        } catch (e: any) {
+            setError(e.message || 'Failed to fetch routes');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    
+    useEffect(() => {
+        fetchRoutes();
+    }, []);
+
 
     const openModal = (route = null) => {
         setCurrentRoute(route);
         setIsModalOpen(true);
     };
 
-    const handleSave = (routeData) => {
-        if (currentRoute) {
-            setRoutes(routes.map(r => r.id === currentRoute.id ? { ...r, ...routeData } : r));
-        } else {
-            setRoutes([...routes, { ...routeData, id: `route-${Date.now()}`, companyId }]);
-        }
+    const handleSave = async (routeData: any) => {
         setIsModalOpen(false);
+        setIsLoading(true);
+        try {
+            if (currentRoute) {
+                await api.companyUpdateRoute(currentRoute.id, routeData);
+            } else {
+                await api.companyCreateRoute(routeData);
+            }
+            await fetchRoutes();
+        } catch(e: any) {
+            setError(e.message || 'Failed to save route.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
      const handleDeleteClick = (id: string) => {
@@ -90,15 +113,31 @@ const CompanyRoutes: React.FC<CompanyRoutesProps> = ({ companyId }) => {
         setIsConfirmModalOpen(true);
     };
 
-    const handleConfirmDelete = () => {
+    const handleConfirmDelete = async () => {
         if (!itemToDelete) return;
-        setRoutes(routes.filter(r => r.id !== itemToDelete));
         setIsConfirmModalOpen(false);
-        setItemToDelete(null);
+        setIsLoading(true);
+        try {
+            await api.companyDeleteRoute(itemToDelete);
+            await fetchRoutes();
+        } catch (e: any) {
+            setError(e.message || 'Failed to delete route.');
+        } finally {
+            setIsLoading(false);
+            setItemToDelete(null);
+        }
+    };
+
+    const formatDuration = (minutes: number) => {
+        if (!minutes) return 'N/A';
+        const h = Math.floor(minutes / 60);
+        const m = minutes % 60;
+        return `${h}h ${m}m`;
     };
 
     return (
         <div>
+            {isLoading && <LoadingSpinner />}
             <h1 className="text-3xl font-bold dark:text-gray-200 mb-6">Manage Routes</h1>
             <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-lg">
                 <div className="flex justify-between items-center mb-4">
@@ -110,6 +149,8 @@ const CompanyRoutes: React.FC<CompanyRoutesProps> = ({ companyId }) => {
                         <PlusIcon className="w-5 h-5 mr-2" /> Add Route
                     </button>
                 </div>
+
+                {error && <p className="text-red-500 mb-4">{error}</p>}
 
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left">
@@ -127,7 +168,7 @@ const CompanyRoutes: React.FC<CompanyRoutesProps> = ({ companyId }) => {
                                 <tr key={route.id} className="border-t dark:border-gray-700">
                                     <td className="p-3 font-semibold dark:text-white">{route.from} - {route.to}</td>
                                     <td>{new Intl.NumberFormat('fr-RW').format(route.price)} RWF</td>
-                                    <td>{route.duration}</td>
+                                    <td>{formatDuration(route.duration)}</td>
                                     <td>
                                         <span className={`px-2 py-1 text-xs font-semibold rounded-full ${route.status === 'Active' ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300'}`}>
                                             {route.status}
@@ -153,6 +194,7 @@ const CompanyRoutes: React.FC<CompanyRoutesProps> = ({ companyId }) => {
                 onConfirm={handleConfirmDelete}
                 title="Delete Route"
                 message="Are you sure you want to delete this route? This action cannot be undone."
+                isLoading={isLoading}
             />
         </div>
     );

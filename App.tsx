@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import HeroSection from './components/HeroSection';
@@ -52,6 +53,7 @@ import LoyaltyPage from './LoyaltyPage';
 import PaymentPage from './PaymentPage';
 import WalletPage from './WalletPage';
 import { useAuth } from './contexts/AuthContext';
+import LoadingSpinner from './components/LoadingSpinner';
 
 
 export type Page = 
@@ -134,7 +136,7 @@ const AppContent: React.FC = () => {
   }
 
   if (isLoading) {
-      return <div className="min-h-screen flex items-center justify-center dark:bg-gray-900 dark:text-white">{t('app_loading')}</div>;
+      return <LoadingSpinner />;
   }
 
   const renderPage = () => {

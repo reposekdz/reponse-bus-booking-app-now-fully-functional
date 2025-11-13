@@ -5,70 +5,7 @@ import WalletTopUpModal from './components/WalletTopUpModal';
 import { useLanguage } from './contexts/LanguageContext';
 import { useAuth } from './contexts/AuthContext';
 import * as api from './services/apiService';
-
-const SecuritySettings = () => {
-    const [currentPassword, setCurrentPassword] = useState('');
-    const [newPassword, setNewPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
-
-    const handlePasswordChange = async (e) => {
-        e.preventDefault();
-        if (newPassword !== confirmPassword) {
-            setError("New passwords do not match.");
-            return;
-        }
-        if (newPassword.length < 6) {
-            setError("New password must be at least 6 characters long.");
-            return;
-        }
-        setError('');
-        setSuccess('');
-        setIsLoading(true);
-        try {
-            await api.updatePassword({ currentPassword, newPassword });
-            setSuccess('Password updated successfully!');
-            setCurrentPassword('');
-            setNewPassword('');
-            setConfirmPassword('');
-        } catch (err) {
-            setError(err.message || 'Failed to update password.');
-        } finally {
-            setIsLoading(false);
-        }
-    };
-    
-    return (
-        <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-lg mt-6">
-            <h2 className="text-xl font-bold dark:text-white mb-4 flex items-center"><LockClosedIcon className="w-6 h-6 mr-3 text-red-500"/> Security</h2>
-            <form onSubmit={handlePasswordChange} className="space-y-4">
-                <div>
-                    <label className="text-xs font-semibold text-gray-500">Current Password</label>
-                    <input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} required className="w-full mt-1 p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600"/>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label className="text-xs font-semibold text-gray-500">New Password</label>
-                        <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required className="w-full mt-1 p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600"/>
-                    </div>
-                     <div>
-                        <label className="text-xs font-semibold text-gray-500">Confirm New Password</label>
-                        <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required className="w-full mt-1 p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600"/>
-                    </div>
-                </div>
-                {error && <p className="text-red-500 text-sm font-semibold">{error}</p>}
-                {success && <p className="text-green-500 text-sm font-semibold">{success}</p>}
-                <div className="text-right">
-                    <button type="submit" disabled={isLoading} className="px-5 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition disabled:opacity-50">
-                        {isLoading ? 'Updating...' : 'Update Password'}
-                    </button>
-                </div>
-            </form>
-        </div>
-    );
-};
+import SecuritySettings from './components/SecuritySettings';
 
 interface ProfilePageProps {
   onNavigate: (page: Page, data?: any) => void;
@@ -76,32 +13,45 @@ interface ProfilePageProps {
 
 const ProfilePage: React.FC<ProfilePageProps> = ({ onNavigate }) => {
   const { t } = useLanguage();
-  const { user, setUser: setAuthUser } = useAuth(); // setUser from auth context is not implemented here
+  const { user, setUser } = useAuth();
   const [isTopUpOpen, setIsTopUpOpen] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
-  
-  // Local state to manage UI changes like photo uploads, since we don't have a backend for it.
-  const [profileData, setProfileData] = useState(user);
 
-
-  const handleTopUpSuccess = (amount: number) => {
-    // This is a simulation. In a real app, the user object would be refetched.
-    setProfileData(prev => ({ ...prev, walletBalance: (prev.walletBalance || 0) + amount }));
+  const handleTopUpSuccess = async (amount: number) => {
     setIsTopUpOpen(false);
-    alert(`Successfully added ${new Intl.NumberFormat('fr-RW').format(amount)} RWF to your wallet!`);
+    setIsProcessing(true);
+    try {
+        const response = await api.topUpWallet(amount);
+        setUser(prevUser => ({...prevUser, walletBalance: response.data.walletBalance }));
+        alert(`Successfully added ${new Intl.NumberFormat('fr-RW').format(amount)} RWF to your wallet!`);
+    } catch (error: any) {
+        alert(`Top-up failed: ${error.message}`);
+    } finally {
+        setIsProcessing(false);
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'avatar' | 'cover') => {
     const file = e.target.files?.[0];
     if (file) {
+        setIsProcessing(true);
         const reader = new FileReader();
-        reader.onload = () => {
+        reader.onload = async () => {
             const url = reader.result as string;
-            if (type === 'avatar') {
-                setProfileData(prev => ({...prev, avatarUrl: url}));
-            } else {
-                setProfileData(prev => ({...prev, coverUrl: url}));
+            try {
+                if (type === 'avatar') {
+                    const { data } = await api.updateAvatar(url);
+                    setUser(prev => ({ ...prev, avatar_url: data.avatarUrl }));
+                } else {
+                    // Note: Cover photo update is client-side only for this demo
+                     setUser(prev => ({...prev, coverUrl: url}));
+                }
+            } catch (error) {
+                 alert(`Failed to update ${type}.`);
+            } finally {
+                setIsProcessing(false);
             }
         };
         reader.readAsDataURL(file);
@@ -109,7 +59,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onNavigate }) => {
   };
 
 
-  if (!profileData) {
+  if (!user) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
         <h1 className="text-2xl font-bold mb-4 dark:text-white">You are not logged in.</h1>
@@ -133,7 +83,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onNavigate }) => {
             <div className="container mx-auto px-6 max-w-4xl py-12">
                  <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
                     <div className="h-40 bg-blue-600 relative group">
-                        <img src={profileData.coverUrl} alt="Cover" className="w-full h-full object-cover"/>
+                        <img src={user.coverUrl || 'https://images.unsplash.com/photo-1619534103142-93b3f276c120?q=80&w=2070&auto=format&fit=crop'} alt="Cover" className="w-full h-full object-cover"/>
                         <div className="absolute inset-0 bg-black/30"></div>
                          <button onClick={() => coverInputRef.current?.click()} className="absolute top-2 right-2 flex items-center text-xs bg-black/40 text-white px-2 py-1 rounded-full hover:bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity">
                             <CameraIcon className="w-4 h-4 mr-1"/> Edit Cover
@@ -143,26 +93,26 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onNavigate }) => {
                     <div className="px-6 pb-6">
                         <div className="flex flex-col sm:flex-row items-center -mt-16">
                             <div className="relative group">
-                                <img src={profileData.avatarUrl} alt={profileData.name} className="w-32 h-32 rounded-full border-4 border-white dark:border-gray-800 object-cover"/>
+                                <img src={user.avatar_url} alt={user.name} className="w-32 h-32 rounded-full border-4 border-white dark:border-gray-800 object-cover"/>
                                 <button onClick={() => avatarInputRef.current?.click()} className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity">
                                     <CameraIcon className="w-6 h-6"/>
                                 </button>
                                 <input type="file" ref={avatarInputRef} onChange={(e) => handleFileChange(e, 'avatar')} className="hidden" accept="image/*" />
                             </div>
                             <div className="sm:ml-6 mt-4 sm:mt-16 text-center sm:text-left">
-                                <h1 className="text-3xl font-bold text-gray-800 dark:text-white">{profileData.name}</h1>
-                                <p className="text-gray-600 dark:text-gray-400">{profileData.email}</p>
+                                <h1 className="text-3xl font-bold text-gray-800 dark:text-white">{user.name}</h1>
+                                <p className="text-gray-600 dark:text-gray-400">{user.email}</p>
                             </div>
                         </div>
                         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-4 rounded-xl shadow-lg">
                                 <p className="text-sm font-semibold opacity-80">Wallet Balance</p>
-                                <p className="text-3xl font-bold">{new Intl.NumberFormat('fr-RW').format(profileData.walletBalance)} RWF</p>
+                                <p className="text-3xl font-bold">{new Intl.NumberFormat('fr-RW').format(user.walletBalance)} RWF</p>
                                 <button onClick={() => setIsTopUpOpen(true)} className="mt-2 text-xs font-bold bg-white/20 px-3 py-1 rounded-full hover:bg-white/30">Add Funds</button>
                             </div>
                             <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white p-4 rounded-xl shadow-lg">
                                 <p className="text-sm font-semibold opacity-80">Loyalty Points</p>
-                                <p className="text-3xl font-bold">{new Intl.NumberFormat().format(profileData.loyaltyPoints)}</p>
+                                <p className="text-3xl font-bold">{new Intl.NumberFormat().format(user.loyaltyPoints)}</p>
                                 <button onClick={() => onNavigate('loyalty')} className="mt-2 text-xs font-bold bg-white/20 px-3 py-1 rounded-full hover:bg-white/30">View Rewards</button>
                             </div>
                         </div>
@@ -186,7 +136,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onNavigate }) => {
             <WalletTopUpModal 
                 onClose={() => setIsTopUpOpen(false)}
                 onSuccess={handleTopUpSuccess}
-                userPin={profileData.pin || '1234'}
+                userPin={user.pin || '1234'}
             />
         )}
     </>

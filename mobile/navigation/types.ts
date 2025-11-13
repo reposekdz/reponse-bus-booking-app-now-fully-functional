@@ -1,11 +1,13 @@
 
+
 // types.ts
 import { NavigatorScreenParams } from '@react-navigation/native';
 
 // Define params for each screen that receives them
-type SearchResultsParams = { from: string; to: string };
-type SeatSelectionParams = { trip: any };
-type BookingConfirmationParams = { trip: any; selectedSeats: string[] };
+type SearchResultsParams = { from: string; to: string; date: string; };
+type SeatSelectionParams = { tripId: string };
+type PaymentParams = { bookingDetails: any };
+type BookingConfirmationParams = { bookingDetails: any };
 type TicketDetailsParams = { ticket: any };
 type AddEditBusParams = { bus?: any };
 type AddEditDriverParams = { driver?: any };
@@ -18,6 +20,7 @@ export type RootStackParamList = {
   // Screens that can be pushed on top of any tab
   SearchResults: SearchResultsParams;
   SeatSelection: SeatSelectionParams;
+  Payment: PaymentParams;
   BookingConfirmation: BookingConfirmationParams;
   TicketDetails: TicketDetailsParams;
   DriverBoarding: undefined;

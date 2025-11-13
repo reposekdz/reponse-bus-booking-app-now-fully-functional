@@ -1,16 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BusIcon, SearchIcon, PlusIcon, PencilSquareIcon, TrashIcon } from '../components/icons';
 import Modal from '../components/Modal';
 import ConfirmationModal from '../components/ConfirmationModal';
+import * as api from '../services/apiService';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const BusForm = ({ bus, onSave, onCancel }) => {
     const [formData, setFormData] = useState({
-        plate: '',
-        model: '',
-        capacity: 30,
-        status: 'Operational',
-        maintenanceDate: '',
-        ...bus
+        plate: bus?.plate_number || '',
+        model: bus?.model || '',
+        capacity: bus?.capacity || 30,
+        status: bus?.status || 'Operational',
+        maintenanceDate: bus?.maintenanceDate ? new Date(bus.maintenanceDate).toISOString().split('T')[0] : '',
     });
 
     const handleChange = (e) => {
@@ -59,35 +60,58 @@ const BusForm = ({ bus, onSave, onCancel }) => {
     );
 };
 
-const initialBuses = [
-    { id: 'b1', plate: 'RAD 123 B', model: 'Yutong Explorer', capacity: 55, status: 'Operational', maintenanceDate: '2024-12-15' },
-    { id: 'b2', plate: 'RAE 789 A', model: 'Coaster', capacity: 30, status: 'On Route', maintenanceDate: '2024-11-30' },
-];
-
 interface CompanyBusesProps {
     companyId: string;
 }
 
 const CompanyBuses: React.FC<CompanyBusesProps> = ({ companyId }) => {
-    const [buses, setBuses] = useState(initialBuses);
+    const [buses, setBuses] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentBus, setCurrentBus] = useState<any | null>(null);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
     const [itemToDelete, setItemToDelete] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string|null>(null);
+
+    const fetchBuses = async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const data = await api.companyGetMyBuses();
+            setBuses(data);
+        } catch (e: any) {
+            setError(e.message || 'Failed to fetch buses');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    
+    useEffect(() => {
+        fetchBuses();
+    }, []);
+
 
     const openModal = (bus = null) => {
         setCurrentBus(bus);
         setIsModalOpen(true);
     };
 
-    const handleSave = (busData) => {
-        if (currentBus) {
-            setBuses(buses.map(b => b.id === currentBus.id ? { ...b, ...busData } : b));
-        } else {
-            setBuses([...buses, { ...busData, id: `bus-${Date.now()}`, companyId }]);
-        }
+    const handleSave = async (busData: any) => {
         setIsModalOpen(false);
+        setIsLoading(true);
+        try {
+            if (currentBus) {
+                await api.companyUpdateBus(currentBus.id, busData);
+            } else {
+                await api.companyCreateBus(busData);
+            }
+            await fetchBuses();
+        } catch(e: any) {
+            setError(e.message || 'Failed to save bus.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleDeleteClick = (id: string) => {
@@ -95,15 +119,24 @@ const CompanyBuses: React.FC<CompanyBusesProps> = ({ companyId }) => {
         setIsConfirmModalOpen(true);
     };
 
-    const handleConfirmDelete = () => {
+    const handleConfirmDelete = async () => {
         if (!itemToDelete) return;
-        setBuses(buses.filter(b => b.id !== itemToDelete));
         setIsConfirmModalOpen(false);
-        setItemToDelete(null);
+        setIsLoading(true);
+        try {
+            await api.companyDeleteBus(itemToDelete);
+            await fetchBuses();
+        } catch (e: any) {
+            setError(e.message || 'Failed to delete bus.');
+        } finally {
+            setIsLoading(false);
+            setItemToDelete(null);
+        }
     };
 
     return (
         <div>
+            {isLoading && <LoadingSpinner />}
             <h1 className="text-3xl font-bold dark:text-gray-200 mb-6">Manage Buses</h1>
             <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-lg">
                  <div className="flex justify-between items-center mb-4">
@@ -122,6 +155,8 @@ const CompanyBuses: React.FC<CompanyBusesProps> = ({ companyId }) => {
                     </button>
                 </div>
 
+                {error && <p className="text-red-500 mb-4">{error}</p>}
+
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left">
                         <thead className="text-xs text-gray-500 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
@@ -135,9 +170,9 @@ const CompanyBuses: React.FC<CompanyBusesProps> = ({ companyId }) => {
                             </tr>
                         </thead>
                         <tbody>
-                            {buses.filter(b => b.plate.toLowerCase().includes(searchTerm.toLowerCase()) || b.model.toLowerCase().includes(searchTerm.toLowerCase())).map(bus => (
+                            {buses.filter(b => b.plate_number.toLowerCase().includes(searchTerm.toLowerCase()) || b.model.toLowerCase().includes(searchTerm.toLowerCase())).map(bus => (
                                 <tr key={bus.id} className="border-t dark:border-gray-700">
-                                    <td className="p-3 font-semibold dark:text-white flex items-center"><BusIcon className="w-5 h-5 mr-3 text-gray-400"/>{bus.plate}</td>
+                                    <td className="p-3 font-semibold dark:text-white flex items-center"><BusIcon className="w-5 h-5 mr-3 text-gray-400"/>{bus.plate_number}</td>
                                     <td>{bus.model}</td>
                                     <td>{bus.capacity} seats</td>
                                     <td>
@@ -145,7 +180,7 @@ const CompanyBuses: React.FC<CompanyBusesProps> = ({ companyId }) => {
                                             {bus.status}
                                         </span>
                                     </td>
-                                    <td>{new Date(bus.maintenanceDate).toLocaleDateString()}</td>
+                                    <td>{bus.maintenanceDate ? new Date(bus.maintenanceDate).toLocaleDateString() : 'N/A'}</td>
                                     <td className="flex space-x-2 p-3">
                                         <button onClick={() => openModal(bus)} className="p-1 text-gray-500 hover:text-blue-600"><PencilSquareIcon className="w-5 h-5"/></button>
                                         <button onClick={() => handleDeleteClick(bus.id)} className="p-1 text-gray-500 hover:text-red-600"><TrashIcon className="w-5 h-5"/></button>
@@ -166,6 +201,7 @@ const CompanyBuses: React.FC<CompanyBusesProps> = ({ companyId }) => {
                 onConfirm={handleConfirmDelete}
                 title="Delete Bus"
                 message="Are you sure you want to delete this bus? This action cannot be undone."
+                isLoading={isLoading}
             />
         </div>
     );
