@@ -17,7 +17,6 @@ export default function AgentProfileScreen() {
         <SafeAreaView style={styles.container}>
             <ScrollView>
                 <View style={styles.header}>
-                    {/* FIX: Changed avatarUrl to avatar_url to match User type definition. */}
                     <Image source={{ uri: user?.avatar_url }} style={styles.avatar} />
                     <Text style={styles.name}>{user?.name}</Text>
                     <Text style={styles.location}>Nyabugogo Agent</Text>

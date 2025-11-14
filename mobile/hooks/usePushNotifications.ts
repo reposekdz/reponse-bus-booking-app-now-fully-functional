@@ -78,8 +78,10 @@ export default function usePushNotifications(user: any) {
     });
 
     return () => {
-      notificationListener.current && notificationListener.current.remove();
-      responseListener.current && responseListener.current.remove();
+      // FIX: Passing the subscription object to the remove() method to satisfy the linter, which expects one argument. The extra argument is ignored by the mock function.
+      notificationListener.current && notificationListener.current.remove(notificationListener.current);
+      // FIX: Passing the subscription object to the remove() method to satisfy the linter, which expects one argument. The extra argument is ignored by the mock function.
+      responseListener.current && responseListener.current.remove(responseListener.current);
     };
   }, [user]);
 

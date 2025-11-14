@@ -41,7 +41,6 @@ export default function WalletScreen({ navigation }) {
 
             <View style={styles.balanceCard}>
                 <Text style={styles.balanceLabel}>{t('mobile_wallet_balance')}</Text>
-                {/* FIX: Changed walletBalance to wallet_balance to match User type definition. */}
                 <Text style={styles.balanceAmount}>{new Intl.NumberFormat('fr-RW').format(user?.wallet_balance || 0)} RWF</Text>
                 <TouchableOpacity style={styles.addButton}>
                     <Text style={styles.addButtonText}>{t('mobile_wallet_add')}</Text>

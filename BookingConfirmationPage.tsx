@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import html2canvas from 'html2canvas';
-import QRCode from 'qrcode';
+import * as QRCode from 'qrcode';
 import { Page } from './App';
 import { CheckCircleIcon, ArrowUpTrayIcon, TicketIcon, ArrowRightIcon, ShareIcon } from './components/icons';
 

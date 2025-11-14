@@ -20,13 +20,11 @@ export default function ProfileScreen({ navigation }) {
         <SafeAreaView style={styles.container}>
             <ScrollView>
                 <View style={styles.header}>
-                    {/* FIX: Changed avatarUrl to avatar_url to match User type definition. */}
                     <Image source={{ uri: user?.avatar_url }} style={styles.avatar} />
                     <Text style={styles.name}>{user?.name}</Text>
                     <Text style={styles.email}>{user?.email}</Text>
                      <View style={styles.pointsContainer}>
                         <Text style={styles.pointsIcon}>✨</Text>
-                        {/* FIX: Changed loyaltyPoints to loyalty_points to match User type definition. */}
                         <Text style={styles.points}>{new Intl.NumberFormat().format(user?.loyalty_points || 0)} GoPoints</Text>
                     </View>
                 </View>

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { SearchIcon, TicketIcon, UserCircleIcon, BusIcon, QuestionMarkCircleIcon, ChevronRightIcon } from './components/icons';
-import { useLanguage } from '../contexts/LanguageContext';
+import { useLanguage } from './contexts/LanguageContext';
 
 const FAQItem: React.FC<{ faq: { question: string; answer: string }; isOpen: boolean; onClick: () => void }> = ({ faq, isOpen, onClick }) => (
     <div className="border-b dark:border-gray-700">

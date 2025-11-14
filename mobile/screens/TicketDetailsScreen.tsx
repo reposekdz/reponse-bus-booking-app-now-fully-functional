@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import QRCode from 'qrcode';
+import * as QRCode from 'qrcode';
 
 const RealQRCode: React.FC<{ value: any; size: number }> = ({ value, size }) => {
     const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);

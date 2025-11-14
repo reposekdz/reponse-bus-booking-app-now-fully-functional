@@ -16,7 +16,6 @@ export interface User {
   role: 'passenger' | 'company' | 'admin' | 'agent' | 'driver';
   avatar_url: string;
   loyalty_points?: number;
-  // FIX: Changed to snake_case for consistency with other properties and backend.
   wallet_balance?: number;
   company_id?: number;
   pin?: string; // Note: This is the hash, not the raw PIN
