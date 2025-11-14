@@ -1,6 +1,6 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
-import StarRating from './components/StarRating';
+// FIX: Changed import to a named import as StarRating is not a default export.
+import { StarRating } from './components/StarRating';
 import { SearchIcon, ChevronRightIcon, StarIcon } from './components/icons';
 import type { Page } from './App';
 import * as api from './services/apiService';

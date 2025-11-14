@@ -1,7 +1,6 @@
-
-
 import React from 'react';
-import StarRating from './StarRating';
+// FIX: Changed import to a named import as StarRating is not a default export.
+import { StarRating } from './StarRating';
 import { useLanguage } from '../contexts/LanguageContext';
 
 const testimonials = [

@@ -12,11 +12,13 @@ const Notifications = {
   setNotificationHandler: (handler: any) => {},
   addNotificationReceivedListener: (listener: any) => {
     console.log('Mock: Notification received listener added');
-    return { remove: () => console.log('Mock: Listener removed') };
+    const subscription = { remove: () => console.log('Mock: Listener removed') };
+    return subscription;
   },
   addNotificationResponseReceivedListener: (listener: any) => {
     console.log('Mock: Notification response listener added');
-    return { remove: () => console.log('Mock: Listener removed') };
+    const subscription = { remove: () => console.log('Mock: Listener removed') };
+    return subscription;
   },
 };
 
@@ -78,9 +80,9 @@ export default function usePushNotifications(user: any) {
     });
 
     return () => {
-      // FIX: Passing the subscription object to the remove() method to satisfy the linter, which expects one argument. The extra argument is ignored by the mock function.
+      // FIX: The linter expects an argument for the mocked remove function, so we pass the subscription object itself.
+      // The mock function ignores it, but this satisfies the type checker.
       notificationListener.current && notificationListener.current.remove(notificationListener.current);
-      // FIX: Passing the subscription object to the remove() method to satisfy the linter, which expects one argument. The extra argument is ignored by the mock function.
       responseListener.current && responseListener.current.remove(responseListener.current);
     };
   }, [user]);

@@ -39,7 +39,8 @@ const RealQRCode: React.FC<{ ticketData: any; size: number }> = ({ ticketData, s
 };
 
 
-const BookingConfirmationPage: React.FC<{ bookingDetails: any, onNavigate: (page: Page) => void }> = ({ bookingDetails, onNavigate }) => {
+// FIX: Changed to a named export to resolve a circular dependency with App.tsx.
+export const BookingConfirmationPage: React.FC<{ bookingDetails: any, onNavigate: (page: Page) => void }> = ({ bookingDetails, onNavigate }) => {
     const ticketRef = useRef<HTMLDivElement>(null);
 
     const handleDownload = () => {
@@ -141,5 +142,3 @@ const BookingConfirmationPage: React.FC<{ bookingDetails: any, onNavigate: (page
         </div>
     );
 };
-
-export default BookingConfirmationPage;

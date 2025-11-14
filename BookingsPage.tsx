@@ -1,9 +1,8 @@
-
-
 import React, { useState, useEffect } from 'react';
 import { TicketIcon, QrCodeIcon, ArrowPathIcon, ShareIcon, StarIcon, CheckCircleIcon } from './components/icons';
 import Modal from './components/Modal';
-import StarRating from './components/StarRating';
+// FIX: Changed import to a named import as StarRating is not a default export.
+import { StarRating } from './components/StarRating';
 import * as api from './services/apiService';
 import { useAuth } from './contexts/AuthContext';
 

@@ -1,5 +1,3 @@
-
-
 import React, { useRef, useEffect } from 'react';
 import * as QRCode from 'qrcode';
 import { XIcon, BusIcon } from './icons';

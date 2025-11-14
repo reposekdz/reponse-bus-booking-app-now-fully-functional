@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import HeroSection from './components/HeroSection';
@@ -46,7 +44,8 @@ import VehicleRentalsPage from './VehicleRentalsPage';
 import VipLoungePage from './VipLoungePage';
 import WhyChooseUs from './components/WhyChooseUs';
 import SpecialOffers from './components/SpecialOffers';
-import BookingConfirmationPage from './BookingConfirmationPage';
+// FIX: Changed import for BookingConfirmationPage to be a named import to resolve a circular dependency.
+import { BookingConfirmationPage } from './BookingConfirmationPage';
 import FavoritesPage from './FavoritesPage';
 import PriceAlertsPage from './PriceAlertsPage';
 import LoyaltyPage from './LoyaltyPage';

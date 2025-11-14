@@ -1,8 +1,8 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { ClockIcon, MapPinIcon, ChevronRightIcon, BusIcon, WifiIcon, AcIcon, PowerIcon, StarIcon, UsersIcon, MapIcon, BriefcaseIcon, TvIcon, ShieldCheckIcon, ArrowRightIcon, CameraIcon, EnvelopeIcon, XIcon, PaperAirplaneIcon, TagIcon, ArchiveBoxIcon, PhoneIcon } from './components/icons';
 import FleetDetailModal from './components/FleetDetailModal';
-import StarRating from './components/StarRating';
+// FIX: Changed import to a named import as StarRating is not a default export.
+import { StarRating } from './components/StarRating';
 import * as api from './services/apiService';
 import LoadingSpinner from './components/LoadingSpinner';
 

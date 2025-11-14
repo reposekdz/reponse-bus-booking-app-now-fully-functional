@@ -40,12 +40,4 @@ const StarRating: React.FC<StarRatingProps> = ({
             onMouseLeave={() => isInteractive && setHoverRating(0)}
             className={`transition-colors duration-200 ${isInteractive ? 'cursor-pointer' : ''}`}
           >
-            <StarIcon className={`${sizeClasses[size]} ${starClass}`} />
-          </button>
-        );
-      })}
-    </div>
-  );
-};
-
-export default StarRating;
+            <StarIcon className={`${sizeClasses[size
