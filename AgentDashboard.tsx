@@ -271,30 +271,9 @@ const TransactionsView = ({ agentId }) => {
     );
 };
 
-const MobileNav: React.FC<{isOpen: boolean, onClose: () => void, setView: (view: string) => void, navigate: (page: Page) => void, currentView: string, navItems: any[]}> = ({isOpen, onClose, setView, navigate, currentView, navItems}) => (
-    <div className={`fixed inset-0 z-50 md:hidden transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={onClose}>
-        <div className="absolute inset-0 bg-black/60"></div>
-        <div className={`absolute top-0 left-0 h-full w-64 bg-gray-900 text-white p-6 transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`} onClick={e => e.stopPropagation()}>
-            <div className="flex justify-between items-center mb-8">
-                <span className="font-bold text-xl">Agent Menu</span>
-                <button onClick={onClose}><XIcon className="w-6 h-6"/></button>
-            </div>
-            <nav className="space-y-2">
-                {navItems.map(item => (
-                    <button key={item.view} onClick={() => { item.view === 'profile' ? navigate('agentProfile') : setView(item.view); onClose(); }} className={`w-full flex items-center p-3 rounded-lg ${currentView === item.view ? 'bg-white/20' : 'hover:bg-white/10'}`}>
-                        <item.icon className="w-5 h-5 mr-3"/>
-                        <span>{item.label}</span>
-                    </button>
-                ))}
-            </nav>
-        </div>
-    </div>
-);
-
 
 const AgentDashboard: React.FC<AgentDashboardProps> = ({ onLogout, theme, setTheme, agentData, navigate }) => {
     const [view, setView] = useState('dashboard');
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const toggleTheme = () => setTheme(theme === 'light' ? 'dark' : 'light');
     const { t } = useLanguage();
 
@@ -314,36 +293,28 @@ const AgentDashboard: React.FC<AgentDashboardProps> = ({ onLogout, theme, setThe
         }
     };
 
-    interface NavLinkProps {
-        viewName: string;
-        label: string;
-        icon: React.FC<React.SVGProps<SVGSVGElement>>;
-    }
-
-    const NavLink: React.FC<NavLinkProps> = ({ viewName, label, icon: Icon }) => (
-      <button onClick={() => viewName === 'profile' ? navigate('agentProfile', agentData) : setView(viewName)} className={`group w-full flex items-center px-4 py-3 transition-all duration-300 rounded-lg relative ${view === viewName ? 'text-white bg-white/10' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>
+    const NavLink: React.FC<{ viewName: string; label: string; icon: React.FC<any> }> = ({ viewName, label, icon: Icon }) => (
+      <button onClick={() => viewName === 'profile' ? navigate('agentProfile', agentData) : setView(viewName)} title={label} className={`group w-full flex items-center justify-center md:justify-start px-2 md:px-4 py-3 transition-all duration-300 rounded-lg relative ${view === viewName ? 'text-white bg-white/10' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>
           <div className={`absolute left-0 top-0 h-full w-1 rounded-r-full bg-yellow-400 transition-all duration-300 ${view === viewName ? 'scale-y-100' : 'scale-y-0 group-hover:scale-y-50'}`}></div>
-          <Icon className="w-6 h-6 mr-4 transition-transform duration-300 group-hover:scale-110" />
-          <span className="font-semibold">{label}</span>
+          <Icon className="w-6 h-6 md:mr-4 transition-transform duration-300 group-hover:scale-110" />
+          <span className="font-semibold md:inline hidden">{label}</span>
       </button>
     );
 
     return (
         <div className={`min-h-screen flex ${theme}`}>
-            <aside className="w-64 bg-gradient-to-b from-gray-800 via-gray-900 to-black text-gray-300 flex-col hidden md:flex border-r border-gray-700/50">
-                <div className="h-20 flex items-center justify-center text-white font-bold text-xl border-b border-white/10">AGENT PORTAL</div>
-                <nav className="flex-1 px-4 py-6 space-y-2">
+            <aside className="w-20 md:w-64 bg-gradient-to-b from-gray-800 via-gray-900 to-black text-gray-300 flex-col flex transition-all duration-300 border-r border-gray-700/50">
+                <div className="h-20 flex items-center justify-center text-white font-bold text-xl border-b border-white/10 px-2 text-center overflow-hidden">
+                    <span className="md:inline hidden">AGENT PORTAL</span>
+                    <span className="md:hidden font-extrabold">A</span>
+                </div>
+                <nav className="flex-1 px-2 md:px-4 py-6 space-y-2">
                     {navItems.map(item => <NavLink key={item.view} viewName={item.view} label={item.label} icon={item.icon} />)}
                 </nav>
             </aside>
             <div className="flex-1 flex flex-col bg-gray-100 dark:bg-gray-900">
                 <header className="h-16 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-sm flex items-center justify-between px-6 border-b dark:border-gray-700/50">
-                     <div className="flex items-center">
-                        <button className="md:hidden mr-4" onClick={() => setIsMobileMenuOpen(true)}>
-                            <MenuIcon className="w-6 h-6 text-gray-700 dark:text-gray-200"/>
-                        </button>
-                        <div className="font-bold text-gray-800 dark:text-white">Ikaze, {agentData.name.split(' ')[0]}</div>
-                    </div>
+                    <div className="font-bold text-gray-800 dark:text-white">Ikaze, {agentData.name.split(' ')[0]}</div>
                     <div className="flex items-center space-x-4">
                         <button onClick={toggleTheme} className="text-gray-500 dark:text-gray-400">{theme === 'light' ? <MoonIcon className="w-6 h-6"/> : <SunIcon className="w-6 h-6"/>}</button>
                         <button onClick={onLogout} className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700">Sohoka</button>
@@ -353,7 +324,6 @@ const AgentDashboard: React.FC<AgentDashboardProps> = ({ onLogout, theme, setThe
                     <div className="animate-fade-in">{renderContent()}</div>
                 </main>
             </div>
-            <MobileNav isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} setView={setView} navigate={navigate} currentView={view} navItems={navItems} />
         </div>
     );
 };
