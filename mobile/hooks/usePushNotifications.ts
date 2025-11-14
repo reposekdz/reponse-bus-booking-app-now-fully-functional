@@ -20,6 +20,10 @@ const Notifications = {
     const subscription = { remove: () => console.log('Mock: Listener removed') };
     return subscription;
   },
+  // FIX: Added mock for removeNotificationSubscription to support the modern Expo API.
+  removeNotificationSubscription: (subscription: any) => {
+    console.log('Mock: removeNotificationSubscription called');
+  }
 };
 
 Notifications.setNotificationHandler({
@@ -80,9 +84,16 @@ export default function usePushNotifications(user: any) {
     });
 
     return () => {
-      // FIX: The remove() method on notification listener subscriptions takes no arguments.
-      notificationListener.current && notificationListener.current.remove();
-      responseListener.current && responseListener.current.remove();
+      // FIX: The .remove() method on subscriptions is deprecated and was causing a type error.
+      // Replaced with the current Expo API: Notifications.removeNotificationSubscription().
+      if (notificationListener.current) {
+        // FIX: Pass the subscription object to removeNotificationSubscription.
+        Notifications.removeNotificationSubscription(notificationListener.current);
+      }
+      if (responseListener.current) {
+        // FIX: Pass the subscription object to removeNotificationSubscription.
+        Notifications.removeNotificationSubscription(responseListener.current);
+      }
     };
   }, [user]);
 

@@ -14,7 +14,7 @@ const PORT = config.port || 5000;
 const server = http.createServer(app);
 export const io = new Server(server, {
     cors: {
-        origin: process.env.FRONTEND_URL || "http://localhost:3000", // Restrict to frontend URL for security
+        origin: process.env.FRONTEND_URL, // Restrict to frontend URL for security
         methods: ["GET", "POST"]
     }
 });

@@ -36,8 +36,8 @@ export const topUpUserWallet = async (userId: number, amount: number) => {
         
         await connection.commit();
         
-        // Return only the updated balance
-        return { walletBalance: newBalance };
+        // Return only the updated balance with consistent snake_case
+        return { wallet_balance: newBalance };
 
     } catch (error) {
         await connection.rollback();
@@ -127,7 +127,7 @@ export const transferFunds = async (sender: User, toSerial: string, amount: numb
         });
         
         const newBalance = parseFloat(senderWallet.balance) - amount;
-        return { newBalance };
+        return { new_sender_balance: newBalance };
         
     } catch (error) {
         await connection.rollback();

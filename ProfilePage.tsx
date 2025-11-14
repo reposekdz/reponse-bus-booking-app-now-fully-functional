@@ -24,7 +24,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onNavigate }) => {
     setIsProcessing(true);
     try {
         const response = await api.topUpWallet(amount);
-        setUser(prevUser => ({...prevUser, walletBalance: response.data.walletBalance }));
+        setUser(prevUser => ({...prevUser, wallet_balance: response.data.wallet_balance }));
         alert(`Successfully added ${new Intl.NumberFormat('fr-RW').format(amount)} RWF to your wallet!`);
     } catch (error: any) {
         alert(`Top-up failed: ${error.message}`);
@@ -107,12 +107,12 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onNavigate }) => {
                         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-4 rounded-xl shadow-lg">
                                 <p className="text-sm font-semibold opacity-80">Wallet Balance</p>
-                                <p className="text-3xl font-bold">{new Intl.NumberFormat('fr-RW').format(user.walletBalance)} RWF</p>
+                                <p className="text-3xl font-bold">{new Intl.NumberFormat('fr-RW').format(user.wallet_balance)} RWF</p>
                                 <button onClick={() => setIsTopUpOpen(true)} className="mt-2 text-xs font-bold bg-white/20 px-3 py-1 rounded-full hover:bg-white/30">Add Funds</button>
                             </div>
                             <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white p-4 rounded-xl shadow-lg">
                                 <p className="text-sm font-semibold opacity-80">Loyalty Points</p>
-                                <p className="text-3xl font-bold">{new Intl.NumberFormat().format(user.loyaltyPoints)}</p>
+                                <p className="text-3xl font-bold">{new Intl.NumberFormat().format(user.loyalty_points)}</p>
                                 <button onClick={() => onNavigate('loyalty')} className="mt-2 text-xs font-bold bg-white/20 px-3 py-1 rounded-full hover:bg-white/30">View Rewards</button>
                             </div>
                         </div>

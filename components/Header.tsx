@@ -262,10 +262,10 @@ const Header: React.FC<HeaderProps> = ({ currentPage, onNavigate, onLogout, them
                         <p className="font-bold">{user.name}</p>
                         <p className="text-xs opacity-80">{user.email}</p>
                     </div>
-                     {user.walletBalance !== undefined && (
+                     {user.wallet_balance !== undefined && (
                         <button onClick={() => { onNavigate('wallet'); setIsUserMenuOpen(false); }} className="p-4 border-b border-white/20 w-full text-left hover:bg-white/10">
                             <p className="text-xs font-semibold opacity-80">{t('usermenu_wallet_balance')}</p>
-                            <p className="font-bold text-xl text-green-300">{new Intl.NumberFormat('fr-RW').format(user.walletBalance)} RWF</p>
+                            <p className="font-bold text-xl text-green-300">{new Intl.NumberFormat('fr-RW').format(user.wallet_balance)} RWF</p>
                         </button>
                      )}
                     <div className="py-2">

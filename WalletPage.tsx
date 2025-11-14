@@ -33,7 +33,7 @@ const WalletPage: React.FC<{ onNavigate: (page: Page) => void }> = ({ onNavigate
         setIsTopUpOpen(false);
         try {
             const response = await api.topUpWallet(amount);
-            setUser(prevUser => ({...prevUser, walletBalance: response.data.walletBalance }));
+            setUser(prevUser => ({...prevUser, wallet_balance: response.data.wallet_balance }));
             alert(`Successfully added ${new Intl.NumberFormat('fr-RW').format(amount)} RWF to your wallet!`);
             fetchHistory();
         } catch (error: any) {
@@ -43,7 +43,7 @@ const WalletPage: React.FC<{ onNavigate: (page: Page) => void }> = ({ onNavigate
     
      const handleSendSuccess = (newBalance: number) => {
         setIsSendMoneyOpen(false);
-        setUser(prevUser => ({ ...prevUser, walletBalance: newBalance }));
+        setUser(prevUser => ({ ...prevUser, wallet_balance: newBalance }));
         alert(`Money sent successfully!`);
         fetchHistory(); // Refresh transaction history
     };
@@ -71,7 +71,7 @@ const WalletPage: React.FC<{ onNavigate: (page: Page) => void }> = ({ onNavigate
                             <div className="bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-2xl shadow-xl p-8">
                                 <WalletIcon className="w-10 h-10 mb-4 opacity-70"/>
                                 <p className="text-lg opacity-80">Current Balance</p>
-                                <p className="text-5xl font-bold tracking-tight">{new Intl.NumberFormat('fr-RW').format(user?.walletBalance || 0)} <span className="text-3xl opacity-80">RWF</span></p>
+                                <p className="text-5xl font-bold tracking-tight">{new Intl.NumberFormat('fr-RW').format(user?.wallet_balance || 0)} <span className="text-3xl opacity-80">RWF</span></p>
                                 <div className="mt-6 grid grid-cols-2 gap-2">
                                     <button onClick={() => setIsTopUpOpen(true)} className="w-full py-3 bg-white/20 backdrop-blur-sm font-bold rounded-lg hover:bg-white/30 transition">
                                         Add Funds
@@ -125,7 +125,7 @@ const WalletPage: React.FC<{ onNavigate: (page: Page) => void }> = ({ onNavigate
                 <SendMoneyModal 
                     onClose={() => setIsSendMoneyOpen(false)}
                     onSuccess={handleSendSuccess}
-                    currentBalance={user?.walletBalance || 0}
+                    currentBalance={user?.wallet_balance || 0}
                     userPin={user.pin}
                 />
             )}

@@ -21,6 +21,7 @@ export const setPin = asyncHandler(async (req: any, res: any) => {
 
 export const transferFunds = asyncHandler(async (req: any, res: any) => {
     const { toSerial, amount, pin } = req.body;
-    const { newBalance } = await walletService.transferFunds(req.user, toSerial, amount, pin);
-    res.status(200).json({ success: true, message: 'Transfer successful', data: { newBalance } });
+    // FIX: Destructured 'new_sender_balance' as returned by the service, which fixes the property not existing error.
+    const { new_sender_balance } = await walletService.transferFunds(req.user, toSerial, amount, pin);
+    res.status(200).json({ success: true, message: 'Transfer successful', data: { new_sender_balance } });
 });

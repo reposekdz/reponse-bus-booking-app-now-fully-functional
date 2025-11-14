@@ -40,7 +40,7 @@ const SendMoneyModal: React.FC<SendMoneyModalProps> = ({ onClose, onSuccess, cur
         setError('');
         try {
             const result = await api.walletTransfer({ toSerial, amount: parseFloat(amount), pin });
-            onSuccess(result.data.newBalance);
+            onSuccess(result.data.new_sender_balance);
         } catch (err: any) {
             setError(err.message || 'Transfer failed. Please try again.');
         } finally {
