@@ -269,7 +269,9 @@ const DriverDashboard: React.FC<DriverDashboardProps> = ({ onLogout, theme, setT
                     <div className="font-bold text-gray-800 dark:text-white">Welcome, {driverData.name.split(' ')[0]}</div>
                     <div className="flex items-center space-x-4">
                         <AvailabilityToggle isAvailable={isAvailable} onToggle={handleToggleAvailability} isLoading={isUpdatingStatus} />
-                        <button onClick={() => navigate('driverSettings')} className="text-gray-500 dark:text-gray-400"><CogIcon className="w-6 h-6"/></button>
+                        <button onClick={() => navigate('driverSettings')} className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                            <CogIcon className="w-6 h-6"/>
+                        </button>
                         <button onClick={toggleTheme} className="text-gray-500 dark:text-gray-400">{theme === 'light' ? <MoonIcon className="w-6 h-6"/> : <SunIcon className="w-6 h-6"/>}</button>
                         <button onClick={onLogout} className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700">Logout</button>
                     </div>

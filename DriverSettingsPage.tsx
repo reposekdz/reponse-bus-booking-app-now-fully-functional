@@ -2,13 +2,20 @@ import React, { useState, useRef } from 'react';
 import { CameraIcon, CogIcon } from './components/icons';
 import { useLanguage } from './contexts/LanguageContext';
 import SecuritySettings from './components/SecuritySettings';
+import { Page } from './App';
 
-const DriverSettingsPage = ({ driverData, companyData, theme, setTheme }) => {
+interface DriverSettingsPageProps {
+    driverData: any;
+    companyData: any;
+    onNavigate: (page: Page) => void;
+}
+
+const DriverSettingsPage: React.FC<DriverSettingsPageProps> = ({ driverData, companyData, onNavigate }) => {
     const { t } = useLanguage();
     const [driverInfo, setDriverInfo] = useState(driverData);
     const avatarInputRef = useRef<HTMLInputElement>(null);
 
-    const handleInfoChange = (e) => {
+    const handleInfoChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setDriverInfo(prev => ({...prev, [e.target.name]: e.target.value}));
     };
     
@@ -17,7 +24,7 @@ const DriverSettingsPage = ({ driverData, companyData, theme, setTheme }) => {
         if (file) {
             const reader = new FileReader();
             reader.onload = () => {
-                setDriverInfo(prev => ({...prev, avatarUrl: reader.result as string}));
+                setDriverInfo(prev => ({...prev, avatar_url: reader.result as string}));
             };
             reader.readAsDataURL(file);
         }
@@ -31,6 +38,7 @@ const DriverSettingsPage = ({ driverData, companyData, theme, setTheme }) => {
 
     return (
         <div className="animate-fade-in container mx-auto px-6 py-8">
+             <button onClick={() => onNavigate('driverDashboard')} className="text-sm font-semibold text-blue-600 dark:text-blue-400 mb-4">&larr; Back to Dashboard</button>
             <h1 className="text-3xl font-bold dark:text-gray-200 mb-6">{t('settings_title')}</h1>
             <div className="max-w-2xl mx-auto space-y-8">
                 {/* Profile Editing */}

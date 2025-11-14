@@ -56,7 +56,7 @@ const AgentProfilePage: React.FC<{agent: any; allTransactions: any[]}> = ({ agen
             reader.onload = () => {
                 const url = reader.result as string;
                 if (type === 'avatar') {
-                    setProfileData(prev => ({...prev, avatarUrl: url}));
+                    setProfileData(prev => ({...prev, avatar_url: url}));
                 } else {
                     setProfileData(prev => ({...prev, coverUrl: url}));
                 }
@@ -83,7 +83,13 @@ const AgentProfilePage: React.FC<{agent: any; allTransactions: any[]}> = ({ agen
                      <div className="px-6 pb-6 relative">
                         <div className="flex items-end -mt-16">
                             <div className="relative group">
-                                <img src={profileData.avatarUrl} alt={profileData.name} className="w-32 h-32 rounded-full border-4 border-white dark:border-gray-800 object-cover"/>
+                                {profileData.avatar_url ? (
+                                    <img src={profileData.avatar_url} alt={profileData.name} className="w-32 h-32 rounded-full border-4 border-white dark:border-gray-800 object-cover"/>
+                                ) : (
+                                     <div className="w-32 h-32 rounded-full border-4 border-white dark:border-gray-800 bg-gray-200 flex items-center justify-center">
+                                        <span className="text-5xl font-bold text-gray-500">{profileData.name.charAt(0)}</span>
+                                    </div>
+                                )}
                                 {isOwnProfile && (
                                     <button onClick={() => avatarInputRef.current?.click()} className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity">
                                         <CameraIcon className="w-6 h-6"/>

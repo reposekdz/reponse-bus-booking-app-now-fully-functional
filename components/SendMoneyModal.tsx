@@ -86,7 +86,6 @@ const SendMoneyModal: React.FC<SendMoneyModalProps> = ({ onClose, onSuccess, cur
                 <PinModal 
                     onClose={() => setIsPinModalOpen(false)}
                     onSuccess={handlePinSuccess}
-                    // No pinToMatch needed, backend handles verification
                     title="Confirm Transfer"
                     description={`Enter your PIN to send ${new Intl.NumberFormat('fr-RW').format(parseFloat(amount))} RWF to ${toSerial}.`}
                 />

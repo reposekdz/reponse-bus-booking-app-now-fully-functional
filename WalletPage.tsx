@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { Page } from './App';
 import { WalletIcon, PaperAirplaneIcon } from './components/icons';
@@ -114,14 +115,15 @@ const WalletPage: React.FC<{ onNavigate: (page: Page) => void }> = ({ onNavigate
                     </div>
                 </main>
             </div>
-            {isTopUpOpen && user?.pin && (
+            {isTopUpOpen && (
+// FIX: Pass the user's PIN to the modal as required by its props.
                 <WalletTopUpModal 
                     onClose={() => setIsTopUpOpen(false)}
                     onSuccess={handleTopUpSuccess}
-                    userPin={user.pin}
+                    userPin={user?.pin || ''}
                 />
             )}
-             {isSendMoneyOpen && user?.pin && (
+             {isSendMoneyOpen && (
                 <SendMoneyModal 
                     onClose={() => setIsSendMoneyOpen(false)}
                     onSuccess={handleSendSuccess}

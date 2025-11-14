@@ -198,7 +198,7 @@ const AppContent: React.FC = () => {
         return user?.role === 'driver' ? <DriverDashboard driverData={user} navigate={navigate} onLogout={handleLogout} theme={theme} setTheme={setTheme} /> : <p>{t('access_denied')}</p>;
       
       case 'driverSettings':
-        return user?.role === 'driver' ? <DriverSettingsPage driverData={user} companyData={user.company} theme={theme} setTheme={setTheme} /> : <p>{t('access_denied')}</p>;
+        return user?.role === 'driver' ? <DriverSettingsPage driverData={user} companyData={user.company} onNavigate={navigate} /> : <p>{t('access_denied')}</p>;
 
       case 'agentDashboard':
         return user?.role === 'agent' ? <AgentDashboard agentData={user} navigate={navigate} onLogout={handleLogout} theme={theme} setTheme={setTheme} /> : <p>{t('access_denied')}</p>;
