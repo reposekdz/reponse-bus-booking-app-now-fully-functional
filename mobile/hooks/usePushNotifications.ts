@@ -80,10 +80,9 @@ export default function usePushNotifications(user: any) {
     });
 
     return () => {
-      // FIX: The linter expects an argument for the mocked remove function, so we pass the subscription object itself.
-      // The mock function ignores it, but this satisfies the type checker.
-      notificationListener.current && notificationListener.current.remove(notificationListener.current);
-      responseListener.current && responseListener.current.remove(responseListener.current);
+      // FIX: The remove() method on notification listener subscriptions takes no arguments.
+      notificationListener.current && notificationListener.current.remove();
+      responseListener.current && responseListener.current.remove();
     };
   }, [user]);
 

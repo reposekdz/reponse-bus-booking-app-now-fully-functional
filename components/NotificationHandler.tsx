@@ -1,13 +1,11 @@
-// FIX: Added Vite client types reference to resolve 'import.meta.env' type error.
-/// <reference types="vite/client" />
-
 import React, { useEffect } from 'react';
 import * as api from '../services/apiService';
 import { useAuth } from '../contexts/AuthContext';
 
 // This is a public key for the VAPID protocol, used to identify the application server.
 // It is now loaded from a Vite environment variable for better deployment configuration.
-const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+// FIX: Cast import.meta to any to resolve TypeScript errors when Vite client types are not available.
+const VAPID_PUBLIC_KEY = (import.meta as any).env.VITE_VAPID_PUBLIC_KEY;
 
 // Helper function to convert the VAPID key to the format required by the Push API.
 function urlBase64ToUint8Array(base64String: string) {
