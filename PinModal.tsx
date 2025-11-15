@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { LockClosedIcon, XIcon } from './icons';
+import { LockClosedIcon, XIcon } from './components/icons';
 
 interface PinModalProps {
   onClose: () => void;

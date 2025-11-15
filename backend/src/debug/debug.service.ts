@@ -1,4 +1,4 @@
-import { pool } from '../../config/db';
+import { pool } from '../config/db';
 import * as mysql from 'mysql2/promise';
 import bcrypt from 'bcryptjs';
 import fs from 'fs';
