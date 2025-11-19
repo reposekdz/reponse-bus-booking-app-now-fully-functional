@@ -1,7 +1,7 @@
+
 import React, { useState } from 'react';
 import Modal from './Modal';
-import PinModal from './PinModal';
-import { WalletIcon } from './icons';
+import { PhoneIcon } from './icons';
 
 interface WalletTopUpModalProps {
     onClose: () => void;
@@ -9,10 +9,11 @@ interface WalletTopUpModalProps {
     userPin: string;
 }
 
-const WalletTopUpModal: React.FC<WalletTopUpModalProps> = ({ onClose, onSuccess, userPin }) => {
+const WalletTopUpModal: React.FC<WalletTopUpModalProps> = ({ onClose, onSuccess }) => {
     const [amount, setAmount] = useState('10000');
     const [customAmount, setCustomAmount] = useState('');
-    const [isPinModalOpen, setIsPinModalOpen] = useState(false);
+    const [phone, setPhone] = useState('');
+    const [step, setStep] = useState<'amount' | 'processing'>('amount');
     const [error, setError] = useState('');
 
     const quickAmounts = ['5000', '10000', '20000'];
@@ -25,57 +26,78 @@ const WalletTopUpModal: React.FC<WalletTopUpModalProps> = ({ onClose, onSuccess,
             setError('Please enter a valid amount.');
             return;
         }
+        if (!phone || phone.length < 10) {
+            setError('Please enter a valid MTN phone number.');
+            return;
+        }
         setError('');
-        setIsPinModalOpen(true);
-    };
+        setStep('processing');
 
-    const handlePinSuccess = (pin: string) => {
-        setIsPinModalOpen(false);
-        onSuccess(Number(finalAmount));
+        // Simulate MTN USSD Push
+        setTimeout(() => {
+            onSuccess(numAmount);
+        }, 3000); 
     };
 
     return (
-        <>
-            <Modal isOpen={true} onClose={onClose} title="Add Funds to Wallet">
-                <form onSubmit={handleConfirm} className="space-y-4">
+        <Modal isOpen={true} onClose={onClose} title="Deposit to Wallet">
+            {step === 'amount' ? (
+                <form onSubmit={handleConfirm} className="space-y-6">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Load money into your GoBus wallet using Mobile Money (MTN).
+                    </p>
+                    
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Select Amount (RWF)</label>
-                        <div className="grid grid-cols-3 gap-2 mt-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select Amount (RWF)</label>
+                        <div className="grid grid-cols-3 gap-2">
                             {quickAmounts.map(val => (
-                                <button key={val} type="button" onClick={() => { setAmount(val); setCustomAmount(''); }} className={`p-3 text-center rounded-lg border-2 ${amount === val && !customAmount ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'dark:border-gray-600'}`}>
-                                    <p className="font-semibold">{new Intl.NumberFormat('fr-RW').format(parseInt(val))}</p>
+                                <button key={val} type="button" onClick={() => { setAmount(val); setCustomAmount(''); }} className={`p-3 text-center rounded-lg border-2 transition-all ${amount === val && !customAmount ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 font-bold' : 'dark:border-gray-600 text-gray-600 dark:text-gray-300'}`}>
+                                    {new Intl.NumberFormat('fr-RW').format(parseInt(val))}
                                 </button>
                             ))}
                         </div>
                     </div>
+
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Or Enter Custom Amount</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Or Enter Custom Amount</label>
                         <input 
                             type="number"
                             value={customAmount}
                             onChange={e => { setCustomAmount(e.target.value); setAmount(''); }}
                             placeholder="e.g., 12500"
-                            className="mt-1 w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 text-lg font-bold"
+                            className="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 text-lg font-bold focus:ring-2 focus:ring-blue-500 focus:outline-none"
                         />
                     </div>
-                    {error && <p className="text-red-500 text-sm">{error}</p>}
-                     <div className="border-t dark:border-gray-700 pt-4 flex justify-end">
-                        <button type="submit" className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700">
-                            Confirm & Add {new Intl.NumberFormat('fr-RW').format(Number(finalAmount))} RWF
-                        </button>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">MTN Phone Number</label>
+                        <div className="relative">
+                            <PhoneIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"/>
+                            <input 
+                                type="tel"
+                                value={phone}
+                                onChange={e => setPhone(e.target.value)}
+                                placeholder="078..."
+                                className="w-full pl-10 p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                required
+                            />
+                        </div>
                     </div>
+
+                    {error && <p className="text-red-500 text-sm font-medium bg-red-50 p-2 rounded">{error}</p>}
+                    
+                    <button type="submit" className="w-full py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition shadow-lg">
+                        Confirm Deposit
+                    </button>
                 </form>
-            </Modal>
-             {isPinModalOpen && userPin && (
-                <PinModal 
-                    onClose={() => setIsPinModalOpen(false)}
-                    onSuccess={handlePinSuccess}
-                    pinToMatch={userPin}
-                    title="Confirm Top-Up"
-                    description={`Enter your 4-digit PIN to authorize the deposit of ${new Intl.NumberFormat('fr-RW').format(Number(finalAmount))} RWF.`}
-                />
+            ) : (
+                <div className="text-center py-8">
+                    <div className="w-16 h-16 border-4 border-yellow-400/50 border-t-yellow-400 rounded-full animate-spin mx-auto mb-6"></div>
+                    <h3 className="text-xl font-bold dark:text-white">Waiting for Confirmation</h3>
+                    <p className="text-gray-600 dark:text-gray-400 mt-2">Please approve the transaction of <span className="font-bold text-blue-500">{new Intl.NumberFormat('fr-RW').format(Number(finalAmount))} RWF</span> on your phone ({phone}).</p>
+                </div>
             )}
-        </>
+        </Modal>
     );
 };
 

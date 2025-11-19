@@ -14,7 +14,7 @@ const NavItem: React.FC<{ item: { label: string; page: Page; icon: React.FC<{cla
         <div className={`relative p-2 rounded-full transition-all duration-300 ${isActive ? 'bg-yellow-400/20' : 'group-hover:bg-white/10'}`}>
          <item.icon className={`w-6 h-6 transition-colors duration-300 ${isActive ? 'text-yellow-300' : 'text-gray-400 group-hover:text-white'}`} />
         </div>
-        <span className={`text-xs mt-1 transition-colors duration-300 ${isActive ? 'text-yellow-300 font-semibold' : 'text-gray-300'}`}>{item.label}</span>
+        <span className={`text-xs mt-1 transition-colors duration-300 ${isActive ? 'text-yellow-300 font-semibold' : 'text-gray-400'}`}>{item.label}</span>
     </button>
 );
 
@@ -28,10 +28,14 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ navigate, currentPa
         { label: t('bottomnav_profile'), page: 'profile', icon: UserCircleIcon },
     ];
 
-    // A bit of a hack to make the profile icon active for its sub-pages
+    // Logic to keep parent tabs active when on sub-pages
+    const isBookActive = ['bookingSearch', 'search', 'seatSelection', 'payment', 'bookingConfirmation'].includes(currentPage);
+    const isCompaniesActive = ['companies', 'companyProfile'].includes(currentPage);
     const isProfileActive = ['profile', 'bookings', 'scheduled', 'wallet', 'loyalty', 'favorites', 'priceAlerts'].includes(currentPage);
     
     const activePage = (page: Page) => {
+        if (page === 'bookingSearch' && isBookActive) return true;
+        if (page === 'companies' && isCompaniesActive) return true;
         if (page === 'profile' && isProfileActive) return true;
         return currentPage === page;
     }

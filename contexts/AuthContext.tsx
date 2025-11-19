@@ -1,5 +1,4 @@
 
-
 import React, { createContext, useState, useContext, ReactNode, useEffect, useCallback } from 'react';
 import * as api from '../services/apiService';
 
@@ -10,6 +9,7 @@ interface AuthContextType {
   login: (credentials: any) => Promise<void>;
   register: (userData: any) => Promise<void>;
   logout: () => void;
+  refreshUserData: () => Promise<void>;
   isLoading: boolean;
 }
 
@@ -62,8 +62,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     api.setAuthToken(null);
   };
 
+  const refreshUserData = async () => {
+      if (token) {
+          try {
+              const currentUser = await api.getCurrentUser();
+              setUser(currentUser);
+          } catch (error) {
+              console.error("Failed to refresh user data", error);
+          }
+      }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, setUser, token, login, register, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, setUser, token, login, register, logout, refreshUserData, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

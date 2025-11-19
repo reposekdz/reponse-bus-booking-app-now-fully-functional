@@ -6,10 +6,8 @@ import LoadingSpinner from './components/LoadingSpinner';
 import * as api from './services/apiService';
 import { useLanguage } from './contexts/LanguageContext';
 import { useSocket } from './contexts/SocketContext';
-import Modal from './components/Modal';
 import { useAuth } from './contexts/AuthContext';
 import PinModal from './components/PinModal';
-
 
 const MomoAwaitingConfirmationModal: React.FC<{amount: number, phone: string, onCancel: () => void}> = ({ amount, phone, onCancel }) => {
     const { t } = useLanguage();
@@ -46,7 +44,7 @@ const MomoAwaitingConfirmationModal: React.FC<{amount: number, phone: string, on
 };
 
 const PaymentPage: React.FC<{ bookingDetails: any, onNavigate: (page: Page, data?: any) => void }> = ({ bookingDetails, onNavigate }) => {
-    const [paymentMethod, setPaymentMethod] = useState('momo');
+    const [paymentMethod, setPaymentMethod] = useState('wallet');
     const [momoPhone, setMomoPhone] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
     const [isAwaitingMomo, setIsAwaitingMomo] = useState(false);
@@ -54,7 +52,7 @@ const PaymentPage: React.FC<{ bookingDetails: any, onNavigate: (page: Page, data
     const [error, setError] = useState('');
     const { t } = useLanguage();
     const socket = useSocket();
-    const { user, setUser } = useAuth();
+    const { user, refreshUserData } = useAuth();
 
     useEffect(() => {
         if (socket && isAwaitingMomo) {
@@ -105,10 +103,8 @@ const PaymentPage: React.FC<{ bookingDetails: any, onNavigate: (page: Page, data
             };
             const confirmedBooking = await api.createBooking(bookingPayload);
             
-            // If wallet was used, update user context
-            if(finalPaymentMethod === 'wallet') {
-                setUser(prev => ({...prev, walletBalance: prev.walletBalance - bookingDetails.totalPrice}))
-            }
+            // Update user context to reflect new wallet balance
+            await refreshUserData();
             
             const fullBookingDetails = { ...bookingDetails, ...confirmedBooking };
             onNavigate('bookingConfirmation', fullBookingDetails);
@@ -125,6 +121,10 @@ const PaymentPage: React.FC<{ bookingDetails: any, onNavigate: (page: Page, data
         setError('');
         
         if (paymentMethod === 'momo') {
+            if (!momoPhone || momoPhone.length < 10) {
+                setError('Please enter a valid MoMo phone number.');
+                return;
+            }
             setIsProcessing(true);
             try {
                 await api.initiateMomoPayment({ ...bookingDetails, phone: momoPhone });
@@ -134,8 +134,9 @@ const PaymentPage: React.FC<{ bookingDetails: any, onNavigate: (page: Page, data
                 setIsProcessing(false);
             }
         } else if (paymentMethod === 'wallet') {
-            if ((user?.walletBalance || 0) < bookingDetails.totalPrice) {
-                setError('Insufficient wallet balance.');
+            // Check balance locally first for instant feedback
+            if ((user?.wallet_balance || 0) < bookingDetails.totalPrice) {
+                setError(`Insufficient wallet balance. You need ${new Intl.NumberFormat('fr-RW').format(bookingDetails.totalPrice - (user?.wallet_balance || 0))} RWF more.`);
                 return;
             }
             if (!user?.pin) {
@@ -197,29 +198,35 @@ const PaymentPage: React.FC<{ bookingDetails: any, onNavigate: (page: Page, data
 
                     <form onSubmit={handlePayment} className="space-y-4">
                         {paymentMethod === 'momo' && (
-                             <div>
+                             <div className="animate-fade-in">
                                 <label htmlFor="momo-phone" className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('payment_momo_phone')}</label>
                                 <div className="relative mt-1">
                                     <PhoneIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"/>
-                                    <input type="tel" id="momo-phone" value={momoPhone} onChange={e => setMomoPhone(e.target.value)} required className="w-full pl-10 pr-3 py-2 border rounded-md dark:bg-gray-700" placeholder="07..."/>
+                                    <input type="tel" id="momo-phone" value={momoPhone} onChange={e => setMomoPhone(e.target.value)} required className="w-full pl-10 pr-3 py-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" placeholder="078..."/>
                                 </div>
                              </div>
                         )}
                         {paymentMethod === 'card' && (
-                            <p className="text-center text-sm text-gray-500">{t('payment_card_info')}</p>
+                            <p className="text-center text-sm text-gray-500 animate-fade-in">{t('payment_card_info')}</p>
                         )}
                          {paymentMethod === 'wallet' && (
-                            <div className="text-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                            <div className="text-center p-6 bg-gray-50 dark:bg-gray-700/50 rounded-lg animate-fade-in">
                                 <p className="text-sm text-gray-600 dark:text-gray-300">Your current balance is</p>
-                                <p className="font-bold text-lg text-green-600">{new Intl.NumberFormat('fr-RW').format(user?.walletBalance || 0)} RWF</p>
+                                <p className="font-bold text-2xl text-blue-600 dark:text-blue-400 my-2">{new Intl.NumberFormat('fr-RW').format(user?.wallet_balance || 0)} RWF</p>
+                                {(user?.wallet_balance || 0) < bookingDetails.totalPrice ? (
+                                    <p className="text-xs text-red-500 font-bold">Insufficient funds. Please top up.</p>
+                                ) : (
+                                    <p className="text-xs text-green-500 font-bold">✓ Sufficient funds available</p>
+                                )}
                             </div>
                         )}
                         
-                        {error && <p className="text-sm text-red-500 text-center font-semibold mt-4">{error}</p>}
-                        <button type="submit" disabled={isProcessing} className="w-full mt-6 py-4 bg-green-600 text-white font-bold rounded-lg text-lg hover:bg-green-700 transition flex items-center justify-center disabled:opacity-60">
+                        {error && <p className="text-sm text-red-500 text-center font-semibold mt-4 bg-red-50 dark:bg-red-900/20 p-2 rounded-md">{error}</p>}
+                        
+                        <button type="submit" disabled={isProcessing} className="w-full mt-6 py-4 bg-gradient-to-r from-green-600 to-green-500 text-white font-bold rounded-xl text-lg hover:from-green-700 hover:to-green-600 transition-all shadow-lg transform hover:-translate-y-0.5 flex items-center justify-center disabled:opacity-60 disabled:cursor-not-allowed">
                             {t('payment_pay_button')} <ArrowRightIcon className="w-5 h-5 ml-2"/>
                         </button>
-                         <p className="text-xs text-gray-500 text-center flex items-center justify-center mt-2"><LockClosedIcon className="w-3 h-3 mr-1"/> {t('payment_secure_info')}</p>
+                         <p className="text-xs text-gray-500 text-center flex items-center justify-center mt-4"><LockClosedIcon className="w-3 h-3 mr-1"/> {t('payment_secure_info')}</p>
                     </form>
                 </div>
             </div>
