@@ -5,12 +5,16 @@ import { useAuth } from '../contexts/AuthContext';
 // Safely retrieve the VAPID key from environment variables
 const getVapidPublicKey = () => {
     try {
-        // Check for Vite's import.meta.env
-        if (typeof import.meta !== 'undefined' && (import.meta as any).env) {
-            return (import.meta as any).env.VITE_VAPID_PUBLIC_KEY;
+        // First try Vite's import.meta.env
+        // @ts-ignore
+        if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_VAPID_PUBLIC_KEY) {
+            // @ts-ignore
+            return import.meta.env.VITE_VAPID_PUBLIC_KEY;
         }
-        // Check for process.env (if polyfilled)
-        if (typeof process !== 'undefined' && process.env) {
+        
+        // Fallback to process.env (handled by Vite's define)
+        // We access it directly so Vite can replace the string 'process.env.VITE_VAPID_PUBLIC_KEY'
+        if (typeof process !== 'undefined' && process.env && process.env.VITE_VAPID_PUBLIC_KEY) {
             return process.env.VITE_VAPID_PUBLIC_KEY;
         }
     } catch (e) {
