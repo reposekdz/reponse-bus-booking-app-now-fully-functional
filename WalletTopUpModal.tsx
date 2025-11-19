@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import Modal from './components/Modal';
+import Modal from './Modal';
 import PinModal from './PinModal';
-import { WalletIcon } from './components/icons';
+import { WalletIcon } from './icons';
 
 interface WalletTopUpModalProps {
     onClose: () => void;

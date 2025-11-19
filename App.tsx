@@ -148,6 +148,7 @@ const AppContent: React.FC = () => {
         if (user.role === 'company') return <CompanyLayout currentPage={'companyDashboard'} navigate={navigate} pageData={pageData} companyData={user} theme={theme} setTheme={setTheme} onLogout={handleLogout}/>;
         if (user.role === 'driver') return <DriverDashboard driverData={user} navigate={navigate} onLogout={handleLogout} theme={theme} setTheme={setTheme} />;
         if (user.role === 'agent') return <AgentDashboard agentData={user} navigate={navigate} onLogout={handleLogout} theme={theme} setTheme={setTheme} />;
+        if (user.role === 'passenger') return <BookingsPage onViewTicket={(ticket, isActive) => setViewingTicket({ ticket, isActive })} />;
     }
 
     // If not logged in, force login page for protected routes

@@ -4,6 +4,9 @@ import { createCharterRequest } from './charters.controller';
 
 const router = Router();
 
-router.post('/', protect, createCharterRequest);
+// All routes here require an authenticated user
+router.use(protect);
+
+router.post('/', createCharterRequest);
 
 export default router;

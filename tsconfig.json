@@ -25,21 +25,5 @@
     },
     "allowImportingTsExtensions": true,
     "noEmit": true
-  },
-  "include": [
-    "*.ts",
-    "*.tsx",
-    "components/**/*",
-    "contexts/**/*",
-    "lib/**/*",
-    "services/**/*",
-    "admin/**/*",
-    "company/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "backend",
-    "mobile",
-    "dist"
-  ]
+  }
 }

@@ -1,74 +1,81 @@
+
+
+import { AppError } from '../utils/AppError';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import { pool } from '../config/db';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import config from '../config';
+import { pool } from '../config/db';
+import { User } from '../types';
+import * as mysql from 'mysql2/promise';
 
-export const register = async (userData: any) => {
-    const hashedPassword = await bcrypt.hash(userData.password, 12);
-    
-    const [result] = await pool.execute(
-        'INSERT INTO users (email, password, name, phone) VALUES (?, ?, ?, ?)',
-        [userData.email, hashedPassword, userData.name, userData.phone]
-    );
-    
-    return { success: true, message: 'User registered successfully' };
+const generateToken = (userId: number) => {
+    return jwt.sign({ id: userId }, config.jwt.secret, {
+        expiresIn: config.jwt.expiresIn,
+    } as SignOptions);
 };
 
-export const login = async (credentials: any) => {
-    const [rows] = await pool.execute(
-        'SELECT * FROM users WHERE email = ?',
-        [credentials.email]
-    );
-    
-    const users = rows as any[];
-    if (users.length === 0) {
-        throw new Error('Invalid credentials');
+export const registerUser = async (userData: any) => {
+    const { name, email, password, phone } = userData;
+
+    const [existingUsers] = await pool.query<User[] & mysql.RowDataPacket[]>('SELECT id FROM users WHERE email = ?', [email]);
+    if (existingUsers.length > 0) {
+        throw new AppError('User already exists', 400);
     }
     
-    const user = users[0];
-    const isValidPassword = await bcrypt.compare(credentials.password, user.password);
+    const password_hash = await bcrypt.hash(password, 10);
     
-    if (!isValidPassword) {
-        throw new Error('Invalid credentials');
+    const [result] = await pool.query<mysql.ResultSetHeader>(
+        'INSERT INTO users (name, email, password_hash, phone_number, role) VALUES (?, ?, ?, ?, ?)',
+        [name, email, password_hash, phone, 'passenger']
+    );
+
+    const userId = result.insertId;
+    const [rows] = await pool.query<User[] & mysql.RowDataPacket[]>('SELECT * FROM users WHERE id = ?', [userId]);
+    const user = rows[0];
+    delete user.password_hash;
+    
+    const token = generateToken(userId);
+
+    return { user, token };
+};
+
+export const loginUser = async (loginData: any) => {
+    const { email, password } = loginData;
+
+    if (!email || !password) {
+        throw new AppError('Please provide an email and password', 400);
     }
+
+    const [rows] = await pool.query<User[] & mysql.RowDataPacket[]>('SELECT * FROM users WHERE email = ?', [email]);
+    const user = rows[0];
+
+    if (!user || !(await bcrypt.compare(password, user.password_hash!))) {
+        throw new AppError('Invalid credentials', 401);
+    }
+
+    const token = generateToken(user.id);
+    delete user.password_hash;
     
-    const token = jwt.sign(
-        { id: user.id }, 
-        config.jwt.secret as string, 
-        { expiresIn: config.jwt.expiresIn as string }
-    );
-    
-    return {
-        success: true,
-        data: {
-            user: { id: user.id, email: user.email, name: user.name },
-            token
-        }
-    };
+    return { user, token };
 };
 
-export const getUserById = async (id: number) => {
-    const [rows] = await pool.execute(
-        'SELECT id, email, name, phone FROM users WHERE id = ?',
-        [id]
-    );
-    
-    const users = rows as any[];
-    return users[0] || null;
-};
+export const updatePassword = async (userId: number, currentPassword, newPassword) => {
+    if (!currentPassword || !newPassword) {
+        throw new AppError('Please provide current and new passwords', 400);
+    }
 
-export const updatePassword = async (userId: number, currentPassword: string, newPassword: string) => {
-    const user = await getUserById(userId);
+    const [rows] = await pool.query<User[] & mysql.RowDataPacket[]>('SELECT password_hash FROM users WHERE id = ?', [userId]);
+    const user = rows[0];
+
     if (!user) {
-        throw new Error('User not found');
+        throw new AppError('User not found', 404);
     }
-    
-    const hashedPassword = await bcrypt.hash(newPassword, 12);
-    
-    await pool.execute(
-        'UPDATE users SET password = ? WHERE id = ?',
-        [hashedPassword, userId]
-    );
-    
-    return { success: true, message: 'Password updated successfully' };
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password_hash!);
+    if (!isMatch) {
+        throw new AppError('Incorrect current password', 401);
+    }
+
+    const new_password_hash = await bcrypt.hash(newPassword, 10);
+    await pool.query('UPDATE users SET password_hash = ? WHERE id = ?', [new_password_hash, userId]);
 };

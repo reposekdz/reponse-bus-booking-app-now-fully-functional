@@ -1,10 +1,11 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 // FIX: Changed import to a named import as StarRating is not a default export.
 import { StarRating } from './components/StarRating';
 import { SearchIcon, ChevronRightIcon, StarIcon } from './components/icons';
 import type { Page } from './App';
 import * as api from './services/apiService';
 import LoadingSpinner from './components/LoadingSpinner';
+import ErrorDisplay from './components/ErrorDisplay';
 
 
 interface CompaniesPageProps {
@@ -68,20 +69,22 @@ const CompaniesPage: React.FC<CompaniesPageProps> = ({ onNavigate }) => {
   const [sortOrder, setSortOrder] = useState('rating_desc');
   const [ratingFilter, setRatingFilter] = useState(0);
 
-  useEffect(() => {
-    const fetchCompanies = async () => {
-        setIsLoading(true);
-        try {
-            const data = await api.getCompanies();
-            setAllCompanies(data);
-        } catch (e: any) {
-            setError(e.message || 'Failed to fetch companies.');
-        } finally {
-            setIsLoading(false);
-        }
-    };
-    fetchCompanies();
+  const fetchCompanies = useCallback(async () => {
+    setIsLoading(true);
+    setError('');
+    try {
+        const data = await api.getCompanies();
+        setAllCompanies(data);
+    } catch (e: any) {
+        setError(e.message || 'Failed to fetch companies.');
+    } finally {
+        setIsLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchCompanies();
+  }, [fetchCompanies]);
 
   const featuredCompanies = useMemo(() => allCompanies.slice(0, 2), [allCompanies]);
   const regularCompanies = useMemo(() => allCompanies.slice(2), [allCompanies]);
@@ -121,7 +124,7 @@ const CompaniesPage: React.FC<CompaniesPageProps> = ({ onNavigate }) => {
         <main className="container mx-auto px-6 py-12">
             
             {isLoading && <LoadingSpinner />}
-            {error && <p className="text-center text-red-500">{error}</p>}
+            {error && <ErrorDisplay message={error} onRetry={fetchCompanies} />}
 
             {!isLoading && !error && (
                 <>

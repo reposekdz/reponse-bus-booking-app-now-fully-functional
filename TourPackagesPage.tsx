@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Page } from './App';
 import { MapIcon } from './components/icons';
+import Modal from './components/Modal';
+import * as api from './services/apiService';
 
 const mockTours = [
     { title: "Gorilla Trekking Express", description: "A round trip from Kigali to Musanze, including park entry coordination.", image: 'https://www.andbeyond.com/wp-content/uploads/sites/5/one-of-the-reasons-to-visit-rwanda-gorilla.jpg' },
@@ -8,8 +10,47 @@ const mockTours = [
     { title: "Kivu Lakeside Weekender", description: "Enjoy a relaxing weekend by the beautiful shores of Lake Kivu in Rubavu.", image: 'https://images.unsplash.com/photo-1590632313655-e9c5220c4273?q=80&w=2070&auto=format&fit=crop' }
 ];
 
-const TourPackagesPage: React.FC<{ onNavigate: (page: Page) => void }> = ({ onNavigate }) => {
+const InquiryForm = ({ tourTitle, onClose }) => {
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setIsLoading(true);
+        try {
+            await api.submitContactMessage({
+                name,
+                email,
+                subject: `Tour Inquiry: ${tourTitle}`,
+                message: `Hello, I'm interested in learning more about the "${tourTitle}" package. Please send me more information.\n\nContact: ${name}\nEmail: ${email}`
+            });
+            alert('Inquiry sent! Our team will contact you shortly.');
+            onClose();
+        } catch (error) {
+            alert(`Failed to send inquiry: ${error.message}`);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return (
+        <form onSubmit={handleSubmit} className="space-y-4">
+            <p className="text-sm text-gray-500">Please provide your details, and our team will get in touch with more information about the "{tourTitle}" package.</p>
+            <div><label>Your Name</label><input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full mt-1 p-2 border rounded-md dark:bg-gray-700" required/></div>
+            <div><label>Your Email</label><input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full mt-1 p-2 border rounded-md dark:bg-gray-700" required/></div>
+            <div className="flex justify-end pt-2">
+                <button type="submit" disabled={isLoading} className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg disabled:opacity-50">{isLoading ? 'Sending...' : 'Send Inquiry'}</button>
+            </div>
+        </form>
+    )
+}
+
+const TourPackagesPage: React.FC<{ onNavigate: (page: Page) => void }> = ({ onNavigate }) => {
+    const [selectedTour, setSelectedTour] = useState<any>(null);
+
+    return (
+        <>
         <div className="bg-gray-100/50 dark:bg-gray-900/50 min-h-screen py-12">
             <div className="container mx-auto px-6">
                 <div className="text-center mb-12">
@@ -29,7 +70,7 @@ const TourPackagesPage: React.FC<{ onNavigate: (page: Page) => void }> = ({ onNa
                                     <h3 className="text-2xl font-bold dark:text-white">{tour.title}</h3>
                                     <p className="text-gray-600 dark:text-gray-400 mt-2">{tour.description}</p>
                                 </div>
-                                <button onClick={() => alert('Inquiry form would open here.')} className="mt-4 px-5 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 self-start">
+                                <button onClick={() => setSelectedTour(tour)} className="mt-4 px-5 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 self-start">
                                     Inquire Now
                                 </button>
                             </div>
@@ -38,6 +79,12 @@ const TourPackagesPage: React.FC<{ onNavigate: (page: Page) => void }> = ({ onNa
                 </div>
             </div>
         </div>
+        {selectedTour && (
+            <Modal isOpen={true} onClose={() => setSelectedTour(null)} title={`Inquire About: ${selectedTour.title}`}>
+                <InquiryForm tourTitle={selectedTour.title} onClose={() => setSelectedTour(null)} />
+            </Modal>
+        )}
+        </>
     );
 };
 

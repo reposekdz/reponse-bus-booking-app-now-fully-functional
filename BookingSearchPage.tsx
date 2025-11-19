@@ -1,6 +1,7 @@
 
 
-import React, { useState, useMemo, useEffect } from 'react';
+
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { ArrowRightIcon, FilterIcon, StarIcon, WifiIcon, AcIcon, PowerIcon, BuildingOfficeIcon, XIcon, CalendarIcon } from './components/icons';
 import SearchResultsPage from './SearchResultsPage';
 import { Page } from './App';
@@ -9,16 +10,19 @@ import SearchResultSkeleton from './components/SearchResultSkeleton';
 import Modal from './components/Modal';
 import SearchableSelect from './components/SearchableSelect';
 import PassengerSelector from './components/PassengerSelector';
+import ErrorDisplay from './components/ErrorDisplay';
+import { rwandaAllStations } from './lib/stations';
 
 const allAmenities = ['WiFi', 'AC', 'Charging'];
-const allLocations = ['Kigali', 'Rubavu', 'Musanze', 'Huye', 'Rusizi', 'Nyagatare', 'Muhanga'];
+const allDistricts = [...new Set(rwandaAllStations.map(station => station.district))].sort();
+const locationToDistrictMap = new Map(rwandaAllStations.map(s => [s.name, s.district]));
 
 interface BookingSearchPageProps {
   searchParams: { from?: string; to?: string; date?: string; passengers?: { adults: number; children: number; }, companyId?: string };
   onNavigate: (page: Page, data?: any) => void;
 }
 
-const FilterSidebarContent = ({ sortOrder, setSortOrder, amenityFilters, setAmenityFilters, timeFilters, setTimeFilters, companyFilters, setCompanyFilters, companies, showFavoritesOnly, setShowFavoritesOnly, handleFilterToggle }) => (
+const FilterSidebarContent = ({ sortOrder, setSortOrder, amenityFilters, setAmenityFilters, timeFilters, setTimeFilters, companyFilters, setCompanyFilters, companies, showFavoritesOnly, setShowFavoritesOnly, handleFilterToggle, originDistrictFilter, setOriginDistrictFilter, destinationDistrictFilter, setDestinationDistrictFilter }) => (
     <div className="space-y-6">
         <div>
             <h4 className="font-semibold mb-2 dark:text-gray-200">Sort by</h4>
@@ -27,6 +31,20 @@ const FilterSidebarContent = ({ sortOrder, setSortOrder, amenityFilters, setAmen
                 <option value="cheapest">Cheapest</option>
                 <option value="earliest">Earliest Departure</option>
             </select>
+        </div>
+        
+        <div className="border-t dark:border-gray-700 pt-4">
+            <h4 className="font-semibold mb-2 dark:text-gray-200">Filter by District</h4>
+            <div className="space-y-2">
+                 <select value={originDistrictFilter} onChange={e => setOriginDistrictFilter(e.target.value)} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600">
+                    <option value="">Any Origin District</option>
+                    {allDistricts.map(d => <option key={d} value={d}>{d}</option>)}
+                </select>
+                 <select value={destinationDistrictFilter} onChange={e => setDestinationDistrictFilter(e.target.value)} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600">
+                    <option value="">Any Destination District</option>
+                    {allDistricts.map(d => <option key={d} value={d}>{d}</option>)}
+                </select>
+            </div>
         </div>
         
         <div className="border-t dark:border-gray-700 pt-4">
@@ -89,10 +107,12 @@ const BookingSearchPage: React.FC<BookingSearchPageProps> = ({ searchParams, onN
   const [companyFilters, setCompanyFilters] = useState<string[]>([]);
   const [timeFilters, setTimeFilters] = useState<string[]>([]);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [originDistrictFilter, setOriginDistrictFilter] = useState('');
+  const [destinationDistrictFilter, setDestinationDistrictFilter] = useState('');
   
   const totalPassengers = useMemo(() => passengers.adults + passengers.children, [passengers]);
 
-  const fetchTrips = async () => {
+  const fetchTrips = useCallback(async () => {
       if (!fromLocation || !toLocation || !journeyDate) return;
       setIsLoading(true);
       setError('');
@@ -104,7 +124,7 @@ const BookingSearchPage: React.FC<BookingSearchPageProps> = ({ searchParams, onN
       } finally {
           setIsLoading(false);
       }
-  };
+  }, [fromLocation, toLocation, journeyDate, searchParams?.companyId]);
   
   useEffect(() => {
     fetchTrips();
@@ -117,7 +137,7 @@ const BookingSearchPage: React.FC<BookingSearchPageProps> = ({ searchParams, onN
         }
     };
     fetchCompanies();
-  }, [fromLocation, toLocation, journeyDate, searchParams?.companyId]);
+  }, [fetchTrips]);
 
   useEffect(() => {
     if (searchParams?.companyId && companies.length > 0) {
@@ -164,6 +184,8 @@ const BookingSearchPage: React.FC<BookingSearchPageProps> = ({ searchParams, onN
     let processedResults = results
       .map(trip => ({
           id: trip._id,
+          from: trip.route.from,
+          to: trip.route.to,
           company: trip.route.company.name,
           companyLogo: trip.route.company.logoUrl,
           departureTime: new Date(trip.departureTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
@@ -180,6 +202,10 @@ const BookingSearchPage: React.FC<BookingSearchPageProps> = ({ searchParams, onN
         if (showFavoritesOnly && !favoriteTripIds.includes(trip.id)) return false;
         if (amenityFilters.length > 0 && !amenityFilters.every(amenity => trip.amenities.includes(amenity))) return false;
         if (companyFilters.length > 0 && !companyFilters.includes(trip.company)) return false;
+        
+        if (originDistrictFilter && locationToDistrictMap.get(trip.from) !== originDistrictFilter) return false;
+        if (destinationDistrictFilter && locationToDistrictMap.get(trip.to) !== destinationDistrictFilter) return false;
+
         if (timeFilters.length > 0) {
             const hour = parseInt(trip.departureTime.split(':')[0]);
             const isMorning = hour >= 5 && hour < 12;
@@ -206,7 +232,7 @@ const BookingSearchPage: React.FC<BookingSearchPageProps> = ({ searchParams, onN
     });
 
     return processedResults;
-  }, [results, sortOrder, showFavoritesOnly, favoriteTripIds, amenityFilters, companyFilters, timeFilters, totalPassengers]);
+  }, [results, sortOrder, showFavoritesOnly, favoriteTripIds, amenityFilters, companyFilters, timeFilters, totalPassengers, originDistrictFilter, destinationDistrictFilter]);
 
 
   return (
@@ -221,8 +247,8 @@ const BookingSearchPage: React.FC<BookingSearchPageProps> = ({ searchParams, onN
                     </div>
                 </div>
                  <div className="bg-white/10 dark:bg-black/20 p-4 rounded-xl grid grid-cols-1 md:grid-cols-[1fr_1fr_auto_auto] gap-4 items-center">
-                    <SearchableSelect options={allLocations} value={fromLocation} onChange={setFromLocation} placeholder="From" />
-                    <SearchableSelect options={allLocations} value={toLocation} onChange={setToLocation} placeholder="To" />
+                    <SearchableSelect options={allDistricts} value={fromLocation} onChange={setFromLocation} placeholder="From" />
+                    <SearchableSelect options={allDistricts} value={toLocation} onChange={setToLocation} placeholder="To" />
                     <div className="relative">
                         <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 z-10" />
                         <input type="date" value={journeyDate} onChange={e => setJourneyDate(e.target.value)} className="w-full pl-10 pr-4 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-700"/>
@@ -238,7 +264,7 @@ const BookingSearchPage: React.FC<BookingSearchPageProps> = ({ searchParams, onN
            <aside className="hidden md:block md:col-span-1">
              <div className="sticky top-24 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg">
                 <h3 className="text-xl font-bold dark:text-white flex items-center mb-4"><FilterIcon className="w-5 h-5 mr-2"/> Filters</h3>
-                <FilterSidebarContent {...{ sortOrder, setSortOrder, amenityFilters, setAmenityFilters, timeFilters, setTimeFilters, companyFilters, setCompanyFilters, companies, showFavoritesOnly, setShowFavoritesOnly, handleFilterToggle }} />
+                <FilterSidebarContent {...{ sortOrder, setSortOrder, amenityFilters, setAmenityFilters, timeFilters, setTimeFilters, companyFilters, setCompanyFilters, companies, showFavoritesOnly, setShowFavoritesOnly, handleFilterToggle, originDistrictFilter, setOriginDistrictFilter, destinationDistrictFilter, setDestinationDistrictFilter }} />
              </div>
            </aside>
            <div className="md:col-span-3">
@@ -249,7 +275,7 @@ const BookingSearchPage: React.FC<BookingSearchPageProps> = ({ searchParams, onN
                  </button>
                </div>
                {isLoading && <SearchResultSkeleton />}
-               {error && <p className="text-red-500 text-center bg-red-100 dark:bg-red-900/50 p-4 rounded-lg">{error}</p>}
+               {error && <ErrorDisplay message={error} onRetry={fetchTrips} />}
                {!isLoading && !error && <SearchResultsPage 
                   results={filteredAndSortedResults} 
                   onTripSelect={(trip) => onNavigate('seatSelection', { tripId: trip.id })}
@@ -260,7 +286,7 @@ const BookingSearchPage: React.FC<BookingSearchPageProps> = ({ searchParams, onN
          </div>
        </main>
         <Modal isOpen={isFilterModalOpen} onClose={() => setIsFilterModalOpen(false)} title="Filters & Sort">
-            <FilterSidebarContent {...{ sortOrder, setSortOrder, amenityFilters, setAmenityFilters, timeFilters, setTimeFilters, companyFilters, setCompanyFilters, companies, showFavoritesOnly, setShowFavoritesOnly, handleFilterToggle }} />
+            <FilterSidebarContent {...{ sortOrder, setSortOrder, amenityFilters, setAmenityFilters, timeFilters, setTimeFilters, companyFilters, setCompanyFilters, companies, showFavoritesOnly, setShowFavoritesOnly, handleFilterToggle, originDistrictFilter, setOriginDistrictFilter, destinationDistrictFilter, setDestinationDistrictFilter }} />
             <div className="mt-6 text-right">
                 <button onClick={() => setIsFilterModalOpen(false)} className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg">Apply</button>
             </div>

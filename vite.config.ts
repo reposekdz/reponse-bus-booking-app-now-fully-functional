@@ -1,42 +1,22 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import path from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [
-    react()
-  ],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './')
-    }
-  },
+  plugins: [react()],
   server: {
-    host: '0.0.0.0',
+    host: 'localhost',
     port: 3000,
     proxy: {
+      // Proxy API requests to the backend
       '/api': {
-        target: process.env.VITE_API_URL || 'http://localhost:5000',
+        target: 'http://localhost:5000',
         changeOrigin: true,
-        secure: false
       },
+      // Proxy WebSocket connections for real-time features
       '/socket.io': {
-        target: process.env.VITE_WS_URL || 'ws://localhost:5000',
+        target: 'ws://localhost:5000',
         ws: true,
-        changeOrigin: true
-      }
-    }
-  },
-  build: {
-    target: 'esnext',
-    minify: 'terser',
-    sourcemap: false,
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom']
-        }
       }
     }
   }

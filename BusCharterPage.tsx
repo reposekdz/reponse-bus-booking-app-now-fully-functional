@@ -8,6 +8,7 @@ const STEPS = ['Select Company', 'Trip Details', 'Contact Info', 'Confirmation']
 const BusCharterPage: React.FC<{ onNavigate: (page: Page) => void }> = ({ onNavigate }) => {
     const [currentStep, setCurrentStep] = useState(1);
     const [companies, setCompanies] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
     const [charterRequest, setCharterRequest] = useState({
         companyId: '',
         companyName: '',
@@ -24,11 +25,14 @@ const BusCharterPage: React.FC<{ onNavigate: (page: Page) => void }> = ({ onNavi
 
     useEffect(() => {
         const fetchCompanies = async () => {
+            setIsLoading(true);
             try {
                 const data = await api.getCompanies();
                 setCompanies(data);
             } catch (error) {
                 console.error("Failed to fetch companies", error);
+            } finally {
+                setIsLoading(false);
             }
         };
         fetchCompanies();
@@ -41,10 +45,16 @@ const BusCharterPage: React.FC<{ onNavigate: (page: Page) => void }> = ({ onNavi
     
     const handleNext = () => setCurrentStep(prev => Math.min(prev + 1, STEPS.length));
     const handleBack = () => setCurrentStep(prev => Math.max(prev - 1, 1));
-    const handleConfirm = () => {
-        // Here you would typically send the data to a backend
-        console.log('Charter Request Submitted:', charterRequest);
-        handleNext();
+    const handleConfirm = async () => {
+        setIsLoading(true);
+        try {
+            await api.createCharterRequest(charterRequest);
+            handleNext();
+        } catch (error) {
+            alert(`Failed to submit request: ${error.message}`);
+        } finally {
+            setIsLoading(false);
+        }
     }
 
     const renderStepContent = () => {
@@ -53,9 +63,10 @@ const BusCharterPage: React.FC<{ onNavigate: (page: Page) => void }> = ({ onNavi
                 return (
                     <div className="space-y-4">
                         <h3 className="font-semibold dark:text-white">Select a bus company for your charter</h3>
+                        {isLoading && <p>Loading companies...</p>}
                         {companies.map(company => (
-                             <button key={company._id} type="button" onClick={() => { setCharterRequest(r => ({...r, companyId: company._id, companyName: company.name})); handleNext(); }} className="w-full p-4 border-2 rounded-lg text-left flex items-center space-x-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors dark:border-gray-600">
-                                <img src={company.logoUrl} alt={company.name} className="w-12 h-12 object-contain bg-gray-100 rounded-full p-1"/>
+                             <button key={company.id} type="button" onClick={() => { setCharterRequest(r => ({...r, companyId: company.id, companyName: company.name})); handleNext(); }} className="w-full p-4 border-2 rounded-lg text-left flex items-center space-x-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors dark:border-gray-600">
+                                <img src={company.logo_url} alt={company.name} className="w-12 h-12 object-contain bg-gray-100 rounded-full p-1"/>
                                 <span className="font-bold flex-grow text-lg dark:text-white">{company.name}</span>
                                 <ChevronRightIcon className="w-6 h-6 text-gray-400"/>
                             </button>
@@ -133,7 +144,7 @@ const BusCharterPage: React.FC<{ onNavigate: (page: Page) => void }> = ({ onNavi
                         ) : <div></div>}
                         
                         {currentStep < 3 && <button onClick={handleNext} className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700">Next</button>}
-                        {currentStep === 3 && <button onClick={handleConfirm} className="px-6 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700">Submit Request</button>}
+                        {currentStep === 3 && <button onClick={handleConfirm} disabled={isLoading} className="px-6 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 disabled:opacity-50">{isLoading ? 'Submitting...' : 'Submit Request'}</button>}
                         {currentStep === 4 && <button onClick={() => onNavigate('home')} className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700">Back to Home</button>}
                     </div>
                 </div>

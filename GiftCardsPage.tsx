@@ -1,15 +1,31 @@
 import React, { useState } from 'react';
 import { Page } from './App';
 import { CreditCardIcon } from './components/icons';
+import * as api from './services/apiService';
 
 const GiftCardsPage: React.FC<{ onNavigate: (page: Page) => void }> = ({ onNavigate }) => {
     const [amount, setAmount] = useState('10000');
     const [recipientEmail, setRecipientEmail] = useState('');
+    const [senderName, setSenderName] = useState('');
     const [submitted, setSubmitted] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setSubmitted(true);
+        setIsLoading(true);
+        try {
+            await api.submitContactMessage({
+                name: senderName,
+                email: recipientEmail, // Using recipient email for direct contact
+                subject: `Gift Card Purchase Request: ${new Intl.NumberFormat('fr-RW').format(parseInt(amount))} RWF`,
+                message: `${senderName} wants to purchase a ${new Intl.NumberFormat('fr-RW').format(parseInt(amount))} RWF gift card for ${recipientEmail}. Please follow up to complete the transaction.`
+            });
+            setSubmitted(true);
+        } catch (error) {
+            alert(`Failed to submit request: ${error.message}`);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -24,8 +40,8 @@ const GiftCardsPage: React.FC<{ onNavigate: (page: Page) => void }> = ({ onNavig
                     
                     {submitted ? (
                         <div className="text-center p-8">
-                            <h2 className="text-xl font-semibold text-green-600">Gift Card Sent!</h2>
-                            <p className="text-gray-600 dark:text-gray-300 mt-2">A {new Intl.NumberFormat('fr-RW').format(parseInt(amount))} RWF gift card has been sent to {recipientEmail}.</p>
+                            <h2 className="text-xl font-semibold text-green-600">Request Sent!</h2>
+                            <p className="text-gray-600 dark:text-gray-300 mt-2">Thank you! Our team will process your request to send a {new Intl.NumberFormat('fr-RW').format(parseInt(amount))} RWF gift card to {recipientEmail} and will be in touch shortly.</p>
                              <button onClick={() => onNavigate('services')} className="mt-6 px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700">Back to Services</button>
                         </div>
                     ) : (
@@ -40,9 +56,10 @@ const GiftCardsPage: React.FC<{ onNavigate: (page: Page) => void }> = ({ onNavig
                                     ))}
                                 </div>
                             </div>
+                            <div><label className="block text-sm font-medium">Your Name</label><input type="text" value={senderName} onChange={e => setSenderName(e.target.value)} className="mt-1 w-full p-2 border rounded-md dark:bg-gray-700" required /></div>
                             <div><label className="block text-sm font-medium">Recipient's Email</label><input type="email" value={recipientEmail} onChange={e => setRecipientEmail(e.target.value)} className="mt-1 w-full p-2 border rounded-md dark:bg-gray-700" required /></div>
                             <div><label className="block text-sm font-medium">Personal Message (Optional)</label><textarea rows={2} className="mt-1 w-full p-2 border rounded-md dark:bg-gray-700" /></div>
-                            <div className="flex justify-end pt-4"><button type="submit" className="px-6 py-2 text-sm font-semibold bg-blue-600 text-white rounded-lg">Purchase & Send</button></div>
+                            <div className="flex justify-end pt-4"><button type="submit" disabled={isLoading} className="px-6 py-2 text-sm font-semibold bg-blue-600 text-white rounded-lg disabled:opacity-50">{isLoading ? 'Submitting...' : 'Request Gift Card'}</button></div>
                         </form>
                     )}
                 </div>

@@ -1,5 +1,6 @@
 import { pool } from '../../config/db';
 import logger from '../../utils/logger';
+import config from '../../config';
 
 // In a real app, you would use web-push and expo-server-sdk-node.
 // They are not included here, so we will log the actions instead.
@@ -42,7 +43,7 @@ export const sendNotification = async (userId: number, payload: { title: string;
 
     for (const sub of (subscriptions as any[])) {
         if (sub.platform === 'web') {
-            if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+            if (config.vapid.publicKey && config.vapid.privateKey) {
                 logger.info(`[MOCK WEB PUSH] Configured. Sending to endpoint for user ${userId}. Payload: ${JSON.stringify(payload)}`);
                 // Real 'web-push' implementation would go here, using the VAPID keys.
             } else {

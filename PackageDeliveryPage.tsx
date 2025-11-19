@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Page } from './App';
 import { ArrowRightIcon, CheckCircleIcon, ChevronRightIcon, UserCircleIcon } from './components/icons';
 import * as api from './services/apiService';
@@ -11,21 +11,47 @@ const PackageDeliveryPage: React.FC<{ onNavigate: (page: Page) => void }> = ({ o
     const [selectedSchedule, setSelectedSchedule] = useState<any>(null);
     const [recipient, setRecipient] = useState({ name: '', phone: '' });
     const [trackingId, setTrackingId] = useState('');
+    const [schedules, setSchedules] = useState<any[]>([]);
+    const [isLoadingSchedules, setIsLoadingSchedules] = useState(false);
 
     const packageOptions = {
-        small: { label: 'Small Envelope', pricePerKg: 200, base: 500 },
-        medium: { label: 'Medium Box', pricePerKg: 300, base: 1000 },
-        large: { label: 'Large Box', pricePerKg: 400, base: 2000 },
+        small: { label: 'Small Envelope', pricePerKg: 200, base: 500, multiplier: 0.1 },
+        medium: { label: 'Medium Box', pricePerKg: 300, base: 1000, multiplier: 0.2 },
+        large: { label: 'Large Box', pricePerKg: 400, base: 2000, multiplier: 0.3 },
     };
 
-    const calculatedPrice = packageOptions[packageDetails.size].base + packageDetails.weight * packageOptions[packageDetails.size].pricePerKg;
+    const getPackagePrice = (baseTripPrice: number) => {
+        const options = packageOptions[packageDetails.size];
+        return options.base + (baseTripPrice * options.multiplier) + (packageDetails.weight * options.pricePerKg);
+    };
 
-    // In a real app, this would be fetched based on the route from packageDetails
-    const mockSchedules = [
-        { id: 1, company: 'Volcano Express', departure: '08:00', arrival: '10:30', price: calculatedPrice, trip_id: 1 },
-        { id: 2, company: 'RITCO', departure: '09:30', arrival: '12:00', price: calculatedPrice * 0.95, trip_id: 2 },
-    ];
-    
+    useEffect(() => {
+        if (currentStep === 2) {
+            const fetchSchedules = async () => {
+                setIsLoadingSchedules(true);
+                setSchedules([]);
+                try {
+                    const today = new Date().toISOString().split('T')[0];
+                    const trips = await api.searchTrips(packageDetails.from, packageDetails.to, today);
+                    const formattedSchedules = trips.map((trip: any) => ({
+                        id: trip._id,
+                        company: trip.company,
+                        departure: trip.departureTime,
+                        arrival: trip.arrivalTime,
+                        price: getPackagePrice(trip.basePrice),
+                        trip_id: trip.id,
+                    }));
+                    setSchedules(formattedSchedules);
+                } catch (error) {
+                    console.error("Failed to fetch schedules for package delivery", error);
+                } finally {
+                    setIsLoadingSchedules(false);
+                }
+            };
+            fetchSchedules();
+        }
+    }, [currentStep, packageDetails.from, packageDetails.to, packageDetails.size, packageDetails.weight]);
+
     const handleNext = () => setCurrentStep(prev => Math.min(prev + 1, STEPS.length));
     const handleBack = () => setCurrentStep(prev => Math.max(prev - 1, 1));
     
@@ -43,7 +69,7 @@ const PackageDeliveryPage: React.FC<{ onNavigate: (page: Page) => void }> = ({ o
                 weight_kg: packageDetails.weight
             };
             const result = await api.createPackageRequest(payload);
-            setTrackingId(result.tracking_id);
+            setTrackingId(result.data.tracking_id);
             handleNext();
         } catch (error: any) {
             alert(`Failed to create package request: ${error.message}`);
@@ -73,14 +99,15 @@ const PackageDeliveryPage: React.FC<{ onNavigate: (page: Page) => void }> = ({ o
                             <label className="text-sm">Weight (kg)</label>
                             <input type="number" value={packageDetails.weight} onChange={e => setPackageDetails(p => ({...p, weight: Number(e.target.value)}))} className="w-full mt-1 p-2 border rounded-md dark:bg-gray-700" />
                         </div>
-                        <div className="text-right font-bold text-xl dark:text-white">Estimated Price: <span className="text-green-600">{new Intl.NumberFormat('fr-RW').format(calculatedPrice)} RWF</span></div>
                     </div>
                 );
             case 2:
                 return (
                     <div className="space-y-3">
                         <h3 className="font-semibold dark:text-white">Select a bus for your package on {packageDetails.from} to {packageDetails.to}</h3>
-                        {mockSchedules.map(schedule => (
+                        {isLoadingSchedules && <p>Loading schedules...</p>}
+                        {!isLoadingSchedules && schedules.length === 0 && <p className="text-center text-gray-500 py-4">No available trips for this route today.</p>}
+                        {schedules.map(schedule => (
                             <button key={schedule.id} onClick={() => setSelectedSchedule(schedule)} className={`w-full p-4 border-2 rounded-lg text-left flex justify-between items-center ${selectedSchedule?.id === schedule.id ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'dark:border-gray-600'}`}>
                                 <div>
                                     <p className="font-bold">{schedule.company}</p>
@@ -95,8 +122,8 @@ const PackageDeliveryPage: React.FC<{ onNavigate: (page: Page) => void }> = ({ o
                 return (
                      <div className="space-y-4">
                         <h3 className="font-semibold dark:text-white">Recipient's Information</h3>
-                        <div><label className="text-sm">Full Name</label><input type="text" value={recipient.name} onChange={e => setRecipient(r => ({...r, name: e.target.value}))} className="w-full mt-1 p-2 border rounded-md dark:bg-gray-700" /></div>
-                        <div><label className="text-sm">Phone Number</label><input type="tel" value={recipient.phone} onChange={e => setRecipient(r => ({...r, phone: e.target.value}))} className="w-full mt-1 p-2 border rounded-md dark:bg-gray-700" /></div>
+                        <div><label className="text-sm">Full Name</label><input type="text" value={recipient.name} onChange={e => setRecipient(r => ({...r, name: e.target.value}))} className="w-full mt-1 p-2 border rounded-md dark:bg-gray-700" required /></div>
+                        <div><label className="text-sm">Phone Number</label><input type="tel" value={recipient.phone} onChange={e => setRecipient(r => ({...r, phone: e.target.value}))} className="w-full mt-1 p-2 border rounded-md dark:bg-gray-700" required /></div>
                     </div>
                 );
             case 4:
@@ -145,7 +172,7 @@ const PackageDeliveryPage: React.FC<{ onNavigate: (page: Page) => void }> = ({ o
                             <button onClick={handleBack} className="px-6 py-2 border rounded-lg font-semibold dark:border-gray-600">Back</button>
                         ) : <div></div>}
                         
-                        {currentStep < 3 && <button onClick={handleNext} className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700">Next</button>}
+                        {currentStep < 3 && <button onClick={handleNext} disabled={currentStep === 2 && !selectedSchedule} className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50">Next</button>}
                         {currentStep === 3 && <button onClick={handleConfirm} className="px-6 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700">Submit Request</button>}
                         {currentStep === 4 && <button onClick={() => onNavigate('home')} className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700">Back to Home</button>}
                     </div>

@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { TicketIcon, QrCodeIcon, ArrowPathIcon, ShareIcon, StarIcon, CheckCircleIcon } from './components/icons';
+import React, { useState, useEffect, useCallback } from 'react';
+import { TicketIcon, QrCodeIcon, ArrowPathIcon, ShareIcon, StarIcon, CheckCircleIcon, ClockIcon, BusIcon, CalendarIcon, MapPinIcon } from './components/icons';
 import Modal from './components/Modal';
 // FIX: Changed import to a named import as StarRating is not a default export.
 import { StarRating } from './components/StarRating';
 import * as api from './services/apiService';
 import { useAuth } from './contexts/AuthContext';
+import ErrorDisplay from './components/ErrorDisplay';
 
 const RateTripModal: React.FC<{ booking: any, onClose: () => void, onSubmit: (rating: number, comment: string) => void }> = ({ booking, onClose, onSubmit }) => {
     const [rating, setRating] = useState(0);
@@ -32,6 +33,90 @@ const RateTripModal: React.FC<{ booking: any, onClose: () => void, onSubmit: (ra
                 </div>
             </div>
         </Modal>
+    );
+};
+
+
+const formatCountdown = (departureTime) => {
+    const now = new Date().getTime();
+    const departure = new Date(departureTime).getTime();
+    const diff = departure - now;
+
+    if (diff <= 0) return 'Departed';
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+    if (days > 0) return `in ${days}d ${hours}h`;
+    if (hours > 0) return `in ${hours}h ${minutes}m`;
+    return `in ${minutes}m`;
+};
+
+const NextTripCard: React.FC<{ booking: any; onViewTicket: (ticketDetails: any, isActive: boolean) => void; onActivate: (ticketId: string) => void; activeTicketId: string | null }> = ({ booking, onViewTicket, onActivate, activeTicketId }) => {
+    const [countdown, setCountdown] = useState(formatCountdown(booking.trip.departureTime));
+    const { trip } = booking;
+    const { route } = trip;
+    const { user } = useAuth();
+    
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCountdown(formatCountdown(trip.departureTime));
+        }, 60000); // Update every minute
+        return () => clearInterval(interval);
+    }, [trip.departureTime]);
+
+    const departureTime = new Date(trip.departureTime);
+    const now = new Date();
+    const hoursUntilDeparture = (departureTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+    const isActivatable = hoursUntilDeparture > 0 && hoursUntilDeparture <= 24;
+    const isTicketActive = activeTicketId === booking.bookingId;
+
+    const ticketDetails = {
+        id: booking.bookingId, from: route.from, to: route.to, company: route.company.name,
+        date: departureTime.toLocaleDateString(), time: departureTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        seats: booking.seats.join(', '), price: `${new Intl.NumberFormat('fr-RW').format(booking.totalPrice)} RWF`,
+        passenger: user?.name, busPlate: 'N/A'
+    };
+
+    return (
+        <div className="bg-gradient-to-tr from-blue-600 to-indigo-700 dark:from-blue-800 dark:to-indigo-900 rounded-2xl shadow-xl text-white p-6 relative overflow-hidden animate-fade-in">
+             <BusIcon className="absolute -right-8 -bottom-8 w-40 h-40 text-white/5 opacity-50 transform rotate-[-15deg]"/>
+            <h2 className="text-xl font-bold mb-2 text-yellow-300">Your Next Trip</h2>
+             <div className="flex items-baseline space-x-3 mb-4">
+                <ClockIcon className="w-8 h-8"/>
+                <span className="text-4xl font-bold">{countdown}</span>
+            </div>
+            <div className="border-t border-white/20 pt-4 space-y-3">
+                <div className="flex justify-between items-start">
+                    <div>
+                        <p className="font-bold text-2xl flex items-center"><MapPinIcon className="w-5 h-5 mr-2 inline-block"/> {route.from} to {route.to}</p>
+                        <p className="font-semibold text-lg opacity-80">{route.company.name}</p>
+                    </div>
+                </div>
+                 <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+                    <span className="flex items-center"><CalendarIcon className="w-4 h-4 mr-1.5"/> {departureTime.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })}</span>
+                    <span className="flex items-center"><ClockIcon className="w-4 h-4 mr-1.5"/> {departureTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    <span className="flex items-center">Seats: <span className="font-bold ml-1.5">{booking.seats.join(', ')}</span></span>
+                </div>
+            </div>
+            <div className="mt-6 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
+                 {isActivatable && !isTicketActive && (
+                    <button onClick={() => onActivate(booking.bookingId)} className="flex-1 text-center py-3 bg-green-500 font-bold rounded-lg hover:bg-green-600 transition shadow-lg">
+                        Activate Ticket for Boarding
+                    </button>
+                )}
+                {isTicketActive && (
+                    <div className="flex-1 text-center py-3 bg-green-500/20 font-bold rounded-lg flex items-center justify-center animate-pulse">
+                         <CheckCircleIcon className="w-5 h-5 mr-2"/>
+                        Ticket is Active
+                    </div>
+                )}
+                 <button onClick={() => onViewTicket(ticketDetails, isTicketActive)} className="flex-1 text-center py-3 bg-white/20 backdrop-blur-sm font-bold rounded-lg hover:bg-white/30 transition">
+                    View Boarding Pass
+                </button>
+            </div>
+        </div>
     );
 };
 
@@ -146,21 +231,23 @@ const BookingsPage: React.FC<BookingsPageProps> = ({ onViewTicket }) => {
   const [activeTicketId, setActiveTicketId] = useState<string | null>(null);
   const { user } = useAuth();
 
-  useEffect(() => {
-    const fetchBookings = async () => {
-        if (!user) return;
-        setIsLoading(true);
-        try {
-            const data = await api.getMyBookings();
-            setBookings(data);
-        } catch (err: any) {
-            setError(err.message || "Failed to fetch bookings.");
-        } finally {
-            setIsLoading(false);
-        }
-    };
-    fetchBookings();
+  const fetchBookings = useCallback(async () => {
+    if (!user) return;
+    setIsLoading(true);
+    setError('');
+    try {
+        const data = await api.getMyBookings();
+        setBookings(data);
+    } catch (err: any) {
+        setError(err.message || "Failed to fetch bookings.");
+    } finally {
+        setIsLoading(false);
+    }
   }, [user]);
+
+  useEffect(() => {
+    fetchBookings();
+  }, [fetchBookings]);
 
   const handleRatingSubmit = (rating: number, comment: string) => {
       console.log('Rating submitted:', { bookingId: ratingTrip?.id, rating, comment });
@@ -174,9 +261,43 @@ const BookingsPage: React.FC<BookingsPageProps> = ({ onViewTicket }) => {
 
   const renderContent = () => {
       if (isLoading) return <p className="text-center dark:text-white">Loading your bookings...</p>
-      if (error) return <p className="text-center text-red-500">{error}</p>
+      if (error) return <ErrorDisplay message={error} onRetry={fetchBookings} />
 
-      const bookingsToDisplay = activeTab === 'upcoming' ? upcomingBookings : pastBookings;
+      if (activeTab === 'upcoming') {
+            if (upcomingBookings.length === 0) {
+                return <p className="text-center text-gray-500 py-10">You have no upcoming trips booked.</p>;
+            }
+
+            const sortedUpcoming = [...upcomingBookings].sort((a, b) => new Date(a.trip.departureTime).getTime() - new Date(b.trip.departureTime).getTime());
+            const nextTrip = sortedUpcoming[0];
+            const otherUpcomingTrips = sortedUpcoming.slice(1);
+
+            return (
+                <div className="space-y-4">
+                    <NextTripCard 
+                        booking={nextTrip} 
+                        onViewTicket={onViewTicket} 
+                        onActivate={setActiveTicketId} 
+                        activeTicketId={activeTicketId} 
+                    />
+
+                    {otherUpcomingTrips.length > 0 && (
+                        <>
+                            <h3 className="text-xl font-bold text-gray-800 dark:text-white pt-8 border-t border-gray-200 dark:border-gray-700">Other Upcoming Trips</h3>
+                            {otherUpcomingTrips.map(booking => {
+                                const departureTime = new Date(booking.trip.departureTime);
+                                const hoursUntilDeparture = (departureTime.getTime() - new Date().getTime()) / (1000 * 60 * 60);
+                                const isActivatable = hoursUntilDeparture > 0 && hoursUntilDeparture <= 24;
+                                const isTicketActive = activeTicketId === booking.bookingId;
+                                return <BookingCard key={booking._id} booking={booking} onViewTicket={onViewTicket} onRateTrip={setRatingTrip} onActivate={setActiveTicketId} isPast={false} isActivatable={isActivatable} isTicketActive={isTicketActive} />;
+                            })}
+                        </>
+                    )}
+                </div>
+            );
+        }
+
+      const bookingsToDisplay = pastBookings;
 
       if (bookingsToDisplay.length === 0) {
           return <p className="text-center text-gray-500">No {activeTab} bookings found.</p>
@@ -185,21 +306,16 @@ const BookingsPage: React.FC<BookingsPageProps> = ({ onViewTicket }) => {
       return (
         <div className="space-y-4">
             {bookingsToDisplay.map(booking => {
-                 const departureTime = new Date(booking.trip.departureTime);
-                 const hoursUntilDeparture = (departureTime.getTime() - now.getTime()) / (1000 * 60 * 60);
-                 const isActivatable = activeTab === 'upcoming' && hoursUntilDeparture > 0 && hoursUntilDeparture <= 24;
-                 const isTicketActive = activeTicketId === booking.bookingId;
-
                  return (
                     <BookingCard 
                         key={booking._id} 
                         booking={booking} 
                         onViewTicket={onViewTicket} 
                         onRateTrip={setRatingTrip} 
-                        onActivate={setActiveTicketId}
-                        isPast={activeTab === 'past'}
-                        isActivatable={isActivatable}
-                        isTicketActive={isTicketActive}
+                        onActivate={() => {}}
+                        isPast={true}
+                        isActivatable={false}
+                        isTicketActive={false}
                     />
                 );
             })}

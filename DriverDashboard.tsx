@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { SunIcon, MoonIcon, CogIcon, UsersIcon, ChartBarIcon, QrCodeIcon, ChartPieIcon, ClipboardDocumentListIcon, WrenchScrewdriverIcon, MegaphoneIcon, CalendarIcon, ChatBubbleLeftRightIcon, CheckCircleIcon, StarIcon, ShieldCheckIcon, MenuIcon, XIcon, ArrowRightIcon, BusIcon } from './components/icons';
 import { Page } from './App';
 import * as api from './services/apiService';
 import LoadingSpinner from './components/LoadingSpinner';
 import { useSocket } from './contexts/SocketContext';
+import ErrorDisplay from './components/ErrorDisplay';
 
 interface DriverDashboardProps {
     onLogout: () => void;
@@ -193,20 +194,22 @@ const DriverDashboard: React.FC<DriverDashboardProps> = ({ onLogout, theme, setT
         }
     };
 
-    useEffect(() => {
-        const fetchTrips = async () => {
-            setIsLoading(true);
-            try {
-                const data = await api.driverGetMyTrips();
-                setTrips(data);
-            } catch (err) {
-                setError((err as Error).message || "Failed to fetch trips.");
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchTrips();
+    const fetchTrips = useCallback(async () => {
+        setIsLoading(true);
+        setError('');
+        try {
+            const data = await api.driverGetMyTrips();
+            setTrips(data);
+        } catch (err) {
+            setError((err as Error).message || "Failed to fetch trips.");
+        } finally {
+            setIsLoading(false);
+        }
     }, []);
+
+    useEffect(() => {
+        fetchTrips();
+    }, [fetchTrips]);
     
     // Real-time location tracking effect
     useEffect(() => {
@@ -239,7 +242,7 @@ const DriverDashboard: React.FC<DriverDashboardProps> = ({ onLogout, theme, setT
 
     const renderContent = () => {
         if (isLoading) return <LoadingSpinner />;
-        if (error) return <p className="text-red-500">{error}</p>;
+        if (error) return <ErrorDisplay message={error} onRetry={fetchTrips} />;
 
         if (selectedTrip) {
             return <TripManagementView trip={selectedTrip} onBack={() => setSelectedTrip(null)} />;

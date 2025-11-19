@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { BuildingOfficeIcon, SearchIcon, PlusIcon, PencilSquareIcon, TrashIcon } from '../components/icons';
 import * as api from '../services/apiService';
 import Modal from '../components/Modal';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ConfirmationModal from '../components/ConfirmationModal';
+import ErrorDisplay from '../components/ErrorDisplay';
 
 // Form for adding/editing a company
 const CompanyForm = ({ company, onSave, onCancel }) => {
@@ -66,9 +67,10 @@ const ManageCompanies: React.FC = () => {
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
     const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 
-    const fetchCompanies = async () => {
+    const fetchCompanies = useCallback(async () => {
         try {
             setIsLoading(true);
+            setError(null);
             const data = await api.adminGetCompanies();
             setCompanies(data);
         } catch(e) {
@@ -76,11 +78,11 @@ const ManageCompanies: React.FC = () => {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, []);
 
     useEffect(() => {
         fetchCompanies();
-    }, []);
+    }, [fetchCompanies]);
 
     const openModal = (company = null) => {
         setCurrentCompany(company);
@@ -147,7 +149,7 @@ const ManageCompanies: React.FC = () => {
                     </button>
                 </div>
                 
-                {error && <p className="text-red-500 my-2">{error}</p>}
+                {error && <ErrorDisplay message={error} onRetry={fetchCompanies} className="mb-4" />}
 
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left">

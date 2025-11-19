@@ -456,3 +456,9 @@ export const EyeDropperIcon: React.FC<IconProps> = (props) => (
         <path strokeLinecap="round" strokeLinejoin="round" d="M15.362 5.214C14.154 4.01 12.654 3.25 10.888 3.25c-1.442 0-2.784.44-3.862 1.25M15.362 5.214a22.5 22.5 0 011.002-3h-3.322c.16.48.298.985.42 1.5M12 21a22.5 22.5 0 004.362-3.786" />
     </svg>
 );
+
+export const XCircleIcon: React.FC<IconProps> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+);

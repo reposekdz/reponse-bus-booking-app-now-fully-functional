@@ -3,16 +3,17 @@ import { CalendarIcon, ArrowRightIcon, ArrowsUpDownIcon } from './icons';
 import { useLanguage } from '../contexts/LanguageContext';
 import SearchableSelect from './SearchableSelect';
 import PassengerSelector from './PassengerSelector';
+import { rwandaAllStations } from '../lib/stations';
 
 interface BookingFormProps {
   onSearch: (from: string, to: string, date: string, passengers: { adults: number; children: number; }) => void;
 }
 
-const locations = ['Kigali', 'Rubavu', 'Musanze', 'Huye', 'Rusizi', 'Nyagatare', 'Muhanga'];
+const locations = [...new Set(rwandaAllStations.map(station => station.district))].sort();
 
 const BookingForm: React.FC<BookingFormProps> = ({ onSearch }) => {
   const { t } = useLanguage();
-  const [fromLocation, setFromLocation] = useState('Kigali');
+  const [fromLocation, setFromLocation] = useState('Gasabo');
   const [toLocation, setToLocation] = useState('Rubavu');
   const [journeyDate, setJourneyDate] = useState(new Date().toISOString().split('T')[0]);
   const [returnDate, setReturnDate] = useState('');
