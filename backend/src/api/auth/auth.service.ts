@@ -1,3 +1,4 @@
+
 import bcrypt from 'bcryptjs';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import config from '../../config';
@@ -17,6 +18,17 @@ export const registerUser = async (userData: any) => {
     
     if(!email && !phone){
         throw new AppError('Email or Phone number is required', 400);
+    }
+    
+    // Enhanced Password Validation
+    if (!password || password.length < 8) {
+        throw new AppError('Password must be at least 8 characters long', 400);
+    }
+    // Simple complexity check
+    const hasNumber = /\d/.test(password);
+    const hasLetter = /[a-zA-Z]/.test(password);
+    if (!hasNumber || !hasLetter) {
+        throw new AppError('Password must contain at least one letter and one number', 400);
     }
 
     if(email){
@@ -78,7 +90,6 @@ export const loginUser = async (loginData: any) => {
     if (user.role === 'passenger') {
         const [walletRows] = await pool.query<any[] & mysql.RowDataPacket[]>('SELECT balance FROM wallets WHERE user_id = ?', [user.id]);
         if (walletRows.length > 0) {
-            // FIX: Changed to snake_case to match type definitions and API consistency.
             user.wallet_balance = parseFloat(walletRows[0].balance);
         }
     }
@@ -92,6 +103,11 @@ export const loginUser = async (loginData: any) => {
 export const updatePassword = async (userId: number, currentPassword, newPassword) => {
     if (!currentPassword || !newPassword) {
         throw new AppError('Please provide current and new passwords', 400);
+    }
+    
+    // Validate new password strength
+    if (newPassword.length < 8) {
+        throw new AppError('New password must be at least 8 characters long', 400);
     }
 
     const [rows] = await pool.query<User[] & mysql.RowDataPacket[]>('SELECT password_hash FROM users WHERE id = ?', [userId]);

@@ -12,6 +12,7 @@ interface TripQuery {
     minPrice?: number;
     maxPrice?: number;
     amenities?: string[];
+    sortBy?: string; // e.g., 'price_asc', 'time_asc', 'duration_asc'
 }
 
 // Function to get available seats for multiple trips efficiently
@@ -38,7 +39,7 @@ async function getAvailableSeatsForTrips(tripIds: number[]) {
 
 
 export const findTrips = async (query: TripQuery) => {
-    const { from, to, date, companyId, minPrice, maxPrice } = query;
+    const { from, to, date, companyId, minPrice, maxPrice, amenities, sortBy } = query;
 
     if (!from || !to || !date) {
         throw new AppError('Please provide from, to, and date query parameters.', 400);
@@ -75,7 +76,38 @@ export const findTrips = async (query: TripQuery) => {
         params.push(maxPrice);
     }
 
-    // Add dynamic pricing logic simulation in query if needed, but usually handled in app logic or specific pricing table
+    // Handle amenity filtering - simplistic text matching for comma-separated string
+    if (amenities && amenities.length > 0) {
+        amenities.forEach(amenity => {
+            sql += ' AND b.amenities LIKE ?';
+            params.push(`%${amenity}%`);
+        });
+    }
+
+    // Dynamic Sorting
+    if (sortBy) {
+        switch (sortBy) {
+            case 'price_asc':
+                sql += ' ORDER BY r.base_price ASC';
+                break;
+            case 'price_desc':
+                sql += ' ORDER BY r.base_price DESC';
+                break;
+            case 'duration_asc':
+                sql += ' ORDER BY r.estimated_duration_minutes ASC';
+                break;
+            case 'time_asc':
+                sql += ' ORDER BY t.departure_time ASC';
+                break;
+            case 'time_desc':
+                sql += ' ORDER BY t.departure_time DESC';
+                break;
+            default:
+                sql += ' ORDER BY t.departure_time ASC'; // Default sort
+        }
+    } else {
+        sql += ' ORDER BY t.departure_time ASC';
+    }
     
     const [trips] = await pool.query(sql, params);
 

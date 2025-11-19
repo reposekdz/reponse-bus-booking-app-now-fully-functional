@@ -1,7 +1,6 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Page } from '../types';
-import { GoBusLogo, SunIcon, MoonIcon, MenuIcon, XIcon, UserCircleIcon, TicketIcon, LanguageIcon, ChevronDownIcon, WalletIcon, BusIcon, BellIcon, TagIcon, StarIcon, BellAlertIcon, SparklesIcon, CheckCircleIcon, ArchiveBoxIcon, BriefcaseIcon, MapIcon, ShieldCheckIcon, CreditCardIcon, QuestionMarkCircleIcon, BuildingStorefrontIcon, KeyIcon } from './icons';
+import { GoBusLogo, SunIcon, MoonIcon, MenuIcon, XIcon, UserCircleIcon, TicketIcon, LanguageIcon, ChevronDownIcon, WalletIcon, BusIcon, BellIcon, TagIcon, StarIcon, BellAlertIcon, SparklesIcon, CheckCircleIcon, ArchiveBoxIcon, BriefcaseIcon, MapIcon, ShieldCheckIcon, CreditCardIcon, QuestionMarkCircleIcon, BuildingStorefrontIcon, KeyIcon, PowerIcon, ChevronRightIcon } from './icons';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useSocket } from '../contexts/SocketContext';
@@ -293,38 +292,129 @@ const Header: React.FC<HeaderProps> = ({ currentPage, onNavigate, onLogout, them
         </div>
       </div>
       
-       {/* Mobile Menu */}
-      {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-50 bg-gray-900/80 backdrop-blur-sm lg:hidden">
-            <div className="absolute top-0 right-0 w-full max-w-xs bg-gradient-to-b from-[#0033A0] to-[#0c2461] h-full p-6">
-                <div className="flex justify-between items-center mb-8">
-                    <span className="text-xl font-bold">{t('mobile_menu_title')}</span>
-                    <button onClick={() => setIsMobileMenuOpen(false)}><XIcon className="w-6 h-6"/></button>
-                </div>
-                 <nav className="flex flex-col space-y-4">
-                    <button onClick={() => {onNavigate('home'); setIsMobileMenuOpen(false);}}>{t('nav_home')}</button>
-                    <button onClick={() => {onNavigate('bookingSearch'); setIsMobileMenuOpen(false);}}>{t('nav_booking')}</button>
-                    <button onClick={() => {onNavigate('companies'); setIsMobileMenuOpen(false);}}>{t('nav_companies')}</button>
-                    <button onClick={() => {onNavigate('services'); setIsMobileMenuOpen(false);}}>{t('nav_services')}</button>
-                    <button onClick={() => {onNavigate('help'); setIsMobileMenuOpen(false);}}>{t('nav_help')}</button>
-                    <button onClick={() => {onNavigate('contact'); setIsMobileMenuOpen(false);}}>{t('nav_contact')}</button>
+       {/* Advanced Mobile/Tablet Left Sidebar (Drawer) */}
+      <div className={`fixed inset-0 z-50 lg:hidden transition-all duration-300 ease-in-out ${isMobileMenuOpen ? 'visible' : 'invisible'}`}>
+        {/* Backdrop */}
+        <div 
+            className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-100' : 'opacity-0'}`} 
+            onClick={() => setIsMobileMenuOpen(false)}
+        />
+        
+        {/* Sidebar Content */}
+        <div className={`absolute top-0 left-0 w-[85%] max-w-sm h-full bg-white dark:bg-gray-900 shadow-2xl transform transition-transform duration-300 ease-out flex flex-col ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+             
+             {/* Sidebar Header / User Profile */}
+             <div className="relative bg-gradient-to-br from-[#0033A0] to-[#00574B] p-6 text-white">
+                 <button onClick={() => setIsMobileMenuOpen(false)} className="absolute top-4 right-4 p-2 rounded-full hover:bg-white/20 transition-colors">
+                    <XIcon className="w-6 h-6"/>
+                 </button>
+                 
+                 {user ? (
+                    <div className="mt-4 flex flex-col">
+                        <div className="flex items-center space-x-4 mb-4">
+                             <img src={user.avatar_url} alt="User" className="w-16 h-16 rounded-full border-2 border-white shadow-md" />
+                             <div>
+                                 <h3 className="font-bold text-lg">{user.name}</h3>
+                                 <p className="text-xs opacity-80">{user.email}</p>
+                                 <span className="inline-block mt-1 px-2 py-0.5 bg-yellow-400 text-[#0033A0] text-[10px] font-bold rounded-full uppercase">{user.role}</span>
+                             </div>
+                        </div>
+                        
+                        {/* Quick Wallet Summary */}
+                        {user.walletBalance !== undefined && (
+                            <div className="bg-white/10 rounded-lg p-3 flex justify-between items-center backdrop-blur-md">
+                                <div>
+                                    <p className="text-xs opacity-80">{t('usermenu_wallet_balance')}</p>
+                                    <p className="font-bold text-lg">{new Intl.NumberFormat('fr-RW').format(user.walletBalance)} RWF</p>
+                                </div>
+                                <button onClick={() => { onNavigate('wallet'); setIsMobileMenuOpen(false); }} className="bg-white text-[#0033A0] px-3 py-1.5 rounded-md text-xs font-bold shadow-sm">
+                                    Top Up
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                 ) : (
+                    <div className="mt-8 text-center">
+                        <GoBusLogo className="w-12 h-12 mx-auto mb-3"/>
+                        <h3 className="font-bold text-xl mb-2">Welcome to GoBus</h3>
+                        <p className="text-sm opacity-80 mb-4">Sign in to manage bookings and wallet.</p>
+                        <button onClick={() => { onNavigate('login'); setIsMobileMenuOpen(false); }} className="w-full py-2 bg-yellow-400 text-[#0033A0] font-bold rounded-lg shadow-lg">
+                            {t('login_button')}
+                        </button>
+                    </div>
+                 )}
+             </div>
 
-                     <div className="border-t border-white/20 my-4"></div>
-                     {user ? (
-                         <>
-                            <button onClick={() => {onNavigate('profile'); setIsMobileMenuOpen(false);}} className="flex items-center space-x-3">
-                                <img src={user.avatar_url} alt="User" className="w-8 h-8 rounded-full" />
-                                <span>{user.name}</span>
-                            </button>
-                            <button onClick={() => {onLogout(); setIsMobileMenuOpen(false);}} className="text-red-400 text-left">{t('usermenu_logout')}</button>
-                         </>
-                     ) : (
-                        <button onClick={() => {onNavigate('login'); setIsMobileMenuOpen(false);}} className="px-4 py-2 text-sm font-semibold bg-yellow-400 text-[#0033A0] rounded-md hover:bg-yellow-500 transition-colors">{t('login_button')}</button>
-                     )}
-                 </nav>
-            </div>
+             {/* Navigation Links */}
+             <div className="flex-1 overflow-y-auto py-4 px-2 custom-scrollbar">
+                <div className="space-y-1">
+                     {[
+                        { page: 'home', label: t('nav_home'), icon: GoBusLogo },
+                        { page: 'bookingSearch', label: t('nav_booking'), icon: TicketIcon },
+                        { page: 'bookings', label: t('usermenu_bookings'), icon: BriefcaseIcon },
+                        { page: 'companies', label: t('nav_companies'), icon: BuildingStorefrontIcon },
+                        { page: 'services', label: t('nav_services'), icon: SparklesIcon },
+                     ].map((item, idx) => (
+                        <button
+                            key={idx}
+                            onClick={() => { onNavigate(item.page as Page); setIsMobileMenuOpen(false); }}
+                            className={`w-full flex items-center px-4 py-3 rounded-lg transition-colors ${currentPage === item.page ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+                        >
+                            <item.icon className="w-5 h-5 mr-4 opacity-70"/>
+                            {item.label}
+                        </button>
+                     ))}
+                </div>
+                
+                <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-800 px-4">
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Support & Settings</p>
+                     <div className="space-y-1">
+                         <button onClick={() => { onNavigate('help'); setIsMobileMenuOpen(false); }} className="w-full flex items-center py-2 text-gray-600 dark:text-gray-400 hover:text-blue-600">
+                             <QuestionMarkCircleIcon className="w-5 h-5 mr-3"/> {t('nav_help')}
+                         </button>
+                         <button onClick={() => { onNavigate('contact'); setIsMobileMenuOpen(false); }} className="w-full flex items-center py-2 text-gray-600 dark:text-gray-400 hover:text-blue-600">
+                             <UserCircleIcon className="w-5 h-5 mr-3"/> {t('nav_contact')}
+                         </button>
+                     </div>
+                </div>
+             </div>
+
+             {/* Sidebar Footer */}
+             <div className="p-4 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
+                <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center space-x-3 bg-gray-200 dark:bg-gray-700 rounded-full p-1">
+                         <button onClick={() => setTheme('light')} className={`p-1.5 rounded-full transition-colors ${theme === 'light' ? 'bg-white shadow text-orange-500' : 'text-gray-500'}`}>
+                            <SunIcon className="w-4 h-4"/>
+                         </button>
+                         <button onClick={() => setTheme('dark')} className={`p-1.5 rounded-full transition-colors ${theme === 'dark' ? 'bg-gray-600 shadow text-blue-300' : 'text-gray-500'}`}>
+                            <MoonIcon className="w-4 h-4"/>
+                         </button>
+                    </div>
+                     <div className="relative">
+                        <button onClick={() => setIsLangOpen(!isLangOpen)} className="flex items-center space-x-1 text-sm font-semibold text-gray-600 dark:text-gray-300">
+                            <LanguageIcon className="w-4 h-4"/>
+                            <span>{currentLang?.code}</span>
+                        </button>
+                         {isLangOpen && (
+                             <div className="absolute bottom-full right-0 mb-2 w-32 bg-white dark:bg-gray-800 shadow-xl rounded-lg overflow-hidden border dark:border-gray-700">
+                                 {languages.map(l => (
+                                     <button key={l.code} onClick={() => { selectLanguage(l); setIsLangOpen(false); }} className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white">
+                                         {l.flag} {l.name}
+                                     </button>
+                                 ))}
+                             </div>
+                         )}
+                     </div>
+                </div>
+                {user && (
+                    <button onClick={() => { onLogout(); setIsMobileMenuOpen(false); }} className="w-full flex items-center justify-center py-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
+                        <PowerIcon className="w-5 h-5 mr-2"/>
+                        {t('usermenu_logout')}
+                    </button>
+                )}
+             </div>
         </div>
-      )}
+      </div>
     </header>
   );
 };
