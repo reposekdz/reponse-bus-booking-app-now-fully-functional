@@ -43,6 +43,14 @@
       .stagger-fade-in {
         animation: fadeIn 0.5s ease-out backwards;
       }
+      
+      @keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .animate-fade-in-down {
+        animation: fadeInDown 0.4s ease-out forwards;
+      }
 
       /* Seat selection animation */
       @keyframes pop-in {
@@ -61,12 +69,6 @@
       }
       .perspective {
         perspective: 1000px;
-      }
-      .rotate-y-10 {
-        transform: rotateY(10deg);
-      }
-       .rotate-y-minus-10 {
-        transform: rotateY(-10deg);
       }
       
       /* New Advanced Animations */
@@ -158,26 +160,26 @@
     "i18next-browser-languagedetector": "https://esm.sh/i18next-browser-languagedetector@7.2.0?external=i18next",
     "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
     "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "express": "https://aistudiocdn.com/express@^5.1.0",
-    "vite": "https://aistudiocdn.com/vite@^7.2.2",
-    "path": "https://aistudiocdn.com/path@^0.12.7",
-    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1",
-    "expo-status-bar": "https://aistudiocdn.com/expo-status-bar@^3.0.8",
-    "@react-navigation/stack": "https://aistudiocdn.com/@react-navigation/stack@^7.6.4",
-    "crypto": "https://aistudiocdn.com/crypto@^1.0.1",
-    "react-native": "https://aistudiocdn.com/react-native@^0.82.1",
-    "@react-navigation/bottom-tabs": "https://aistudiocdn.com/@react-navigation/bottom-tabs@^7.8.5",
-    "react-native-safe-area-context": "https://aistudiocdn.com/react-native-safe-area-context@^5.6.2",
-    "fs": "https://aistudiocdn.com/fs@^0.0.1-security",
-    "jsonwebtoken": "https://aistudiocdn.com/jsonwebtoken@^9.0.2",
-    "dotenv": "https://aistudiocdn.com/dotenv@^17.2.3",
-    "bcryptjs": "https://aistudiocdn.com/bcryptjs@^3.0.3",
-    "http": "https://aistudiocdn.com/http@^0.0.1-security",
-    "@react-navigation/native": "https://aistudiocdn.com/@react-navigation/native@^7.1.20",
     "react-native-gesture-handler": "https://aistudiocdn.com/react-native-gesture-handler@^2.29.1",
-    "mysql2/": "https://aistudiocdn.com/mysql2@^3.15.3/",
+    "expo-status-bar": "https://aistudiocdn.com/expo-status-bar@^3.0.8",
+    "@react-navigation/native": "https://aistudiocdn.com/@react-navigation/native@^7.1.20",
+    "@react-navigation/stack": "https://aistudiocdn.com/@react-navigation/stack@^7.6.4",
+    "@react-navigation/bottom-tabs": "https://aistudiocdn.com/@react-navigation/bottom-tabs@^7.8.5",
+    "react-native": "https://aistudiocdn.com/react-native@^0.82.1",
+    "react-native-safe-area-context": "https://aistudiocdn.com/react-native-safe-area-context@^5.6.2",
+    "express": "https://aistudiocdn.com/express@^5.1.0",
+    "cors": "https://aistudiocdn.com/cors@^2.8.5",
+    "path": "https://aistudiocdn.com/path@^0.12.7",
+    "http": "https://aistudiocdn.com/http@^0.0.1-security",
     "socket.io": "https://aistudiocdn.com/socket.io@^4.8.1",
-    "cors": "https://aistudiocdn.com/cors@^2.8.5"
+    "dotenv": "https://aistudiocdn.com/dotenv@^17.2.3",
+    "mysql2/": "https://aistudiocdn.com/mysql2@^3.15.3/",
+    "jsonwebtoken": "https://aistudiocdn.com/jsonwebtoken@^9.0.2",
+    "bcryptjs": "https://aistudiocdn.com/bcryptjs@^3.0.3",
+    "fs": "https://aistudiocdn.com/fs@^0.0.1-security",
+    "crypto": "https://aistudiocdn.com/crypto@^1.0.1",
+    "vite": "https://aistudiocdn.com/vite@^7.2.2",
+    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1"
   }
 }
 </script>

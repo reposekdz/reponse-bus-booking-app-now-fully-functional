@@ -12,7 +12,8 @@ i18n
       rw: { translation: translations.RW },
       fr: { translation: translations.FR },
     },
-    fallbackLng: 'en',
+    lng: 'rw', // Force default to Kinyarwanda
+    fallbackLng: 'rw', // Fallback to Kinyarwanda
     interpolation: {
       escapeValue: false,
     },

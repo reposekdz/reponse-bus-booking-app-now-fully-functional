@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { CalendarIcon, ArrowRightIcon, ArrowsUpDownIcon } from './icons';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -31,7 +32,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ onSearch }) => {
     setToLocation(temp);
   };
   
-  const formInputBaseClass = "w-full pl-10 pr-4 py-3 rounded-lg border-2 border-white/10 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400 bg-black/30 backdrop-blur-sm text-white transition appearance-none";
+  const formInputBaseClass = "w-full pl-10 pr-4 py-3 rounded-lg border-2 border-white/10 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400 bg-black/30 backdrop-blur-sm text-white transition appearance-none placeholder-gray-300";
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 text-gray-800 dark:text-white">

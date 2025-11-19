@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, ErrorInfo, ReactNode } from 'react';
 import Header from './components/Header';
 import HeroSection from './components/HeroSection';
@@ -49,12 +50,15 @@ import PriceAlertsPage from './PriceAlertsPage';
 import LoyaltyPage from './LoyaltyPage';
 import PaymentPage from './PaymentPage';
 import WalletPage from './WalletPage';
-import { useAuth } from './contexts/AuthContext';
+import { useAuth, AuthProvider } from './contexts/AuthContext'; // Ensure AuthProvider is exported
 import LoadingSpinner from './components/LoadingSpinner';
 import NotificationHandler from './components/NotificationHandler';
 import DriverSettingsPage from './DriverSettingsPage';
 import PromotedCompanies from './components/PromotedCompanies';
 import { Page } from './types';
+import { SocketProvider } from './contexts/SocketContext';
+import { ToastProvider } from './contexts/ToastContext';
+import './i18n'; // Initialize i18n
 
 interface ErrorBoundaryProps {
   children?: ReactNode;
@@ -91,7 +95,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
       );
     }
 
-    return this.props.children;
+    return (this.props as any).children;
   }
 }
 
@@ -258,7 +262,7 @@ const AppContent: React.FC = () => {
   const showBottomNav = !isDashboard && !isFullScreenPage && ['home', 'bookingSearch', 'companies', 'profile', 'services'].includes(currentPage);
 
   return (
-    <div className={`font-sans bg-white dark:bg-gray-900`}>
+    <div className={`font-sans bg-white dark:bg-gray-900 min-h-screen`}>
         <NotificationHandler />
         {showHeader && (
              <Header 
@@ -292,7 +296,13 @@ const App: React.FC = () => {
     return (
         <ErrorBoundary>
             <LanguageProvider>
-                <AppContent />
+                <AuthProvider>
+                  <SocketProvider>
+                    <ToastProvider>
+                      <AppContent />
+                    </ToastProvider>
+                  </SocketProvider>
+                </AuthProvider>
             </LanguageProvider>
         </ErrorBoundary>
     )
