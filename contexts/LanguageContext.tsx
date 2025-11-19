@@ -1,5 +1,7 @@
-import React, { createContext, useState, useContext, ReactNode } from 'react';
-import { translations } from '../translations';
+
+import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { translations } from '../translations'; // Used for fallback types/languages list
 
 export type LanguageCode = 'RW' | 'EN' | 'FR';
 
@@ -12,18 +14,9 @@ export type Language = {
 interface LanguageContextType {
   language: LanguageCode;
   setLanguage: (lang: LanguageCode) => void;
-  t: (key: string, values?: { [key: string]: string | number }) => string;
+  t: (key: string, options?: any) => string;
   languages: Language[];
 }
-
-const defaultLanguage: LanguageCode = 'RW';
-
-export const LanguageContext = createContext<LanguageContextType>({
-  language: defaultLanguage,
-  setLanguage: () => {},
-  t: () => '',
-  languages: [],
-});
 
 const supportedLanguages: Language[] = [
     { code: 'RW', name: 'Kinyarwanda', flag: '🇷🇼' },
@@ -31,19 +24,24 @@ const supportedLanguages: Language[] = [
     { code: 'FR', name: 'Français', flag: '🇫🇷' },
 ];
 
+export const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [language, setLanguage] = useState<LanguageCode>(defaultLanguage);
+  const { t, i18n } = useTranslation();
+  const [language, setLanguageState] = useState<LanguageCode>('EN');
 
-  const t = (key: string, values?: { [key: string]: string | number }): string => {
-    let translation = translations[language][key] || translations[defaultLanguage][key] || key;
-    if (values) {
-        Object.keys(values).forEach(valueKey => {
-            const regex = new RegExp(`{${valueKey}}`, 'g');
-            translation = translation.replace(regex, String(values[valueKey]));
-        });
-    }
-    return translation;
+  // Sync local state with i18n state
+  useEffect(() => {
+      const current = i18n.language?.toUpperCase().substring(0, 2) as LanguageCode;
+      if (current && ['RW', 'EN', 'FR'].includes(current)) {
+          setLanguageState(current);
+      }
+  }, [i18n.language]);
+
+  const setLanguage = (code: LanguageCode) => {
+      const map = { 'RW': 'rw', 'EN': 'en', 'FR': 'fr' };
+      i18n.changeLanguage(map[code]);
+      setLanguageState(code);
   };
 
   return (
@@ -53,4 +51,8 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
   );
 };
 
-export const useLanguage = () => useContext(LanguageContext);
+export const useLanguage = () => {
+    const context = useContext(LanguageContext);
+    if (!context) throw new Error('useLanguage must be used within LanguageProvider');
+    return context;
+};

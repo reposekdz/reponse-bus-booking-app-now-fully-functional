@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, ErrorInfo, ReactNode, Component } from 'react';
 import Header from './components/Header';
 import HeroSection from './components/HeroSection';

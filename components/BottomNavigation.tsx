@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { HomeIcon, TicketIcon, BuildingOfficeIcon, UserCircleIcon } from './icons';
 import { Page } from '../types';
@@ -9,25 +8,9 @@ interface BottomNavigationProps {
     currentPage: Page;
 }
 
-const NavItem: React.FC<{ item: { label: string; page: Page; icon: React.FC<{className?: string}> }; isActive: boolean; onClick: () => void }> = ({ item, isActive, onClick }) => (
-    <button onClick={onClick} className="flex flex-col items-center justify-center w-1/4 h-full text-center transition-colors duration-300 group focus:outline-none">
-        <div className={`relative p-2 rounded-full transition-all duration-300 ${isActive ? 'bg-yellow-400/20' : 'group-hover:bg-white/10'}`}>
-         <item.icon className={`w-6 h-6 transition-colors duration-300 ${isActive ? 'text-yellow-300' : 'text-gray-400 group-hover:text-white'}`} />
-        </div>
-        <span className={`text-xs mt-1 transition-colors duration-300 ${isActive ? 'text-yellow-300 font-semibold' : 'text-gray-400'}`}>{item.label}</span>
-    </button>
-);
-
 const BottomNavigation: React.FC<BottomNavigationProps> = ({ navigate, currentPage }) => {
     const { t } = useLanguage();
     
-    const navItems: { label: string; page: Page; icon: React.FC<{className?: string}> }[] = [
-        { label: t('bottomnav_home'), page: 'home', icon: HomeIcon },
-        { label: t('bottomnav_book'), page: 'bookingSearch', icon: TicketIcon },
-        { label: t('bottomnav_companies'), page: 'companies', icon: BuildingOfficeIcon },
-        { label: t('bottomnav_profile'), page: 'profile', icon: UserCircleIcon },
-    ];
-
     // Logic to keep parent tabs active when on sub-pages
     const isBookActive = ['bookingSearch', 'search', 'seatSelection', 'payment', 'bookingConfirmation'].includes(currentPage);
     const isCompaniesActive = ['companies', 'companyProfile'].includes(currentPage);
@@ -40,17 +23,60 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ navigate, currentPa
         return currentPage === page;
     }
 
+    const navItems = [
+        { label: t('bottomnav_home'), page: 'home', icon: HomeIcon },
+        { label: t('bottomnav_book'), page: 'bookingSearch', icon: TicketIcon },
+        { label: t('bottomnav_companies'), page: 'companies', icon: BuildingOfficeIcon },
+        { label: t('bottomnav_profile'), page: 'profile', icon: UserCircleIcon },
+    ];
+
     return (
-        <nav className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-r from-[#0033A0] to-[#0c2461] dark:from-gray-900 dark:to-black h-20 shadow-[0_-5px_15px_-5px_rgba(0,0,0,0.3)] border-t border-white/10">
-            <div className="container mx-auto h-full flex justify-around items-center">
-                {navItems.map(item => (
-                    <NavItem 
-                        key={item.page} 
-                        item={item} 
-                        isActive={activePage(item.page)} 
-                        onClick={() => navigate(item.page)} 
-                    />
-                ))}
+        <nav className="fixed bottom-6 left-4 right-4 z-50">
+            {/* Floating Dock Container */}
+            <div className="bg-white/90 dark:bg-gray-900/95 backdrop-blur-xl border border-white/20 dark:border-gray-700 shadow-2xl rounded-2xl h-16 px-2 flex justify-around items-center max-w-lg mx-auto ring-1 ring-black/5">
+                {navItems.map((item) => {
+                    const isActive = activePage(item.page as Page);
+                    const Icon = item.icon;
+                    
+                    return (
+                        <button 
+                            key={item.page} 
+                            onClick={() => navigate(item.page as Page)} 
+                            className="group relative flex items-center justify-center w-full h-full focus:outline-none"
+                        >
+                            {/* Active Indicator Background (Gradient Pill) */}
+                            <div 
+                                className={`absolute inset-2 rounded-xl transition-all duration-500 ease-out ${
+                                    isActive 
+                                        ? 'bg-gradient-to-r from-blue-600 to-indigo-600 opacity-100 shadow-lg shadow-blue-500/30' 
+                                        : 'opacity-0'
+                                }`}
+                            />
+
+                            <div className="relative flex flex-col items-center justify-center z-10">
+                                <Icon 
+                                    className={`w-6 h-6 transition-all duration-300 ${
+                                        isActive 
+                                            ? 'text-white transform scale-110 translate-y-0.5' 
+                                            : 'text-gray-400 dark:text-gray-500 group-hover:text-blue-500 dark:group-hover:text-blue-400 group-hover:-translate-y-1'
+                                    }`} 
+                                />
+                                
+                                {/* Label (Only shows when inactive for cleaner look on active, or optional) */}
+                                {!isActive && (
+                                    <span className="text-[10px] font-medium text-gray-400 mt-0.5 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 absolute top-full">
+                                        {item.label}
+                                    </span>
+                                )}
+                                
+                                {/* Notification Dot (Example for Profile) */}
+                                {item.page === 'profile' && !isActive && (
+                                    <span className="absolute top-0 right-0 -mt-1 -mr-1 w-2.5 h-2.5 bg-red-500 border-2 border-white dark:border-gray-900 rounded-full"></span>
+                                )}
+                            </div>
+                        </button>
+                    );
+                })}
             </div>
         </nav>
     );

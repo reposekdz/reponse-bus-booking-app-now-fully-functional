@@ -1,5 +1,4 @@
 
-
 import { pool } from '../../config/db';
 import { AppError } from '../../utils/AppError';
 import { io } from '../../server';
@@ -10,6 +9,9 @@ interface TripQuery {
     to: string;
     date: string;
     companyId?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    amenities?: string[];
 }
 
 // Function to get available seats for multiple trips efficiently
@@ -36,7 +38,7 @@ async function getAvailableSeatsForTrips(tripIds: number[]) {
 
 
 export const findTrips = async (query: TripQuery) => {
-    const { from, to, date, companyId } = query;
+    const { from, to, date, companyId, minPrice, maxPrice } = query;
 
     if (!from || !to || !date) {
         throw new AppError('Please provide from, to, and date query parameters.', 400);
@@ -62,6 +64,18 @@ export const findTrips = async (query: TripQuery) => {
         sql += ' AND c.id = ?';
         params.push(companyId);
     }
+
+    if (minPrice !== undefined) {
+        sql += ' AND r.base_price >= ?';
+        params.push(minPrice);
+    }
+
+    if (maxPrice !== undefined) {
+        sql += ' AND r.base_price <= ?';
+        params.push(maxPrice);
+    }
+
+    // Add dynamic pricing logic simulation in query if needed, but usually handled in app logic or specific pricing table
     
     const [trips] = await pool.query(sql, params);
 
