@@ -2,10 +2,24 @@ import React, { useEffect } from 'react';
 import * as api from '../services/apiService';
 import { useAuth } from '../contexts/AuthContext';
 
-// This is a public key for the VAPID protocol, used to identify the application server.
-// It is now loaded from a Vite environment variable for better deployment configuration.
-// FIX: Cast import.meta to any to resolve TypeScript errors when Vite client types are not available.
-const VAPID_PUBLIC_KEY = (import.meta as any).env.VITE_VAPID_PUBLIC_KEY;
+// Safely retrieve the VAPID key from environment variables
+const getVapidPublicKey = () => {
+    try {
+        // Check for Vite's import.meta.env
+        if (typeof import.meta !== 'undefined' && (import.meta as any).env) {
+            return (import.meta as any).env.VITE_VAPID_PUBLIC_KEY;
+        }
+        // Check for process.env (if polyfilled)
+        if (typeof process !== 'undefined' && process.env) {
+            return process.env.VITE_VAPID_PUBLIC_KEY;
+        }
+    } catch (e) {
+        console.warn('Environment variable access failed', e);
+    }
+    return '';
+};
+
+const VAPID_PUBLIC_KEY = getVapidPublicKey();
 
 // Helper function to convert the VAPID key to the format required by the Push API.
 function urlBase64ToUint8Array(base64String: string) {
@@ -29,7 +43,7 @@ const NotificationHandler: React.FC = () => {
         }
         
         if (!VAPID_PUBLIC_KEY) {
-            console.error('VITE_VAPID_PUBLIC_KEY is not set in the environment. Push notifications will not work.');
+            console.warn('VITE_VAPID_PUBLIC_KEY is not set in the environment. Push notifications will not work.');
             return;
         }
 
