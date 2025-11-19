@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react'
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   // Load env file based on `mode` in the current working directory.
-  // Set the third parameter to '' to load all env regardless of the `VITE_` prefix.
+  // We cast process to any to avoid TS errors if @types/node is missing in some environments
   const env = loadEnv(mode, (process as any).cwd(), '');
 
   return {
@@ -13,12 +13,10 @@ export default defineConfig(({ mode }) => {
       host: 'localhost',
       port: 3000,
       proxy: {
-        // Proxy API requests to the backend
         '/api': {
           target: 'http://localhost:5000',
           changeOrigin: true,
         },
-        // Proxy WebSocket connections for real-time features
         '/socket.io': {
           target: 'ws://localhost:5000',
           ws: true,
@@ -26,8 +24,8 @@ export default defineConfig(({ mode }) => {
       }
     },
     define: {
-      // This ensures process.env is available in the browser code
-      'process.env': env
+      // Safely provide process.env to the browser
+      'process.env': JSON.stringify(env)
     }
   }
 })

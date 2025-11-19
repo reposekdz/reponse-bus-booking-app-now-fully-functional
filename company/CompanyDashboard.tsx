@@ -1,8 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
 import { ChartBarIcon, UsersIcon, BusIcon, MapIcon, WalletIcon, StarIcon } from '../components/icons';
 import PinModal from '../components/PinModal';
 import * as api from '../services/apiService';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const StatCard = ({ title, value, icon }) => (
     <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-lg">
@@ -23,6 +25,7 @@ interface CompanyDashboardProps {
 }
 
 const CompanyDashboard: React.FC<CompanyDashboardProps> = ({ companyPin }) => {
+    const { t } = useLanguage();
     const [isPinModalOpen, setIsPinModalOpen] = useState(false);
     const [dashboardData, setDashboardData] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -55,16 +58,16 @@ const CompanyDashboard: React.FC<CompanyDashboardProps> = ({ companyPin }) => {
 
     return (
         <div>
-            <h1 className="text-3xl font-bold dark:text-gray-200 mb-6">Company Dashboard</h1>
+            <h1 className="text-3xl font-bold dark:text-gray-200 mb-6">{t('company_dashboard_title')}</h1>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatCard title="Total Drivers" value={stats.driverCount} icon={<UsersIcon />} />
-                <StatCard title="Today's Revenue" value={`${new Intl.NumberFormat('fr-RW').format(stats.todayRevenue)} RWF`} icon={<ChartBarIcon />} />
-                <StatCard title="Active Buses" value={`${stats.activeBuses} / ${stats.busCount}`} icon={<BusIcon />} />
-                <StatCard title="Popular Route" value={stats.popularRoute} icon={<MapIcon />} />
+                <StatCard title={t('company_stat_drivers')} value={stats.driverCount} icon={<UsersIcon />} />
+                <StatCard title={t('company_stat_revenue_today')} value={`${new Intl.NumberFormat('fr-RW').format(stats.todayRevenue)} RWF`} icon={<ChartBarIcon />} />
+                <StatCard title={t('company_stat_active_buses')} value={`${stats.activeBuses} / ${stats.busCount}`} icon={<BusIcon />} />
+                <StatCard title={t('company_stat_popular_route')} value={stats.popularRoute} icon={<MapIcon />} />
             </div>
              <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-lg">
-                    <h2 className="text-xl font-bold dark:text-white mb-4">Live Fleet Status</h2>
+                    <h2 className="text-xl font-bold dark:text-white mb-4">{t('company_live_fleet')}</h2>
                     <div className="space-y-4 h-[22rem] overflow-y-auto custom-scrollbar pr-2">
                         {liveFleet.map((bus: any) => (
                              <div key={bus.id} className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
@@ -74,11 +77,11 @@ const CompanyDashboard: React.FC<CompanyDashboardProps> = ({ companyPin }) => {
                                 </div>
                             </div>
                         ))}
-                        {liveFleet.length === 0 && <p className="text-center text-gray-500 py-10">No buses currently on route.</p>}
+                        {liveFleet.length === 0 && <p className="text-center text-gray-500 py-10">{t('company_no_buses_route')}</p>}
                     </div>
                 </div>
                  <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-lg">
-                     <h2 className="text-xl font-bold dark:text-white mb-4">Top Drivers</h2>
+                     <h2 className="text-xl font-bold dark:text-white mb-4">{t('company_top_drivers')}</h2>
                      <div className="space-y-3">
                         {driverLeaderboard.map((driver: any, index: number) => (
                             <div key={driver.id || index} className="flex items-center space-x-3 bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg">

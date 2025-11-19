@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { Page } from './App';
+import { Page } from './types';
 import { ArrowRightIcon, CheckCircleIcon, ChevronRightIcon } from './components/icons';
 import * as api from './services/apiService';
 

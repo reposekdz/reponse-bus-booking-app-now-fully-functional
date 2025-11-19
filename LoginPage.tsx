@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import type { Page } from './App';
+import { Page } from './types';
 import { EyeIcon, EyeOffIcon, LockClosedIcon, GoogleIcon } from './components/icons';
 import { useAuth } from './contexts/AuthContext';
 import { useLanguage } from './contexts/LanguageContext';

@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, ErrorInfo, ReactNode, Component } from 'react';
 import Header from './components/Header';
 import HeroSection from './components/HeroSection';
 import HowItWorks from './components/HowItWorks';
@@ -25,7 +26,6 @@ import PackageDeliveryPage from './PackageDeliveryPage';
 import BusCharterPage from './BusCharterPage';
 import BookingSearchPage from './BookingSearchPage';
 import BottomNavigation from './components/BottomNavigation';
-// FIX: Changed import to be a named import to resolve module loading issue.
 import { TicketModal } from './components/TicketModal';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 import DriverProfilePage from './DriverProfilePage';
@@ -44,7 +44,6 @@ import VehicleRentalsPage from './VehicleRentalsPage';
 import VipLoungePage from './VipLoungePage';
 import WhyChooseUs from './components/WhyChooseUs';
 import SpecialOffers from './components/SpecialOffers';
-// FIX: Changed import for BookingConfirmationPage to be a named import to resolve a circular dependency.
 import { BookingConfirmationPage } from './BookingConfirmationPage';
 import FavoritesPage from './FavoritesPage';
 import PriceAlertsPage from './PriceAlertsPage';
@@ -56,23 +55,46 @@ import LoadingSpinner from './components/LoadingSpinner';
 import NotificationHandler from './components/NotificationHandler';
 import DriverSettingsPage from './DriverSettingsPage';
 import PromotedCompanies from './components/PromotedCompanies';
+import { Page } from './types';
 
+interface ErrorBoundaryProps {
+  children?: ReactNode;
+}
 
-export type Page = 
-  | 'home' | 'login' | 'register' | 'bookings' | 'scheduled' | 'search' 
-  | 'seatSelection' | 'payment' | 'profile' | 'companies' 
-  | 'companyProfile' | 'help' | 'contact' | 'services' | 'packageDelivery' 
-  | 'busCharter' | 'lostAndFound' | 'adminDashboard' | 'companyDashboard' | 'driverDashboard' 
-  | 'agentDashboard' | 'adminCompanies' | 'adminDrivers' | 'adminAgents' 
-  | 'adminUsers' | 'adminFinancials' | 'adminAds' 
-  | 'adminPromotions' | 'companyBuses' | 'companyDrivers' | 'companyRoutes' 
-  | 'companyPassengers' | 'companyFinancials' | 'companySettings' 
-  | 'fleetMonitoring' | 'driverProfile' | 'agentProfile' | 'bookingSearch' | 'passengerProfile'
-  | 'corporateTravel' | 'tourPackages' | 'travelInsurance' | 'giftCards' | 'adminAnnouncements'
-  | 'hotelBooking' | 'eventTickets' | 'vehicleRentals' | 'vipLounge' | 'companyRouteAnalytics'
-  | 'bookingConfirmation' | 'favorites' | 'priceAlerts' | 'loyalty' | 'wallet' | 'companyDriverProfile'
-  | 'adminMessages' | 'adminSettings' | 'adminDestinations' | 'registrationSuccess' | 'driverSettings';
+interface ErrorBoundaryState {
+  hasError: boolean;
+}
 
+// Error Boundary to catch crashes
+class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  public state: ErrorBoundaryState = { hasError: false };
+
+  static getDerivedStateFromError(_: Error): ErrorBoundaryState {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error("Uncaught error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 text-center p-4">
+            <div>
+                <h1 className="text-3xl font-bold text-red-600 mb-4">Something went wrong.</h1>
+                <p className="text-gray-600 mb-6">We're sorry, but the application encountered an unexpected error.</p>
+                <button onClick={() => window.location.reload()} className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    Reload Application
+                </button>
+            </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 
 const AppContent: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<Page>('home');
@@ -269,9 +291,11 @@ const AppContent: React.FC = () => {
 
 const App: React.FC = () => {
     return (
-        <LanguageProvider>
-            <AppContent />
-        </LanguageProvider>
+        <ErrorBoundary>
+            <LanguageProvider>
+                <AppContent />
+            </LanguageProvider>
+        </ErrorBoundary>
     )
 }
 

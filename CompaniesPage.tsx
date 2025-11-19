@@ -1,8 +1,9 @@
+
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 // FIX: Changed import to a named import as StarRating is not a default export.
 import { StarRating } from './components/StarRating';
 import { SearchIcon, ChevronRightIcon, StarIcon } from './components/icons';
-import type { Page } from './App';
+import { Page } from './types';
 import * as api from './services/apiService';
 import LoadingSpinner from './components/LoadingSpinner';
 import ErrorDisplay from './components/ErrorDisplay';

@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { Page } from './App';
+import { Page } from './types';
 import { TicketIcon } from './components/icons';
 
 const mockEvents = [

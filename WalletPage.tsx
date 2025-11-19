@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Page } from './App';
+import { Page } from './types';
 import { WalletIcon, PaperAirplaneIcon } from './components/icons';
 import WalletTopUpModal from './components/WalletTopUpModal';
 import WalletTransactionCard from './components/WalletTransactionCard';

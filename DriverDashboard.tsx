@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { SunIcon, MoonIcon, CogIcon, UsersIcon, ChartBarIcon, QrCodeIcon, ChartPieIcon, ClipboardDocumentListIcon, WrenchScrewdriverIcon, MegaphoneIcon, CalendarIcon, ChatBubbleLeftRightIcon, CheckCircleIcon, StarIcon, ShieldCheckIcon, MenuIcon, XIcon, ArrowRightIcon, BusIcon } from './components/icons';
-import { Page } from './App';
+import { Page } from './types';
 import * as api from './services/apiService';
 import LoadingSpinner from './components/LoadingSpinner';
 import { useSocket } from './contexts/SocketContext';

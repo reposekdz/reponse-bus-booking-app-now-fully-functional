@@ -1,5 +1,6 @@
+
 import React, { useState, FormEvent } from 'react';
-import { Page } from './App';
+import { Page } from './types';
 import { ArchiveBoxIcon, BusIcon, BriefcaseIcon, MapIcon, ShieldCheckIcon, CreditCardIcon, ChevronRightIcon, TruckIcon, QuestionMarkCircleIcon } from './components/icons';
 import PackageTrackingModal from './PackageTrackingModal';
 import { useLanguage } from './contexts/LanguageContext';

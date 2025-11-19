@@ -1,7 +1,8 @@
+
 import React, { useRef, useEffect } from 'react';
 import html2canvas from 'html2canvas';
 import { toCanvas } from 'qrcode';
-import { Page } from './App';
+import { Page } from './types';
 import { CheckCircleIcon, ArrowUpTrayIcon, TicketIcon, ArrowRightIcon, ShareIcon } from './components/icons';
 
 const RealQRCode: React.FC<{ ticketData: any; size: number }> = ({ ticketData, size }) => {
@@ -38,8 +39,6 @@ const RealQRCode: React.FC<{ ticketData: any; size: number }> = ({ ticketData, s
   );
 };
 
-
-// FIX: Changed to a named export to resolve a circular dependency with App.tsx.
 export const BookingConfirmationPage: React.FC<{ bookingDetails: any, onNavigate: (page: Page) => void }> = ({ bookingDetails, onNavigate }) => {
     const ticketRef = useRef<HTMLDivElement>(null);
 

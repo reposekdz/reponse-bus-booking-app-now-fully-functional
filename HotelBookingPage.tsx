@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { Page } from './App';
+import { Page } from './types';
 import { BuildingStorefrontIcon, StarIcon } from './components/icons';
 
 const mockHotels = {

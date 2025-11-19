@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { BriefcaseIcon, SearchIcon, PlusIcon, PencilSquareIcon, TrashIcon, EyeIcon, ArrowUpTrayIcon } from '../components/icons';
 import Modal from '../components/Modal';
-import { Page } from '../App';
+import { Page } from '../types';
 import * as api from '../services/apiService';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ConfirmationModal from '../components/ConfirmationModal';

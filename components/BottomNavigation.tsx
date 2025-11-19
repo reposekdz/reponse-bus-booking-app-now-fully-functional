@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { HomeIcon, TicketIcon, BuildingOfficeIcon, UserCircleIcon } from './icons';
-import type { Page } from '../App';
+import { Page } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 
 interface BottomNavigationProps {

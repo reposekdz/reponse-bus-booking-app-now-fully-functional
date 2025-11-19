@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { Page } from './App';
+import { Page } from './types';
 import { CreditCardIcon, PhoneIcon, LockClosedIcon, ArrowRightIcon, WalletIcon } from './components/icons';
 import LoadingSpinner from './components/LoadingSpinner';
 import * as api from './services/apiService';
@@ -12,14 +13,34 @@ import PinModal from './components/PinModal';
 
 const MomoAwaitingConfirmationModal: React.FC<{amount: number, phone: string, onCancel: () => void}> = ({ amount, phone, onCancel }) => {
     const { t } = useLanguage();
+    const [timeLeft, setTimeLeft] = useState(120); // 2 minutes countdown
+
+    useEffect(() => {
+        if (timeLeft === 0) return;
+        const intervalId = setInterval(() => {
+            setTimeLeft(prev => prev - 1);
+        }, 1000);
+        return () => clearInterval(intervalId);
+    }, [timeLeft]);
+
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+
     return (
         <div className="fixed inset-0 bg-black/70 z-[10000] flex flex-col items-center justify-center backdrop-blur-sm text-white p-4">
             <div className="w-16 h-16 border-4 border-yellow-400/50 border-t-yellow-400 rounded-full animate-spin mb-6"></div>
             <h2 className="text-2xl font-bold">{t('payment_momo_modal_title')}</h2>
-            <p className="text-lg text-gray-300 mt-2 text-center">
+            <p className="text-lg text-gray-300 mt-2 text-center max-w-md">
                 {t('payment_momo_modal_desc', { amount: new Intl.NumberFormat('fr-RW').format(amount), phone: phone })}
             </p>
-             <button onClick={onCancel} className="mt-8 px-6 py-2 border border-gray-500 text-gray-300 rounded-lg hover:bg-gray-700">{t('payment_momo_modal_cancel')}</button>
+            <p className="text-yellow-400 font-mono text-xl font-bold mt-6">
+                Time remaining: {minutes}:{seconds.toString().padStart(2, '0')}
+            </p>
+            <p className="text-sm text-gray-400 mt-2">Please verify on your phone.</p>
+            
+            <button onClick={onCancel} className="mt-8 px-6 py-2 border border-gray-500 text-gray-300 rounded-lg hover:bg-gray-700 hover:text-white transition-colors">
+                {t('payment_momo_modal_cancel')}
+            </button>
         </div>
     );
 };

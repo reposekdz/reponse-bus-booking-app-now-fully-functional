@@ -1,10 +1,11 @@
+
 import React, { useState, useMemo, FormEvent, useEffect } from 'react';
 import { 
     SunIcon, MoonIcon, CogIcon, UsersIcon, ChartBarIcon, ArrowDownLeftIcon,
     WalletIcon, CreditCardIcon, SearchIcon, XIcon, CheckCircleIcon, PhoneIcon, MapPinIcon, StarIcon, MenuIcon
 } from './components/icons';
 import PinModal from './components/PinModal';
-import { Page } from './App';
+import { Page } from './types';
 import * as api from './services/apiService';
 import LoadingSpinner from './components/LoadingSpinner';
 import { useLanguage } from './contexts/LanguageContext';

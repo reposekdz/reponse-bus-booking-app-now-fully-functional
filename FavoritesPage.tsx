@@ -1,8 +1,7 @@
 
-
 import React, { useState, useEffect, useMemo } from 'react';
 import SearchResultCard from './components/SearchResultCard';
-import { Page } from './App';
+import { Page } from './types';
 import { StarIcon } from './components/icons';
 import * as api from './services/apiService';
 import LoadingSpinner from './components/LoadingSpinner';

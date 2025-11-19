@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { Page } from './App';
+import { Page } from './types';
 import { UserGroupIcon } from './components/icons';
 
 const VipLoungePage: React.FC<{ onNavigate: (page: Page) => void }> = ({ onNavigate }) => {

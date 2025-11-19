@@ -1,5 +1,6 @@
+
 import React, { useState, useRef } from 'react';
-import { Page } from './App';
+import { Page } from './types';
 import { CameraIcon, TicketIcon, WalletIcon, StarIcon, BellAlertIcon, SparklesIcon, CogIcon, LockClosedIcon } from './components/icons';
 import WalletTopUpModal from './components/WalletTopUpModal';
 import { useLanguage } from './contexts/LanguageContext';

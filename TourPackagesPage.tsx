@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { Page } from './App';
+import { Page } from './types';
 import { MapIcon } from './components/icons';
 import Modal from './components/Modal';
 import * as api from './services/apiService';

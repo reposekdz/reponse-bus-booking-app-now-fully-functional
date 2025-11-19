@@ -1,3 +1,4 @@
+
 import { pool } from '../../config/db';
 import { AppError } from '../../utils/AppError';
 import * as mysql from 'mysql2/promise';
@@ -93,7 +94,6 @@ export const createBooking = async (userId: number, details: BookingDetails) => 
                 data: { bookingId: newBookingId, screen: 'TicketDetails' } // For deep linking on mobile
             });
         } catch (notificationError) {
-            // Don't fail the booking if notification fails. Just log it.
             logger.error(`Failed to send booking confirmation notification for user ${userId}:`, notificationError);
         }
         
@@ -115,7 +115,7 @@ export const createBooking = async (userId: number, details: BookingDetails) => 
 export const getBookingsForUser = async (userId: number) => {
     const [rows] = await pool.query(`
         SELECT 
-            b.id as _id, b.booking_id as bookingId, b.total_price as totalPrice, b.created_at as createdAt,
+            b.id as _id, b.booking_id as bookingId, b.total_price as totalPrice, b.created_at as createdAt, b.status,
             GROUP_CONCAT(s.seat_number) as seats,
             t.departure_time as departureTime, t.arrival_time as arrivalTime,
             r.origin, r.destination,
@@ -130,11 +130,11 @@ export const getBookingsForUser = async (userId: number) => {
         ORDER BY t.departure_time DESC
     `, [userId]);
     
-    // Re-structure to match frontend expectations
     return (rows as any[]).map(row => ({
         _id: row._id,
         bookingId: row.bookingId,
         totalPrice: row.totalPrice,
+        status: row.status,
         seats: row.seats.split(','),
         trip: {
             departureTime: row.departureTime,
@@ -148,4 +148,67 @@ export const getBookingsForUser = async (userId: number) => {
             }
         }
     }));
+};
+
+// New Service: Update Booking Status
+export const updateBookingStatus = async (bookingId: string, newStatus: string, currentUser: any) => {
+    const connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    try {
+        // 1. Verify Authorization & Get Booking
+        const [bookingRows] = await connection.query<any[] & mysql.RowDataPacket[]>(`
+            SELECT b.id, b.user_id, b.total_price, b.status, c.id as company_id
+            FROM bookings b
+            JOIN trips t ON b.trip_id = t.id
+            JOIN routes r ON t.route_id = r.id
+            JOIN companies c ON r.company_id = c.id
+            WHERE b.id = ? FOR UPDATE
+        `, [bookingId]);
+
+        if (bookingRows.length === 0) throw new AppError('Booking not found', 404);
+        const booking = bookingRows[0];
+
+        if (currentUser.role === 'company' && booking.company_id !== currentUser.company_id) {
+             throw new AppError('Unauthorized to manage this booking.', 403);
+        }
+
+        // 2. Process Cancellation Refund (if applicable)
+        if (newStatus === 'Cancelled' && booking.status === 'Confirmed') {
+             const [walletRows] = await connection.query<any[] & mysql.RowDataPacket[]>('SELECT id FROM wallets WHERE user_id = ?', [booking.user_id]);
+             if(walletRows.length > 0) {
+                 const walletId = walletRows[0].id;
+                 await connection.query('UPDATE wallets SET balance = balance + ? WHERE id = ?', [booking.total_price, walletId]);
+                 await connection.query(
+                    'INSERT INTO wallet_transactions (wallet_id, amount, type, description, related_booking_id) VALUES (?, ?, ?, ?, ?)',
+                    [walletId, booking.total_price, 'refund', `Refund for cancelled booking #${bookingId}`, bookingId]
+                );
+             }
+             // Free up seats
+             await connection.query('DELETE FROM seats WHERE booking_id = ?', [bookingId]);
+        }
+
+        // 3. Update Status
+        await connection.query('UPDATE bookings SET status = ? WHERE id = ?', [newStatus, bookingId]);
+
+        await connection.commit();
+        
+        // 4. Notify User
+        try {
+            await notificationService.sendNotification(booking.user_id, {
+                title: `Booking ${newStatus}`,
+                body: `Your booking #${bookingId} has been marked as ${newStatus}.`
+            });
+        } catch (err) {
+            logger.warn("Failed to send update notification", err);
+        }
+
+        return { id: bookingId, status: newStatus };
+
+    } catch (error) {
+        await connection.rollback();
+        throw error;
+    } finally {
+        connection.release();
+    }
 };

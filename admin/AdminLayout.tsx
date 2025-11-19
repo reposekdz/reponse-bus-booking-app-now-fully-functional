@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { Page } from '../App';
+import { Page } from '../types';
 import { ChartBarIcon, BuildingOfficeIcon, UsersIcon, BriefcaseIcon, SunIcon, MoonIcon, MegaphoneIcon, TagIcon, CurrencyDollarIcon, ChatBubbleLeftRightIcon, CogIcon, MapIcon } from '../components/icons';
 import AdminDashboard from './AdminDashboard';
 import ManageCompanies from './ManageCompanies';

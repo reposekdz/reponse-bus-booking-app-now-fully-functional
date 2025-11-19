@@ -1,8 +1,9 @@
+
 import React, { useState, useRef } from 'react';
 import { CameraIcon, CogIcon } from './components/icons';
 import { useLanguage } from './contexts/LanguageContext';
 import SecuritySettings from './components/SecuritySettings';
-import { Page } from './App';
+import { Page } from './types';
 import { useAuth } from './contexts/AuthContext';
 import * as api from './services/apiService';
 

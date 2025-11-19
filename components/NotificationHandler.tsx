@@ -13,7 +13,8 @@ const getVapidPublicKey = () => {
         }
         
         // Fallback to process.env (handled by Vite's define)
-        // We access it directly so Vite can replace the string 'process.env.VITE_VAPID_PUBLIC_KEY'
+        // We check for process.env first to avoid ReferenceError if process is not defined
+        // The 'process.env' token is replaced by Vite at build time
         if (typeof process !== 'undefined' && process.env && process.env.VITE_VAPID_PUBLIC_KEY) {
             return process.env.VITE_VAPID_PUBLIC_KEY;
         }

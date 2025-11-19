@@ -1,6 +1,7 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { UsersIcon, SearchIcon, EyeIcon } from '../components/icons';
-import { Page } from '../App';
+import { Page } from '../types';
 import * as api from '../services/apiService';
 import LoadingSpinner from '../components/LoadingSpinner';
 

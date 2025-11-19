@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { Page } from './App';
+import { Page } from './types';
 import { SparklesIcon, TicketIcon, ArrowDownLeftIcon, UserGroupIcon } from './components/icons';
 import * as api from './services/apiService';
 import { useAuth } from './contexts/AuthContext';
