@@ -34,9 +34,10 @@ export const makeDepositForPassenger = async (agentId: number, passengerSerial: 
         const [pWalletRows] = await connection.query<any[] & mysql.RowDataPacket[]>('SELECT id FROM wallets WHERE user_id = ?', [passengerId]);
         const passengerWalletId = pWalletRows[0].id;
 
-        // FINANCIAL LOGIC (Updated per prompt)
+        // FINANCIAL LOGIC
         // Agent Commission: 1.2%
         // Admin Fee: 1.9%
+        
         const agentRate = 0.012; 
         const adminRate = 0.019;
         
@@ -79,11 +80,36 @@ export const makeDepositForPassenger = async (agentId: number, passengerSerial: 
 };
 
 export const getTransactionHistory = async (agentId: number) => {
-    // ... existing implementation
-    return [];
+    const [rows] = await pool.query(`
+        SELECT wt.*, u.name as passengerName, u.serial_code as passengerSerial,
+        CASE 
+            WHEN wt.type = 'commission' THEN wt.amount
+            ELSE 0 
+        END as commission
+        FROM wallet_transactions wt
+        JOIN wallets w ON wt.wallet_id = w.id
+        LEFT JOIN users u ON w.user_id = u.id 
+        WHERE w.user_id = ? OR wt.description LIKE CONCAT('%Agent #', ?, '%')
+        ORDER BY wt.created_at DESC
+    `, [agentId, agentId]);
+    return rows;
 };
 
 export const getDashboardData = async (agentId: number) => {
-   // ... existing implementation
-   return {};
+   const [rows] = await pool.query('SELECT SUM(amount) as totalCommission FROM wallet_transactions WHERE wallet_id = (SELECT id FROM wallets WHERE user_id = ?) AND type = "commission"', [agentId]);
+   const [txnRows] = await pool.query('SELECT COUNT(*) as count FROM wallet_transactions WHERE description LIKE CONCAT("%Agent #", ?, "%") AND type = "deposit"', [agentId]);
+   
+   // Calculate total deposits made
+   const [depositRows] = await pool.query(`
+       SELECT SUM(amount) as totalDeposits 
+       FROM wallet_transactions 
+       WHERE type = 'deposit' AND description LIKE CONCAT('%Agent #', ?, '%')
+   `, [agentId]);
+
+   return {
+       totalCommission: (rows as any)[0].totalCommission || 0,
+       transactions: (txnRows as any)[0].count || 0,
+       totalDeposits: (depositRows as any)[0].totalDeposits || 0,
+       uniquePassengers: 0 // Simplified for now
+   };
 };

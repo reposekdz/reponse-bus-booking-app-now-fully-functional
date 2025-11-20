@@ -21,23 +21,20 @@ const config = {
     },
     mtn: {
         baseUrl: 'https://sandbox.momodeveloper.mtn.com',
-        environment: 'sandbox', // Fixed to sandbox as per prompt URL
+        environment: 'sandbox', 
         currency: 'RWF',
         collection: {
-            // Primary Key from prompt for Collections
-            subscriptionKey: process.env.MTN_COLLECTIONS_PRIMARY_KEY || '8c1c562bfbe241458e3b0bdc4d05d40e', 
+            subscriptionKey: process.env.MTN_COLLECTIONS_PRIMARY_KEY, 
             apiUserId: process.env.MTN_COLLECTION_USER_ID,
             apiKey: process.env.MTN_COLLECTION_API_KEY,
         },
         disbursement: {
-            // Primary Key from prompt for Disbursements
-            subscriptionKey: process.env.MTN_DISBURSEMENTS_PRIMARY_KEY || 'a34dd9b3f5b74e729fddf3cf47941795',
+            subscriptionKey: process.env.MTN_DISBURSEMENTS_PRIMARY_KEY, 
             apiUserId: process.env.MTN_DISBURSEMENT_USER_ID,
             apiKey: process.env.MTN_DISBURSEMENT_API_KEY,
         },
         remittance: {
-             // Secondary Key from prompt (used as example for remittance/other)
-            subscriptionKey: process.env.MTN_REMITTANCE_PRIMARY_KEY || '6ff111de84b5464492ce970caf16fa30',
+            subscriptionKey: process.env.MTN_REMITTANCE_PRIMARY_KEY,
             apiUserId: process.env.MTN_REMITTANCE_USER_ID,
             apiKey: process.env.MTN_REMITTANCE_API_KEY,
         }

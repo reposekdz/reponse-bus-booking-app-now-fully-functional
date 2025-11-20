@@ -123,3 +123,9 @@ export const getMyFinancials = asyncHandler(async (req: any, res: any) => {
     const financials = await companyService.getFinancialsForCompany(req.user.company_id);
     res.status(200).json({ success: true, data: financials });
 });
+
+export const requestPayout = asyncHandler(async (req: any, res: any) => {
+    const { amount, phone } = req.body;
+    const result = await companyService.requestCompanyPayout(req.user.id, req.user.company_id, amount, phone);
+    res.status(200).json({ success: true, data: result });
+});

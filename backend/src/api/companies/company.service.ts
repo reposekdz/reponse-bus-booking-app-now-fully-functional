@@ -4,6 +4,7 @@ import { AppError } from '../../utils/AppError';
 import * as mysql from 'mysql2/promise';
 import bcrypt from 'bcryptjs';
 import { dispatchNotification } from '../notifications/notifications.service';
+import * as paymentService from '../payments/payments.service';
 
 export const getAllCompanies = async () => {
     const [rows] = await pool.query("SELECT id, name, logo_url, description, cover_url FROM companies WHERE status = 'Active'");
@@ -115,7 +116,7 @@ export const getDashboardData = async (companyId: number) => {
 };
 
 
-// --- Service functions for company managers managing their drivers ---
+// --- Driver Management for Companies ---
 export const getDriversByCompany = async (companyId: number) => {
     if (!companyId) {
         throw new AppError('Company manager is not associated with a company.', 400);
@@ -323,4 +324,39 @@ export const getFinancialsForCompany = async (companyId: number) => {
         LIMIT 100
     `, [companyId]);
     return transactions;
+};
+
+export const requestCompanyPayout = async (userId: number, companyId: number, amount: number, phone: string) => {
+    // Verify funds available in wallet linked to company manager or company account
+    // Assuming the user.id is the company manager's account which holds the wallet
+    
+    const [walletRows] = await pool.query<any[] & mysql.RowDataPacket[]>('SELECT id, balance FROM wallets WHERE user_id = ?', [userId]);
+    if (walletRows.length === 0) throw new AppError('Wallet not found.', 404);
+    const wallet = walletRows[0];
+    
+    if (parseFloat(wallet.balance) < amount) {
+        throw new AppError('Insufficient funds.', 400);
+    }
+
+    const connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    try {
+        // Deduct funds
+        await connection.query('UPDATE wallets SET balance = balance - ? WHERE id = ?', [amount, wallet.id]);
+        await connection.query('INSERT INTO wallet_transactions (wallet_id, amount, type, description) VALUES (?, ?, ?, ?)', 
+            [wallet.id, -amount, 'transfer_out', `Payout to ${phone}`]);
+
+        // Initiate Disbursement via MTN API (Simulated or Real)
+        // This calls the logic from payments.service.ts
+        await paymentService.processRefund(userId, amount, phone, "Company Payout");
+
+        await connection.commit();
+        return { success: true, amount };
+    } catch (error) {
+        await connection.rollback();
+        throw error;
+    } finally {
+        connection.release();
+    }
 };

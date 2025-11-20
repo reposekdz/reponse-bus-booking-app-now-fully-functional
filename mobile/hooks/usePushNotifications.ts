@@ -1,8 +1,6 @@
+
 import { useState, useEffect, useRef } from 'react';
-// These would be imported from expo in a real project
-// import * as Device from 'expo-device';
-// import * as Notifications from 'expo-notifications';
-import { Platform, Alert } from 'react-native';
+import { Alert } from 'react-native';
 import * as api from '../../services/apiService';
 
 // Mocking the Expo Notifications module for this environment
@@ -12,17 +10,18 @@ const Notifications = {
   setNotificationHandler: (handler: any) => {},
   addNotificationReceivedListener: (listener: any) => {
     console.log('Mock: Notification received listener added');
-    const subscription = { remove: () => console.log('Mock: Listener removed') };
-    return subscription;
+    // Return a subscription object with a remove method
+    return { remove: () => console.log('Mock: Listener removed') };
   },
   addNotificationResponseReceivedListener: (listener: any) => {
     console.log('Mock: Notification response listener added');
-    const subscription = { remove: () => console.log('Mock: Listener removed') };
-    return subscription;
+    return { remove: () => console.log('Mock: Listener removed') };
   },
-  // FIX: Added mock for removeNotificationSubscription to support the modern Expo API.
+  // Fix: Ensure this matches the expected signature or handle the object directly
   removeNotificationSubscription: (subscription: any) => {
-    console.log('Mock: removeNotificationSubscription called');
+    if (subscription && typeof subscription.remove === 'function') {
+        subscription.remove();
+    }
   }
 };
 
@@ -59,16 +58,16 @@ async function registerForPushNotificationsAsync() {
 
 export default function usePushNotifications(user: any) {
   const [expoPushToken, setExpoPushToken] = useState('');
+  // Initialize refs with null to satisfy strict types
   const notificationListener = useRef<any>(null);
   const responseListener = useRef<any>(null);
 
   useEffect(() => {
-    if (!user) return; // Only register if user is logged in
+    if (!user) return; 
 
     registerForPushNotificationsAsync().then(token => {
       if (token) {
         setExpoPushToken(token);
-        // Send the token to your backend server
         api.subscribePush({ token, platform: 'mobile' })
           .catch(err => console.error("Failed to send push token to server", err));
       }
@@ -80,7 +79,6 @@ export default function usePushNotifications(user: any) {
 
     responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
       console.log('User tapped on notification:', response);
-      // Here you can navigate to a specific screen based on notification data
     });
 
     return () => {

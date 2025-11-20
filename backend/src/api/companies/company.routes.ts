@@ -9,7 +9,8 @@ import {
     getMyRoutes, createRoute, updateRoute, deleteRoute,
     getMyPassengers,
     getMyFinancials,
-    createTrip
+    createTrip,
+    requestPayout // New import
 } from './company.controller';
 import { protect, authorize } from '../../middleware/auth.middleware';
 
@@ -65,6 +66,9 @@ router.post('/mytrips', createTrip);
 // Passenger & Financials
 router.get('/mypassengers', getMyPassengers);
 router.get('/myfinancials', getMyFinancials);
+
+// New Payout Route
+router.post('/payouts', requestPayout);
 
 
 export default router;

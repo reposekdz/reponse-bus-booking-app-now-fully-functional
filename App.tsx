@@ -70,9 +70,12 @@ interface ErrorBoundaryState {
   hasError: boolean;
 }
 
-// Error Boundary to catch crashes
+// Error Boundary to catch crashes - Fixed Types
 class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  state: ErrorBoundaryState = { hasError: false };
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false };
+  }
 
   static getDerivedStateFromError(_: Error): ErrorBoundaryState {
     return { hasError: true };

@@ -1,10 +1,10 @@
 
-
 import React, { useState, useEffect } from 'react';
-import { WalletIcon, ChartBarIcon, UsersIcon } from '../components/icons';
+import { WalletIcon, ChartBarIcon, UsersIcon, CreditCardIcon } from '../components/icons';
 import DateRangePicker from '../components/DateRangePicker';
 import * as api from '../services/apiService';
 import LoadingSpinner from '../components/LoadingSpinner';
+import Modal from '../components/Modal';
 
 const StatCard = ({ title, value, icon }) => (
     <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-lg">
@@ -47,21 +47,58 @@ const CompanyFinancials: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string|null>(null);
     
+    const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
+    const [withdrawAmount, setWithdrawAmount] = useState('');
+    const [withdrawPhone, setWithdrawPhone] = useState('');
+    const [isWithdrawing, setIsWithdrawing] = useState(false);
+    
+    const fetchFinancials = async () => {
+        setIsLoading(true);
+        try {
+            const data = await api.companyGetMyFinancials();
+            setTransactions(data);
+        } catch (err: any) {
+            setError(err.message || 'Failed to load financial data.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const fetchFinancials = async () => {
-            setIsLoading(true);
-            try {
-                const data = await api.companyGetMyFinancials();
-                setTransactions(data);
-            } catch (err: any) {
-                setError(err.message || 'Failed to load financial data.');
-            } finally {
-                setIsLoading(false);
-            }
-        };
         fetchFinancials();
     }, [activeRange]); // Re-fetch if range changes in the future
     
+    const handleWithdraw = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsWithdrawing(true);
+        try {
+             // Assuming apiService is updated to include a payout request function
+             // Since apiService.ts updates are separate, we use a generic fetch here or assume it exists on `api`
+             // For this implementation, we will call a new endpoint added in the backend update
+             const response = await fetch('/api/v1/companies/payouts', {
+                 method: 'POST',
+                 headers: {
+                     'Content-Type': 'application/json',
+                     'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                 },
+                 body: JSON.stringify({ amount: parseFloat(withdrawAmount), phone: withdrawPhone })
+             });
+             const res = await response.json();
+             if(res.success) {
+                 alert('Payout request submitted successfully.');
+                 setIsWithdrawModalOpen(false);
+                 setWithdrawAmount('');
+                 setWithdrawPhone('');
+             } else {
+                 alert(res.message || 'Payout failed.');
+             }
+        } catch(e: any) {
+            alert(e.message || 'Payout failed.');
+        } finally {
+            setIsWithdrawing(false);
+        }
+    }
+
     const dailyRevenue = [
         { day: 'W1', revenue: 1200000 }, { day: 'W2', revenue: 1500000 }, { day: 'W3', revenue: 1350000 }, { day: 'W4', revenue: 1550000 }
     ];
@@ -72,7 +109,12 @@ const CompanyFinancials: React.FC = () => {
         <div>
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-3xl font-bold dark:text-gray-200">Financial Overview</h1>
-                <DateRangePicker onRangeChange={setActiveRange} activeRange={activeRange} />
+                <div className="flex space-x-4">
+                    <button onClick={() => setIsWithdrawModalOpen(true)} className="bg-green-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-green-700 transition flex items-center">
+                        <CreditCardIcon className="w-5 h-5 mr-2"/> Request Payout
+                    </button>
+                    <DateRangePicker onRangeChange={setActiveRange} activeRange={activeRange} />
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
@@ -103,6 +145,39 @@ const CompanyFinancials: React.FC = () => {
                     </div>
                 </div>
             </div>
+            
+            <Modal isOpen={isWithdrawModalOpen} onClose={() => setIsWithdrawModalOpen(false)} title="Request Payout">
+                <form onSubmit={handleWithdraw} className="space-y-4">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Withdraw funds to your registered Mobile Money account.</p>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Amount (RWF)</label>
+                        <input 
+                            type="number" 
+                            value={withdrawAmount} 
+                            onChange={e => setWithdrawAmount(e.target.value)} 
+                            className="mt-1 w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" 
+                            required 
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Phone Number</label>
+                        <input 
+                            type="tel" 
+                            value={withdrawPhone} 
+                            onChange={e => setWithdrawPhone(e.target.value)} 
+                            className="mt-1 w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" 
+                            placeholder="078..."
+                            required 
+                        />
+                    </div>
+                    <div className="flex justify-end space-x-3 pt-4">
+                        <button type="button" onClick={() => setIsWithdrawModalOpen(false)} className="px-4 py-2 border rounded-lg dark:border-gray-600">Cancel</button>
+                        <button type="submit" disabled={isWithdrawing} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50">
+                            {isWithdrawing ? 'Processing...' : 'Confirm Payout'}
+                        </button>
+                    </div>
+                </form>
+            </Modal>
         </div>
     );
 };
