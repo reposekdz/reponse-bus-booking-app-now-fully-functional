@@ -1,5 +1,3 @@
-
-
 import { useState, useEffect, useRef } from 'react';
 // These would be imported from expo in a real project
 // import * as Device from 'expo-device';
@@ -9,8 +7,8 @@ import * as api from '../../services/apiService';
 
 // Mocking the Expo Notifications module for this environment
 const Notifications = {
-  requestPermissionsAsync: async () => ({ status: 'granted' }),
-  getExpoPushTokenAsync: async () => ({ data: 'ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]' }),
+  requestPermissionsAsync: async (permissions?: any) => ({ status: 'granted' }),
+  getExpoPushTokenAsync: async (options?: any) => ({ data: 'ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]' }),
   setNotificationHandler: (handler: any) => {},
   addNotificationReceivedListener: (listener: any) => {
     console.log('Mock: Notification received listener added');
@@ -61,8 +59,8 @@ async function registerForPushNotificationsAsync() {
 
 export default function usePushNotifications(user: any) {
   const [expoPushToken, setExpoPushToken] = useState('');
-  const notificationListener = useRef<any>();
-  const responseListener = useRef<any>();
+  const notificationListener = useRef<any>(null);
+  const responseListener = useRef<any>(null);
 
   useEffect(() => {
     if (!user) return; // Only register if user is logged in
@@ -86,14 +84,10 @@ export default function usePushNotifications(user: any) {
     });
 
     return () => {
-      // FIX: The .remove() method on subscriptions is deprecated and was causing a type error.
-      // Replaced with the current Expo API: Notifications.removeNotificationSubscription().
       if (notificationListener.current) {
-        // FIX: Pass the subscription object to removeNotificationSubscription. This call requires one argument.
         Notifications.removeNotificationSubscription(notificationListener.current);
       }
       if (responseListener.current) {
-        // FIX: Pass the subscription object to removeNotificationSubscription. This call requires one argument.
         Notifications.removeNotificationSubscription(responseListener.current);
       }
     };

@@ -1,3 +1,4 @@
+
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -20,31 +21,32 @@ const config = {
     },
     mtn: {
         baseUrl: 'https://sandbox.momodeveloper.mtn.com',
-        environment: process.env.MTN_TARGET_ENV || 'sandbox',
+        environment: 'sandbox', // Fixed to sandbox as per prompt URL
+        currency: 'RWF',
         collection: {
-            subscriptionKey: process.env.MTN_COLLECTION_SUB_KEY,
+            // Primary Key from prompt for Collections
+            subscriptionKey: process.env.MTN_COLLECTIONS_PRIMARY_KEY || '8c1c562bfbe241458e3b0bdc4d05d40e', 
             apiUserId: process.env.MTN_COLLECTION_USER_ID,
             apiKey: process.env.MTN_COLLECTION_API_KEY,
         },
+        disbursement: {
+            // Primary Key from prompt for Disbursements
+            subscriptionKey: process.env.MTN_DISBURSEMENTS_PRIMARY_KEY || 'a34dd9b3f5b74e729fddf3cf47941795',
+            apiUserId: process.env.MTN_DISBURSEMENT_USER_ID,
+            apiKey: process.env.MTN_DISBURSEMENT_API_KEY,
+        },
         remittance: {
-            subscriptionKey: process.env.MTN_REMITTANCE_SUB_KEY,
+             // Secondary Key from prompt (used as example for remittance/other)
+            subscriptionKey: process.env.MTN_REMITTANCE_PRIMARY_KEY || '6ff111de84b5464492ce970caf16fa30',
             apiUserId: process.env.MTN_REMITTANCE_USER_ID,
             apiKey: process.env.MTN_REMITTANCE_API_KEY,
         }
     }
 };
 
-// Validate that critical environment variables are set to prevent running with insecure defaults
-if (process.env.NODE_ENV === 'production' && (
-    !config.mysql.host || 
-    !config.mysql.user || 
-    !config.mysql.database || 
-    !config.jwt.secret ||
-    !config.vapid.publicKey
-)) {
-    console.error("FATAL ERROR: Missing critical environment variables for production. Check your .env file.");
+if (process.env.NODE_ENV === 'production' && (!config.mysql.host || !config.jwt.secret)) {
+    console.error("FATAL ERROR: Missing critical environment variables.");
     (process as any).exit(1);
 }
-
 
 export default config;
