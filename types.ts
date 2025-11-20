@@ -13,4 +13,4 @@ export type Page =
   | 'hotelBooking' | 'eventTickets' | 'vehicleRentals' | 'vipLounge' | 'companyRouteAnalytics'
   | 'bookingConfirmation' | 'favorites' | 'priceAlerts' | 'loyalty' | 'wallet' | 'companyDriverProfile'
   | 'adminMessages' | 'adminSettings' | 'adminDestinations' | 'registrationSuccess' | 'driverSettings'
-  | 'forgotPassword' | 'resetPassword';
+  | 'forgotPassword' | 'resetPassword' | 'adminStations';

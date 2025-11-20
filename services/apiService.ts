@@ -186,6 +186,15 @@ export const adminCreateAd = (adData: any) => apiFetch('/advertisements', { meth
 export const adminUpdateAd = (id: number, adData: any) => apiFetch(`/advertisements/${id}`, { method: 'PUT', body: JSON.stringify(adData) });
 export const adminDeleteAd = (id: number) => apiFetch(`/advertisements/${id}`, { method: 'DELETE' });
 
+// --- STATIONS (NEW) ---
+export const getStations = async () => {
+    const { data } = await apiFetch('/stations');
+    return data;
+};
+export const adminCreateStation = (data: any) => apiFetch('/stations', { method: 'POST', body: JSON.stringify(data) });
+export const adminUpdateStation = (id: number, data: any) => apiFetch(`/stations/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+export const adminDeleteStation = (id: number) => apiFetch(`/stations/${id}`, { method: 'DELETE' });
+
 
 // --- COMPANY ---
 export const companyGetMyDrivers = async () => {

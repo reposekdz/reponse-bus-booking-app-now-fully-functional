@@ -1,4 +1,3 @@
-
 import React, { Component, useState, useEffect, ErrorInfo, ReactNode } from 'react';
 import Header from './components/Header';
 import HeroSection from './components/HeroSection';
@@ -71,7 +70,7 @@ interface ErrorBoundaryState {
 }
 
 // Error Boundary to catch crashes - Fixed Types
-class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false };
@@ -231,7 +230,7 @@ const AppContent: React.FC = () => {
       case 'loyalty': return <LoyaltyPage user={user} onNavigate={navigate} />;
       case 'wallet': return <WalletPage onNavigate={navigate} />;
       
-      case 'adminDashboard': case 'adminCompanies': case 'adminDrivers': case 'adminAgents': case 'adminUsers': case 'adminFinancials': case 'adminAds': case 'adminPromotions': case 'adminAnnouncements': case 'adminMessages': case 'adminSettings': case 'adminDestinations':
+      case 'adminDashboard': case 'adminCompanies': case 'adminDrivers': case 'adminAgents': case 'adminUsers': case 'adminFinancials': case 'adminAds': case 'adminPromotions': case 'adminAnnouncements': case 'adminMessages': case 'adminSettings': case 'adminDestinations': case 'adminStations':
         return user?.role === 'admin' ? <AdminLayout currentPage={currentPage} navigate={navigate} theme={theme} setTheme={setTheme} onLogout={handleLogout}/> : <p>{t('access_denied')}</p>;
         
       case 'companyDashboard': case 'companyBuses': case 'companyDrivers': case 'companyRoutes': case 'companyPassengers': case 'companyFinancials': case 'companySettings': case 'fleetMonitoring': case 'companyRouteAnalytics': case 'companyDriverProfile':
@@ -270,7 +269,7 @@ const AppContent: React.FC = () => {
     }
   };
   
-  const isDashboard = ['adminDashboard', 'companyDashboard', 'driverDashboard', 'agentDashboard', 'adminCompanies', 'adminDrivers', 'adminAgents', 'adminUsers', 'adminFinancials', 'adminAds', 'adminPromotions', 'adminAnnouncements', 'adminMessages', 'adminSettings', 'adminDestinations', 'companyBuses', 'companyDrivers', 'companyRoutes', 'companyPassengers', 'companyFinancials', 'companySettings', 'fleetMonitoring', 'agentProfile', 'driverProfile', 'passengerProfile', 'companyRouteAnalytics', 'companyDriverProfile', 'driverSettings'].includes(currentPage);
+  const isDashboard = ['adminDashboard', 'companyDashboard', 'driverDashboard', 'agentDashboard', 'adminCompanies', 'adminDrivers', 'adminAgents', 'adminUsers', 'adminFinancials', 'adminAds', 'adminPromotions', 'adminAnnouncements', 'adminMessages', 'adminSettings', 'adminDestinations', 'adminStations', 'companyBuses', 'companyDrivers', 'companyRoutes', 'companyPassengers', 'companyFinancials', 'companySettings', 'fleetMonitoring', 'agentProfile', 'driverProfile', 'passengerProfile', 'companyRouteAnalytics', 'companyDriverProfile', 'driverSettings'].includes(currentPage);
   const isFullScreenPage = ['bookingConfirmation', 'registrationSuccess', 'login', 'register', 'forgotPassword', 'resetPassword'].includes(currentPage);
   const showHeader = !isDashboard && !isFullScreenPage;
   const showFooter = !isDashboard && !isFullScreenPage;

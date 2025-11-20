@@ -22,6 +22,7 @@ DROP TABLE IF EXISTS `reviews`;
 DROP TABLE IF EXISTS `services`;
 DROP TABLE IF EXISTS `promotions`;
 DROP TABLE IF EXISTS `gallery`;
+DROP TABLE IF EXISTS `stations`; -- New Table
 DROP TABLE IF EXISTS `companies`;
 DROP TABLE IF EXISTS `users`;
 DROP TABLE IF EXISTS `messages`;
@@ -70,8 +71,17 @@ CREATE TABLE `users` (
     FOREIGN KEY (`company_id`) REFERENCES `companies`(`id`) ON DELETE SET NULL
 );
 
--- Rest of schema remains identical
 ALTER TABLE `companies` ADD FOREIGN KEY (`owner_id`) REFERENCES `users`(`id`) ON DELETE RESTRICT;
+
+CREATE TABLE `stations` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `name` VARCHAR(255) NOT NULL,
+    `district` VARCHAR(100) NOT NULL,
+    `province` VARCHAR(50) NOT NULL,
+    `type` VARCHAR(50) DEFAULT 'major' CHECK (`type` IN ('terminal', 'major', 'minor', 'stop')),
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
 
 CREATE TABLE `buses` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,

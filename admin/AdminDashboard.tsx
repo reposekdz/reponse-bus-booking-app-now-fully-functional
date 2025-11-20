@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { ChartBarIcon, UsersIcon, BuildingOfficeIcon, BriefcaseIcon, CheckCircleIcon, CurrencyDollarIcon } from '../components/icons';
+import { ChartBarIcon, UsersIcon, BuildingOfficeIcon, BriefcaseIcon, CheckCircleIcon, CurrencyDollarIcon, BellAlertIcon } from '../components/icons';
 import ActivityFeed from '../components/ActivityFeed';
 import LiveSalesTicker from '../components/LiveSalesTicker';
 import * as api from '../services/apiService';
@@ -97,13 +97,32 @@ const RevenueChart = ({ data, title }) => {
     );
 };
 
+const SystemAlertsTicker = () => (
+    <div className="bg-red-500 text-white px-4 py-2 rounded-lg flex items-center space-x-3 shadow-md mb-4 overflow-hidden">
+        <BellAlertIcon className="w-5 h-5 animate-pulse" />
+        <div className="whitespace-nowrap animate-marquee">
+            <span className="font-bold">SYSTEM ALERT:</span> High traffic expected on Kigali-Musanze route due to upcoming event. Ensure server capacity. | <span className="font-bold">MAINTENANCE:</span> Scheduled DB backup at 03:00 AM.
+        </div>
+        <style>{`
+            @keyframes marquee {
+                0% { transform: translateX(100%); }
+                100% { transform: translateX(-100%); }
+            }
+            .animate-marquee {
+                animation: marquee 20s linear infinite;
+                width: 100%;
+            }
+        `}</style>
+    </div>
+);
+
 
 const SystemHealth = ({ t }) => (
     <div className="bg-white dark:bg-gray-800/50 p-4 rounded-2xl shadow-lg flex items-center justify-between">
         <h3 className="text-lg font-bold dark:text-white">{t('admin_system_health')}</h3>
         <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2"><div className="w-3 h-3 rounded-full bg-green-500"></div><span className="text-sm">API: Normal</span></div>
-            <div className="flex items-center space-x-2"><div className="w-3 h-3 rounded-full bg-green-500"></div><span className="text-sm">Payments: Normal</span></div>
+            <div className="flex items-center space-x-2"><div className="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div><span className="text-sm">API: Normal</span></div>
+            <div className="flex items-center space-x-2"><div className="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div><span className="text-sm">Payments: Normal</span></div>
         </div>
         <div className="flex items-center space-x-2 text-green-500 font-bold">
             <CheckCircleIcon className="w-6 h-6"/>
@@ -149,15 +168,22 @@ const AdminDashboard: React.FC = () => {
 
     return (
         <div className="space-y-6">
-            <h1 className="text-3xl font-bold dark:text-gray-200">{t('admin_overview')}</h1>
+            <div className="flex justify-between items-end">
+                <h1 className="text-3xl font-bold dark:text-gray-200">{t('admin_overview')}</h1>
+                <p className="text-sm text-gray-500">Last updated: {new Date().toLocaleTimeString()}</p>
+            </div>
+            
+            <SystemAlertsTicker />
             <LiveSalesTicker />
             <SystemHealth t={t} />
+            
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatCard title={t('admin_stat_revenue')} value={`${new Intl.NumberFormat('fr-RW', { notation: "compact" }).format(stats.totalRevenue)} RWF`} icon={<ChartBarIcon className="w-6 h-6 text-blue-600"/>} change="+12%" changeType="increase" />
                 <StatCard title={t('admin_stat_passengers')} value={stats.totalPassengers} icon={<UsersIcon className="w-6 h-6 text-blue-600"/>} change="+5%" changeType="increase" />
                 <StatCard title={t('admin_stat_companies')} value={stats.companies} icon={<BuildingOfficeIcon className="w-6 h-6 text-blue-600"/>} change="+1" changeType="increase" />
                 <StatCard title={t('admin_stat_agents')} value={stats.agents} icon={<BriefcaseIcon className="w-6 h-6 text-blue-600"/>} change="+0" changeType="increase" />
             </div>
+            
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                  <div className="lg:col-span-2" style={{ minHeight: '350px' }}>
                     <RevenueChart data={revenueData} title={t('admin_chart_revenue')} />
@@ -182,6 +208,21 @@ const AdminDashboard: React.FC = () => {
                     </div>
                 </div>
             </div>
+            
+            {/* Live Traffic Heatmap Placeholder */}
+            <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-lg">
+                 <h3 className="font-bold mb-4 dark:text-white">Live Traffic Heatmap (Rwanda)</h3>
+                 <div className="w-full h-64 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center relative overflow-hidden group">
+                     <img src="https://www.researchgate.net/publication/322968537/figure/fig1/AS:631631525920800@1527604113101/Administrative-map-of-Rwanda-showing-the-four-provinces-and-the-capital-city-Kigali.png" alt="Map" className="w-full h-full object-cover opacity-30"/>
+                     <div className="absolute inset-0 flex items-center justify-center">
+                         <p className="text-lg font-bold text-gray-500 dark:text-gray-300 bg-white/80 dark:bg-black/50 px-4 py-2 rounded-full backdrop-blur-md">Real-time fleet congestion data visualization enabled</p>
+                     </div>
+                     {/* Simulated Hotspots */}
+                     <div className="absolute top-1/2 left-1/2 w-24 h-24 bg-red-500/30 rounded-full blur-xl animate-pulse"></div>
+                     <div className="absolute top-1/3 left-1/3 w-16 h-16 bg-yellow-500/30 rounded-full blur-xl animate-pulse" style={{animationDelay: '1s'}}></div>
+                 </div>
+            </div>
+
              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2">
                     <RevenueChart data={companyRevenue ? companyRevenue.map((c:any) => ({ day: c.name, revenue: c.revenue })) : []} title={t('admin_revenue_by_company')} />

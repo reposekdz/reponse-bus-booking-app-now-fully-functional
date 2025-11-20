@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect } from 'react';
 import { toCanvas } from 'qrcode';
 import { XIcon, BusIcon } from './icons';
@@ -8,16 +9,14 @@ const RealQRCode: React.FC<{ ticketData: any; size: number }> = ({ ticketData, s
 
   useEffect(() => {
     if (canvasRef.current && ticketData) {
-      // Create a structured object for the QR code payload for better scanner compatibility
-      const qrDataPayload = {
+      const qrDataString = JSON.stringify({
         bookingId: ticketData.id,
         passenger: ticketData.passenger,
-        route: `${ticketData.from}-${ticketData.to}`,
-        datetime: `${ticketData.date}T${ticketData.time}`,
+        route: `${ticketData.from} to ${ticketData.to}`,
+        datetime: `${ticketData.date} at ${ticketData.time}`,
         seats: ticketData.seats,
         busPlate: ticketData.busPlate,
-      };
-      const qrDataString = JSON.stringify(qrDataPayload);
+      });
 
       toCanvas(canvasRef.current, qrDataString, {
         width: size,
@@ -26,7 +25,7 @@ const RealQRCode: React.FC<{ ticketData: any; size: number }> = ({ ticketData, s
           dark: '#002B7F', // GoBus dark blue
           light: '#FFFFFFFF',
         },
-        errorCorrectionLevel: 'H',
+        errorCorrectionLevel: 'H', // High error correction
       }, (error) => {
         if (error) console.error('QR Code generation failed:', error);
       });

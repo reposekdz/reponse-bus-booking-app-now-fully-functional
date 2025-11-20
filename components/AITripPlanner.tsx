@@ -26,6 +26,7 @@ const AITripPlanner: React.FC<AITripPlannerProps> = ({ onClose, onPlanTrip }) =>
     setGroundingMetadata(null);
 
     try {
+      // The apiKey must be set in VITE_GOOGLE_API_KEY or process.env.API_KEY
       const ai = new GoogleGenAI({ apiKey: process.env.VITE_GOOGLE_API_KEY || process.env.API_KEY as string });
       
       const systemInstruction = `You are an expert travel itinerary planner for GoBus in Rwanda.
@@ -33,7 +34,8 @@ const AITripPlanner: React.FC<AITripPlannerProps> = ({ onClose, onPlanTrip }) =>
       - Infer departure and destination cities from landmarks (e.g., 'gorillas' -> Musanze/Kinigi).
       - Suggest a specific route available on GoBus (Kigali, Musanze, Rubavu, Huye, Rusizi, Nyagatare, Muhanga).
       - Return a JSON object with a list of suggestions.
-      - Each suggestion must include: justification, departure {from, to}, return (optional) {from, to}, and estimatedDuration (string from Maps).`;
+      - Each suggestion must include: justification, departure {from, to}, return (optional) {from, to}, and estimatedDuration (string from Maps).
+      - Also extract any relevant map links or place details if possible.`;
 
       // Use gemini-2.5-flash with googleMaps tool for grounding
       const response = await ai.models.generateContent({
@@ -119,7 +121,7 @@ const AITripPlanner: React.FC<AITripPlannerProps> = ({ onClose, onPlanTrip }) =>
           {!tripSuggestions ? (
             <>
                 <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm">
-                    Describe your ideal trip (e.g., "Weekend trip to Lake Kivu"). We use Google Maps to find the best routes.
+                    Describe your ideal trip (e.g., "Weekend trip to Lake Kivu"). We use Google Maps Grounding to find the best routes.
                 </p>
                 <textarea
                     value={prompt}

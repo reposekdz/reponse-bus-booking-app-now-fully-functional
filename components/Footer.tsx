@@ -38,8 +38,8 @@ const Footer: React.FC = () => {
 
   return (
     <footer className="bg-[#1e1e24] text-white relative overflow-hidden">
-      {/* Premium Top Border Gradient (Rwanda Colors) */}
-      <div className="h-1.5 w-full bg-gradient-to-r from-[#00A3E0] via-[#FCE300] to-[#20603D]"></div>
+      {/* Premium Top Border Gradient (Rwanda Colors: Blue, Yellow, Green) */}
+      <div className="h-2 w-full bg-gradient-to-r from-[#00A3E0] via-[#FCE300] to-[#20603D]"></div>
 
       {/* Decorative Background Element */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#00A3E0]/5 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/2"></div>

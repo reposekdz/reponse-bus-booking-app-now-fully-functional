@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { HomeIcon, TicketIcon, BuildingOfficeIcon, UserCircleIcon } from './icons';
 import { Page } from '../types';

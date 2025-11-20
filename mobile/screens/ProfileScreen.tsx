@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -18,7 +19,7 @@ export default function ProfileScreen({ navigation }) {
 
     return (
         <SafeAreaView style={styles.container}>
-            <ScrollView>
+            <ScrollView showsVerticalScrollIndicator={false}>
                 <View style={styles.header}>
                     <Image source={{ uri: user?.avatar_url }} style={styles.avatar} />
                     <Text style={styles.name}>{user?.name}</Text>
@@ -27,6 +28,19 @@ export default function ProfileScreen({ navigation }) {
                         <Text style={styles.pointsIcon}>✨</Text>
                         <Text style={styles.points}>{new Intl.NumberFormat().format(user?.loyalty_points || 0)} GoPoints</Text>
                     </View>
+                </View>
+
+                {/* Visual Spending Chart Placeholder */}
+                <View style={styles.chartCard}>
+                    <Text style={styles.chartTitle}>Spending Analysis (This Month)</Text>
+                    <View style={styles.chartContainer}>
+                        <View style={[styles.bar, { height: '40%' }]} />
+                        <View style={[styles.bar, { height: '70%' }]} />
+                        <View style={[styles.bar, { height: '50%', backgroundColor: '#FBBF24' }]} />
+                        <View style={[styles.bar, { height: '80%' }]} />
+                        <View style={[styles.bar, { height: '60%' }]} />
+                    </View>
+                    <Text style={styles.chartSub}>You spent 15% less than last month.</Text>
                 </View>
                 
                 <View style={styles.menu}>
@@ -86,8 +100,22 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#92400E'
     },
+    chartCard: {
+        margin: 16,
+        backgroundColor: 'white',
+        padding: 16,
+        borderRadius: 12,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 4,
+        elevation: 2,
+    },
+    chartTitle: { fontWeight: 'bold', marginBottom: 12, color: '#374151' },
+    chartContainer: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-around', height: 100, marginBottom: 8 },
+    bar: { width: 20, backgroundColor: '#E5E7EB', borderRadius: 4 },
+    chartSub: { fontSize: 12, color: '#10B981', textAlign: 'center' },
     menu: {
-        marginTop: 24,
         backgroundColor: 'white',
     },
     option: {
@@ -115,6 +143,7 @@ const styles = StyleSheet.create({
         padding: 16,
         borderRadius: 8,
         alignItems: 'center',
+        marginBottom: 40,
     },
     logoutButtonText: {
         color: '#DC2626',
