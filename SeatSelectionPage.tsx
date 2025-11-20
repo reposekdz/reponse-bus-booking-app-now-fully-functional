@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { ArrowLeftIcon, ArrowRightIcon } from './components/icons';
+import { ArrowLeftIcon, ArrowRightIcon, UsersIcon } from './components/icons';
 import * as api from './services/apiService';
 import { useAuth } from './contexts/AuthContext';
 
@@ -47,6 +48,25 @@ const generateSeatGrid = (seatMap: { [key: string]: string }, capacity: number) 
     grid.push(row); // push the last row
     return grid;
 }
+
+const PassengerCounter: React.FC<{ count: number }> = ({ count }) => (
+    <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 flex items-center justify-between transition-all duration-300 animate-fade-in">
+        <div className="flex items-center space-x-3">
+            <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
+                <UsersIcon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            </div>
+            <div>
+                <p className="text-sm font-bold text-gray-700 dark:text-gray-200">Passengers</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{count === 0 ? 'Select seats' : `${count} Seat${count > 1 ? 's' : ''} Selected`}</p>
+            </div>
+        </div>
+        <div className="flex flex-col items-center">
+             <div className="text-4xl font-extrabold text-blue-600 dark:text-blue-400 tabular-nums">
+                {count}
+             </div>
+        </div>
+    </div>
+);
 
 interface SeatSelectionPageProps {
   tripId: string;
@@ -139,20 +159,23 @@ const SeatSelectionPage: React.FC<SeatSelectionPageProps> = ({ tripId, onConfirm
                     </div>
                 </div>
                 <div className="lg:col-span-1">
-                     <div className="sticky top-24 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg">
-                         <h2 className="text-xl font-bold dark:text-white mb-4">Trip Summary</h2>
-                         <div className="space-y-3 pb-4">
-                             <p className="dark:text-gray-300"><strong>Company:</strong> {trip.route.company.name}</p>
-                             <p className="dark:text-gray-300"><strong>Seats:</strong> {selectedSeats.length > 0 ? selectedSeats.join(', ') : 'None'}</p>
-                             <p className="dark:text-gray-300"><strong>Price per seat:</strong> {new Intl.NumberFormat('fr-RW').format(trip.route.basePrice)} RWF</p>
-                         </div>
-                         <div className="mt-4 border-t dark:border-gray-700 pt-4">
-                             <p className="text-lg font-bold dark:text-gray-200">Total Price:</p>
-                             <p className="text-3xl font-extrabold text-green-600 dark:text-green-400">{new Intl.NumberFormat('fr-RW').format(totalPrice)} RWF</p>
-                         </div>
-                         <button onClick={handleConfirmClick} disabled={selectedSeats.length === 0} className="mt-6 w-full flex items-center justify-center px-6 py-3 rounded-lg bg-gradient-to-r from-yellow-400 to-yellow-500 text-[#0033A0] font-bold hover:saturate-150 transition-all duration-300 shadow-md disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-0.5">
-                            Proceed to Payment <ArrowRightIcon className="w-5 h-5 ml-2" />
-                        </button>
+                     <div className="sticky top-24 space-y-6">
+                         <PassengerCounter count={selectedSeats.length} />
+                         <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg">
+                             <h2 className="text-xl font-bold dark:text-white mb-4">Trip Summary</h2>
+                             <div className="space-y-3 pb-4">
+                                 <p className="dark:text-gray-300"><strong>Company:</strong> {trip.route.company.name}</p>
+                                 <p className="dark:text-gray-300"><strong>Seats:</strong> {selectedSeats.length > 0 ? selectedSeats.join(', ') : 'None'}</p>
+                                 <p className="dark:text-gray-300"><strong>Price per seat:</strong> {new Intl.NumberFormat('fr-RW').format(trip.route.basePrice)} RWF</p>
+                             </div>
+                             <div className="mt-4 border-t dark:border-gray-700 pt-4">
+                                 <p className="text-lg font-bold dark:text-gray-200">Total Price:</p>
+                                 <p className="text-3xl font-extrabold text-green-600 dark:text-green-400">{new Intl.NumberFormat('fr-RW').format(totalPrice)} RWF</p>
+                             </div>
+                             <button onClick={handleConfirmClick} disabled={selectedSeats.length === 0} className="mt-6 w-full flex items-center justify-center px-6 py-3 rounded-lg bg-gradient-to-r from-yellow-400 to-yellow-500 text-[#0033A0] font-bold hover:saturate-150 transition-all duration-300 shadow-md disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-0.5">
+                                Proceed to Payment <ArrowRightIcon className="w-5 h-5 ml-2" />
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
