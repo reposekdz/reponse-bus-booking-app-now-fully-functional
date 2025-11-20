@@ -1,7 +1,9 @@
+
 import { pool } from '../../config/db';
 import { AppError } from '../../utils/AppError';
 import * as mysql from 'mysql2/promise';
 import bcrypt from 'bcryptjs';
+import { dispatchNotification } from '../notifications/notifications.service';
 
 export const getAllCompanies = async () => {
     const [rows] = await pool.query("SELECT id, name, logo_url, description, cover_url FROM companies WHERE status = 'Active'");
@@ -120,17 +122,18 @@ export const getDriversByCompany = async (companyId: number) => {
     }
     const [rows] = await pool.query(`
         SELECT 
-            u.id, u.name, u.email, u.phone_number, u.status, u.avatar_url, u.assigned_bus_id,
+            u.id, u.name, u.email, u.phone_number, u.status, u.avatar_url, u.assigned_bus_id, b.plate_number as assignedBusId,
             c.name as company_name
         FROM users u
         LEFT JOIN companies c ON u.company_id = c.id
+        LEFT JOIN buses b ON u.assigned_bus_id = b.id
         WHERE u.role = 'driver' AND u.company_id = ?
     `, [companyId]);
     return rows;
 };
 
 export const createDriver = async (driverData: any, companyId: number) => {
-    const { name, email, password, phone } = driverData;
+    const { name, email, password, phone, assignedBusId } = driverData;
     
     const [existing] = await pool.query('SELECT id FROM users WHERE email = ?', [email]);
     if ((existing as any[]).length > 0) {
@@ -139,8 +142,8 @@ export const createDriver = async (driverData: any, companyId: number) => {
 
     const password_hash = await bcrypt.hash(password, 10);
     const [result] = await pool.query<mysql.ResultSetHeader>(
-        'INSERT INTO users (name, email, password_hash, phone_number, role, company_id, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
-        [name, email, password_hash, phone, 'driver', companyId, 'Active']
+        'INSERT INTO users (name, email, password_hash, phone_number, role, company_id, status, assigned_bus_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        [name, email, password_hash, phone, 'driver', companyId, 'Active', assignedBusId || null]
     );
     
     const [rows] = await pool.query('SELECT * FROM users WHERE id = ?', [result.insertId]);
@@ -150,10 +153,10 @@ export const createDriver = async (driverData: any, companyId: number) => {
 };
 
 export const updateDriver = async (driverId: string, updateData: any, companyId: number) => {
-    const { name, phone, status } = updateData;
+    const { name, phone, status, assignedBusId } = updateData;
     const [result] = await pool.query<mysql.OkPacket>(
-        'UPDATE users SET name = ?, phone_number = ?, status = ? WHERE id = ? AND company_id = ? AND role = "driver"',
-        [name, phone, status, driverId, companyId]
+        'UPDATE users SET name = ?, phone_number = ?, status = ?, assigned_bus_id = ? WHERE id = ? AND company_id = ? AND role = "driver"',
+        [name, phone, status, assignedBusId || null, driverId, companyId]
     );
 
     if (result.affectedRows === 0) {
@@ -252,6 +255,44 @@ export const updateRouteForCompany = async (routeId: string, routeData: any, com
 export const deleteRouteForCompany = async (routeId: string, companyId: number) => {
     const [result] = await pool.query<mysql.OkPacket>('DELETE FROM routes WHERE id = ? AND company_id = ?', [routeId, companyId]);
     if (result.affectedRows === 0) throw new AppError('Route not found or permission denied', 404);
+};
+
+// --- Trip Scheduling / Driver Assignment ---
+export const createTripForCompany = async (tripData: any, companyId: number) => {
+    const { routeId, busId, driverId, departureTime } = tripData;
+    
+    // Calculate arrival time based on route duration
+    const [routeRows] = await pool.query<any[] & mysql.RowDataPacket[]>('SELECT estimated_duration_minutes, origin, destination FROM routes WHERE id = ? AND company_id = ?', [routeId, companyId]);
+    if (routeRows.length === 0) throw new AppError('Invalid route or permission denied', 403);
+    
+    const route = routeRows[0];
+    const durationMins = route.estimated_duration_minutes;
+    const depTime = new Date(departureTime);
+    const arrTime = new Date(depTime.getTime() + durationMins * 60000);
+    
+    // Verify Driver & Bus ownership
+    await checkDriverOwnership(driverId, companyId);
+    const [busCheck] = await pool.query<any[] & mysql.RowDataPacket[]>('SELECT id FROM buses WHERE id = ? AND company_id = ?', [busId, companyId]);
+    if(busCheck.length === 0) throw new AppError('Invalid bus or permission denied', 403);
+
+    const [result] = await pool.query<mysql.ResultSetHeader>(
+        'INSERT INTO trips (route_id, bus_id, driver_id, departure_time, arrival_time, status) VALUES (?, ?, ?, ?, ?, ?)',
+        [routeId, busId, driverId, departureTime, arrTime, 'Scheduled']
+    );
+
+    // NOTIFY DRIVER via SMS/Email
+    const msgBody = `New Trip Assigned: ${route.origin} to ${route.destination}. Departure: ${depTime.toLocaleString()}. Bus #${busId}. Check your dashboard.`;
+    
+    await dispatchNotification(driverId, 'sms', {
+        title: 'GoBus Assignment',
+        body: msgBody
+    });
+     await dispatchNotification(driverId, 'email', {
+        title: 'New Trip Assigned',
+        body: `Hello,<br><br>${msgBody}<br><br>Drive safely!`
+    });
+
+    return { id: result.insertId, ...tripData };
 };
 
 // --- Passenger & Financials ---

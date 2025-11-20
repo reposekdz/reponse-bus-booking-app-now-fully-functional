@@ -70,6 +70,8 @@ export const confirmBoarding = async (tripId: string, ticketId: string) => {
 };
 export const departTrip = (tripId: string) => apiFetch(`/trips/${tripId}/depart`, { method: 'POST' });
 export const arriveTrip = (tripId: string) => apiFetch(`/trips/${tripId}/arrive`, { method: 'POST' });
+export const updateTripStatus = (tripId: string, status: string) => apiFetch(`/trips/${tripId}/status`, { method: 'PATCH', body: JSON.stringify({ status }) });
+
 
 // --- BOOKINGS ---
 export const createBooking = async (bookingData: any) => {
@@ -216,6 +218,8 @@ export const companyGetMyRoutes = async () => {
 export const companyCreateRoute = (routeData: any) => apiFetch('/companies/myroutes', { method: 'POST', body: JSON.stringify(routeData) });
 export const companyUpdateRoute = (id: string, routeData: any) => apiFetch(`/companies/myroutes/${id}`, { method: 'PUT', body: JSON.stringify(routeData) });
 export const companyDeleteRoute = (id: string) => apiFetch(`/companies/myroutes/${id}`, { method: 'DELETE' });
+
+export const companyCreateTrip = (tripData: any) => apiFetch('/companies/mytrips', { method: 'POST', body: JSON.stringify(tripData) });
 
 export const companyGetMyPassengers = async () => {
     const { data } = await apiFetch('/companies/mypassengers');

@@ -81,7 +81,7 @@ export const createBooking = async (userId: number, details: BookingDetails) => 
 
         await connection.commit();
 
-        // NOTIFICATIONS
+        // --- SEND NOTIFICATIONS ---
         const formattedDate = new Date(trip.departure_time).toLocaleString();
         const seatsStr = seats.join(', ');
         
@@ -195,7 +195,7 @@ export const updateBookingStatus = async (bookingId: string, newStatus: string, 
         await connection.query('UPDATE bookings SET status = ? WHERE id = ?', [newStatus, bookingId]);
         await connection.commit();
         
-        // Notify User about status change via Email
+        // Notify User
         notificationService.dispatchNotification(booking.user_id, 'email', {
             title: `Booking Status Update: ${newStatus}`,
             body: `Your booking #${bookingId} status has been updated to: <strong>${newStatus}</strong>. ${newStatus === 'Cancelled' ? 'A refund has been processed to your wallet.' : ''}`

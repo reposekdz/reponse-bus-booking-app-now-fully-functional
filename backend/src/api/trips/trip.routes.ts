@@ -1,5 +1,6 @@
+
 import { Router } from 'express';
-import { searchTrips, getTripById, confirmBoarding, getTripManifest, departTrip, arriveTrip } from './trip.controller';
+import { searchTrips, getTripById, confirmBoarding, getTripManifest, departTrip, arriveTrip, updateTripStatus } from './trip.controller';
 import { protect, authorize } from '../../middleware/auth.middleware';
 
 
@@ -14,6 +15,12 @@ router.get('/search', searchTrips);
 // @desc    Get a single trip by its ID
 // @access  Public
 router.get('/:id', getTripById);
+
+
+// @route   PATCH /api/v1/trips/:id/status
+// @desc    Update trip status (e.g. Delayed, Cancelled) - triggers notifications
+// @access  Private (Company/Admin)
+router.patch('/:id/status', protect, authorize('company', 'admin'), updateTripStatus);
 
 // --- DRIVER ACCESSIBLE ROUTES ---
 router.use(protect, authorize('driver'));

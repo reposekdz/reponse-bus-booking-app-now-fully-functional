@@ -1,14 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
-import { MapIcon, SearchIcon, PlusIcon, PencilSquareIcon, TrashIcon } from '../components/icons';
+import { MapIcon, SearchIcon, PlusIcon, PencilSquareIcon, TrashIcon, CalendarIcon } from '../components/icons';
 import Modal from '../components/Modal';
 import ConfirmationModal from '../components/ConfirmationModal';
 import * as api from '../services/apiService';
 import LoadingSpinner from '../components/LoadingSpinner';
-import SearchableSelect from '../components/SearchableSelect'; // Re-using the advanced select
+import SearchableSelect from '../components/SearchableSelect'; 
 import { rwandaAllStations } from '../lib/stations';
 
-// Get all location names for the dropdowns
 const allLocations = [...new Set(rwandaAllStations.map(s => s.name))].sort();
 
 const RouteForm = ({ route, onSave, onCancel }) => {
@@ -16,7 +15,7 @@ const RouteForm = ({ route, onSave, onCancel }) => {
         from: route?.from || '',
         to: route?.to || '',
         price: route?.price || 0,
-        duration: route?.duration ? (route.duration / 60).toFixed(2) : '', // convert minutes to hours
+        duration: route?.duration ? (route.duration / 60).toFixed(2) : '', 
         status: route?.status || 'Active',
     });
 
@@ -34,7 +33,6 @@ const RouteForm = ({ route, onSave, onCancel }) => {
         onSave(formData);
     };
 
-    // Minimal wrapper for SearchableSelect to match the styling expected in the form
     const LocationSelect = ({ value, onChange, placeholder }) => (
         <div className="text-black dark:text-white">
             <SearchableSelect 
@@ -84,14 +82,69 @@ const RouteForm = ({ route, onSave, onCancel }) => {
 };
 
 
+const ScheduleTripForm = ({ route, onSave, onCancel, buses, drivers }) => {
+    const [formData, setFormData] = useState({
+        routeId: route.id,
+        busId: '',
+        driverId: '',
+        departureTime: '',
+    });
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        onSave(formData);
+    };
+
+    return (
+        <form onSubmit={handleSubmit} className="space-y-4">
+            <p className="text-sm font-medium dark:text-gray-300">Scheduling Trip for: <b>{route.from} - {route.to}</b></p>
+            <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Departure Time</label>
+                <input type="datetime-local" name="departureTime" value={formData.departureTime} onChange={handleChange} className="mt-1 w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" required />
+            </div>
+            <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Select Bus</label>
+                <select name="busId" value={formData.busId} onChange={handleChange} className="mt-1 w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" required>
+                    <option value="">-- Choose Bus --</option>
+                    {buses.map(bus => (
+                        <option key={bus.id} value={bus.id}>{bus.plate_number} ({bus.model})</option>
+                    ))}
+                </select>
+            </div>
+            <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Assign Driver</label>
+                <select name="driverId" value={formData.driverId} onChange={handleChange} className="mt-1 w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" required>
+                    <option value="">-- Choose Driver --</option>
+                    {drivers.map(driver => (
+                        <option key={driver.id} value={driver.id}>{driver.name}</option>
+                    ))}
+                </select>
+            </div>
+            <div className="flex justify-end space-x-3 pt-4">
+                <button type="button" onClick={onCancel} className="px-4 py-2 text-sm font-semibold border rounded-lg dark:border-gray-600">Cancel</button>
+                <button type="submit" className="px-4 py-2 text-sm font-semibold bg-green-600 text-white rounded-lg hover:bg-green-700">Schedule Trip</button>
+            </div>
+        </form>
+    );
+}
+
+
 interface CompanyRoutesProps {
     companyId: string;
 }
 
 const CompanyRoutes: React.FC<CompanyRoutesProps> = ({ companyId }) => {
     const [routes, setRoutes] = useState([]);
+    const [buses, setBuses] = useState([]);
+    const [drivers, setDrivers] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
     const [currentRoute, setCurrentRoute] = useState<any | null>(null);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
     const [itemToDelete, setItemToDelete] = useState<string | null>(null);
@@ -110,8 +163,22 @@ const CompanyRoutes: React.FC<CompanyRoutesProps> = ({ companyId }) => {
         }
     };
     
+    const fetchResources = async () => {
+        try {
+            const [busesData, driversData] = await Promise.all([
+                api.companyGetMyBuses(),
+                api.companyGetMyDrivers()
+            ]);
+            setBuses(busesData.filter(b => b.status === 'Operational')); // Only operational buses
+            setDrivers(driversData.filter(d => d.status === 'Active')); // Only active drivers
+        } catch (e) {
+            console.error("Failed to load fleet resources", e);
+        }
+    }
+
     useEffect(() => {
         fetchRoutes();
+        fetchResources();
     }, []);
 
 
@@ -119,6 +186,11 @@ const CompanyRoutes: React.FC<CompanyRoutesProps> = ({ companyId }) => {
         setCurrentRoute(route);
         setIsModalOpen(true);
     };
+    
+    const openScheduleModal = (route) => {
+        setCurrentRoute(route);
+        setIsScheduleModalOpen(true);
+    }
 
     const handleSave = async (routeData: any) => {
         setIsModalOpen(false);
@@ -136,6 +208,19 @@ const CompanyRoutes: React.FC<CompanyRoutesProps> = ({ companyId }) => {
             setIsLoading(false);
         }
     };
+    
+    const handleScheduleTrip = async (tripData) => {
+        setIsScheduleModalOpen(false);
+        setIsLoading(true);
+        try {
+            await api.companyCreateTrip(tripData);
+            alert('Trip scheduled successfully! Driver has been notified.');
+        } catch (e: any) {
+            alert(`Failed to schedule trip: ${e.message}`);
+        } finally {
+            setIsLoading(false);
+        }
+    }
 
      const handleDeleteClick = (id: string) => {
         setItemToDelete(id);
@@ -204,8 +289,9 @@ const CompanyRoutes: React.FC<CompanyRoutesProps> = ({ companyId }) => {
                                         </span>
                                     </td>
                                     <td className="flex space-x-2 p-3">
-                                        <button onClick={() => openModal(route)} className="p-1 text-gray-500 hover:text-blue-600"><PencilSquareIcon className="w-5 h-5"/></button>
-                                        <button onClick={() => handleDeleteClick(route.id)} className="p-1 text-gray-500 hover:text-red-600"><TrashIcon className="w-5 h-5"/></button>
+                                        <button onClick={() => openScheduleModal(route)} className="p-1 text-gray-500 hover:text-green-600" title="Schedule Trip"><CalendarIcon className="w-5 h-5"/></button>
+                                        <button onClick={() => openModal(route)} className="p-1 text-gray-500 hover:text-blue-600" title="Edit"><PencilSquareIcon className="w-5 h-5"/></button>
+                                        <button onClick={() => handleDeleteClick(route.id)} className="p-1 text-gray-500 hover:text-red-600" title="Delete"><TrashIcon className="w-5 h-5"/></button>
                                     </td>
                                 </tr>
                             ))}
@@ -217,6 +303,11 @@ const CompanyRoutes: React.FC<CompanyRoutesProps> = ({ companyId }) => {
             <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={currentRoute ? "Edit Route" : "Add New Route"}>
                 <RouteForm route={currentRoute} onSave={handleSave} onCancel={() => setIsModalOpen(false)} />
             </Modal>
+            
+             <Modal isOpen={isScheduleModalOpen} onClose={() => setIsScheduleModalOpen(false)} title="Schedule New Trip">
+                <ScheduleTripForm route={currentRoute} buses={buses} drivers={drivers} onSave={handleScheduleTrip} onCancel={() => setIsScheduleModalOpen(false)} />
+            </Modal>
+
              <ConfirmationModal
                 isOpen={isConfirmModalOpen}
                 onClose={() => setIsConfirmModalOpen(false)}

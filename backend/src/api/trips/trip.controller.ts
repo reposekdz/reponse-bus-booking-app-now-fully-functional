@@ -58,3 +58,9 @@ export const arriveTrip = asyncHandler(async (req, res) => {
     await tripService.arriveTrip(req.params.tripId, req.user.id);
     res.status(200).json({ success: true, message: 'Trip arrived.' });
 });
+
+export const updateTripStatus = asyncHandler(async (req, res) => {
+    const { status } = req.body;
+    const updatedTrip = await tripService.updateTripStatus(req.params.id, status, req.user);
+    res.status(200).json({ success: true, data: updatedTrip });
+});

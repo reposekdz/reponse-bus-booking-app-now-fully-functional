@@ -24,6 +24,10 @@ export const initiateMomoPayment = async (userId: number, phone: string, booking
     );
 
     // 3. --- MOCK MTN API INTERACTION ---
+    // In a real implementation, we would use the keys from config.mtn.collections
+    // const mtnConfig = config.mtn.collections;
+    // logger.info(`Using MTN Primary Key: ${mtnConfig.primaryKey ? '******' : 'Not Set'}`);
+
     // Simulate waiting for the user to enter their PIN on their phone by calling our own callback endpoint after a delay.
     setTimeout(() => {
         const isSuccessful = Math.random() > 0.1; // 90% success rate for demo

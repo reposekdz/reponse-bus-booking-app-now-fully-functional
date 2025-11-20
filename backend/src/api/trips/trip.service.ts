@@ -222,10 +222,18 @@ export const confirmPassengerBoarding = async (data: BoardingData) => {
         newStatus: 'Completed',
     });
 
-    const notificationMessage = `Welcome, ${booking.passenger_name}! You have successfully boarded the bus for ${trip.origin} to ${trip.destination}.`;
+    const notificationMessage = `Welcome aboard, ${booking.passenger_name}! Trip to ${trip.destination} confirmed.`;
+    
+    // Real-time push via socket
     io.to(booking.passenger_id.toString()).emit('passengerBoarded', {
         message: notificationMessage,
         route: `${trip.origin} to ${trip.destination}`
+    });
+
+    // Optional: Send SMS welcome
+    dispatchNotification(booking.passenger_id, 'sms', {
+        title: 'Boarding Confirmed',
+        body: notificationMessage
     });
 
     return {
@@ -271,28 +279,44 @@ export const arriveTrip = async (tripId: string, driverId: number) => {
     await pool.query('UPDATE trips SET status = "Arrived" WHERE id = ?', [tripId]);
 };
 
-// New: Logic to update trip status (e.g. Delayed) and notify passengers
-export const updateTripStatus = async (tripId: number, newStatus: string) => {
+// Update trip status (e.g., Delayed, Cancelled) and notify passengers
+export const updateTripStatus = async (tripId: string, newStatus: string, user: any) => {
+     // Verify ownership if user is a company
+     if (user.role === 'company') {
+         const [rows] = await pool.query<any[] & mysql.RowDataPacket[]>('SELECT r.company_id FROM trips t JOIN routes r ON t.route_id = r.id WHERE t.id = ?', [tripId]);
+         if(rows.length === 0 || rows[0].company_id !== user.companyId) {
+             throw new AppError('Unauthorized access to trip.', 403);
+         }
+     }
+
     await pool.query('UPDATE trips SET status = ? WHERE id = ?', [newStatus, tripId]);
-    
-    if (newStatus === 'Delayed') {
-        // Notify all booked passengers
+
+    if (['Delayed', 'Cancelled'].includes(newStatus)) {
+        // Notify Passengers
         const [bookings] = await pool.query<any[] & mysql.RowDataPacket[]>(`
-            SELECT u.id, u.email, u.phone_number 
+            SELECT u.id, u.email, u.phone_number, u.name
             FROM bookings b 
             JOIN users u ON b.user_id = u.id 
-            WHERE b.trip_id = ?
+            WHERE b.trip_id = ? AND b.status = 'Confirmed'
         `, [tripId]);
 
-        bookings.forEach(user => {
-            dispatchNotification(user.id, 'sms', {
-                title: 'Trip Delayed',
-                body: `Important: Your trip #${tripId} has been delayed. We apologize for the inconvenience.`
+        const messageMap: any = {
+            'Delayed': 'is delayed. We apologize for the inconvenience and will update you shortly.',
+            'Cancelled': 'has been cancelled. A refund has been automatically processed to your wallet.'
+        };
+
+        // Batch notifications
+        for(const passenger of bookings) {
+            await dispatchNotification(passenger.id, 'sms', {
+                title: `Trip ${newStatus}`,
+                body: `Hello ${passenger.name}, your trip #${tripId} ${messageMap[newStatus]}`
             });
-            dispatchNotification(user.id, 'email', {
-                title: 'Important Update: Trip Delay',
-                body: `Your upcoming trip #${tripId} has been marked as delayed. Please check the app for the latest schedule.`
+             await dispatchNotification(passenger.id, 'email', {
+                title: `Important: Trip ${newStatus} Alert`,
+                body: `Hello <b>${passenger.name}</b>,<br><br>Your trip #${tripId} ${messageMap[newStatus]}<br>Please check the app for more details or contact support if you have questions.`
             });
-        });
+        }
     }
+    
+    return { id: tripId, status: newStatus };
 };

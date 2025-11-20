@@ -1,3 +1,4 @@
+
 import { Router } from 'express';
 import { 
     getCompanies, getCompanyById, getMyDrivers, createDriverForMyCompany, updateDriverForMyCompany, 
@@ -7,7 +8,8 @@ import {
     getMyBuses, createBus, updateBus, deleteBus,
     getMyRoutes, createRoute, updateRoute, deleteRoute,
     getMyPassengers,
-    getMyFinancials
+    getMyFinancials,
+    createTrip
 } from './company.controller';
 import { protect, authorize } from '../../middleware/auth.middleware';
 
@@ -56,6 +58,9 @@ router.route('/myroutes')
 router.route('/myroutes/:id')
     .put(updateRoute)
     .delete(deleteRoute);
+
+// Trip Scheduling (Triggers driver notification)
+router.post('/mytrips', createTrip);
     
 // Passenger & Financials
 router.get('/mypassengers', getMyPassengers);

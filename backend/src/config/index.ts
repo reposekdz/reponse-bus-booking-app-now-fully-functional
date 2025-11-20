@@ -17,6 +17,16 @@ const config = {
     vapid: {
         publicKey: process.env.VAPID_PUBLIC_KEY,
         privateKey: process.env.VAPID_PRIVATE_KEY,
+    },
+    mtn: {
+        collections: {
+            primaryKey: process.env.MTN_COLLECTIONS_PRIMARY_KEY,
+            secondaryKey: process.env.MTN_COLLECTIONS_SECONDARY_KEY,
+        },
+        disbursements: {
+            primaryKey: process.env.MTN_DISBURSEMENTS_PRIMARY_KEY,
+            secondaryKey: process.env.MTN_DISBURSEMENTS_SECONDARY_KEY,
+        }
     }
 };
 

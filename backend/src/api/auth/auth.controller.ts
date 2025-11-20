@@ -28,8 +28,8 @@ export const updatePassword = asyncHandler(async (req, res) => {
 export const forgotPassword = asyncHandler(async (req, res) => {
     const { email } = req.body;
     const token = await authService.forgotPassword(email);
-    // In a real app, we don't return the token directly, but since this is a demo environment 
-    // and email delivery is mocked, we return it for testing.
+    // In a real app, we don't return the token directly in response, only via email.
+    // Returned here purely for demonstration ease in this environment.
     res.status(200).json({ success: true, message: 'Reset link sent to email.', debugToken: token });
 });
 

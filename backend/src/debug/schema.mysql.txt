@@ -60,7 +60,7 @@ CREATE TABLE `users` (
     `pin` VARCHAR(255),
     `serial_code` VARCHAR(20) UNIQUE,
     `location` VARCHAR(255),
-    `commission_rate` DECIMAL(5, 4) DEFAULT 0.05,
+    `commission_rate` DECIMAL(5, 4) DEFAULT 0.012,
     `loyalty_points` INT DEFAULT 0,
     `assigned_bus_id` INT,
     `reset_token` VARCHAR(255),
@@ -125,7 +125,7 @@ CREATE TABLE `bookings` (
     `booking_id` VARCHAR(20) UNIQUE NOT NULL,
     `total_price` DECIMAL(10, 2) NOT NULL,
     `payment_method` VARCHAR(50) NOT NULL,
-    `status` VARCHAR(50) DEFAULT 'confirmed' CHECK (`status` IN ('Confirmed', 'Cancelled', 'Completed', 'Pending')),
+    `status` VARCHAR(50) DEFAULT 'Confirmed' CHECK (`status` IN ('Confirmed', 'Cancelled', 'Completed', 'Pending')),
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
@@ -165,7 +165,7 @@ CREATE TABLE `wallet_transactions` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `wallet_id` INT NOT NULL,
     `amount` DECIMAL(10, 2) NOT NULL,
-    `type` VARCHAR(50) CHECK (`type` IN ('deposit', 'purchase', 'refund', 'bonus', 'commission', 'transfer_in', 'transfer_out')),
+    `type` VARCHAR(50) CHECK (`type` IN ('deposit', 'purchase', 'refund', 'bonus', 'commission', 'transfer_in', 'transfer_out', 'fee')),
     `description` TEXT,
     `related_booking_id` INT,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -345,19 +345,17 @@ CREATE TABLE `pending_payments` (
     FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
 );
 
--- New table for System Notifications (Email/SMS) log
 CREATE TABLE `system_notifications` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `user_id` INT NOT NULL,
-    `type` VARCHAR(20) NOT NULL CHECK (`type` IN ('email', 'sms', 'system')),
-    `recipient` VARCHAR(255) NOT NULL,
+    `type` VARCHAR(20) NOT NULL CHECK (`type` IN ('email', 'sms', 'push', 'system')),
+    `recipient` VARCHAR(255),
     `subject` VARCHAR(255),
     `content` TEXT NOT NULL,
     `status` VARCHAR(20) DEFAULT 'Sent',
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
 );
-
 
 CREATE INDEX `idx_trips_departure_time` ON `trips`(`departure_time`);
 CREATE INDEX `idx_bookings_user_id` ON `bookings`(`user_id`);

@@ -8,13 +8,14 @@ import { Page } from '../types';
 import ConfirmationModal from '../components/ConfirmationModal';
 
 
-const DriverForm = ({ driver, onSave, onCancel }) => {
+const DriverForm = ({ driver, onSave, onCancel, availableBuses }) => {
     const [formData, setFormData] = useState({
         name: driver?.name || '',
         email: driver?.email || '',
         phone: driver?.phone || '',
         password: '',
         status: driver?.status || 'Active',
+        assignedBusId: driver?.assigned_bus_id || '',
     });
     const isEditing = !!driver;
 
@@ -48,6 +49,15 @@ const DriverForm = ({ driver, onSave, onCancel }) => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Phone Number</label>
                 <input type="tel" name="phone" value={formData.phone} onChange={handleChange} className="mt-1 w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" required />
             </div>
+            <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Assigned Bus (Optional)</label>
+                <select name="assignedBusId" value={formData.assignedBusId} onChange={handleChange} className="mt-1 w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600">
+                    <option value="">-- Select Bus --</option>
+                    {availableBuses.map(bus => (
+                        <option key={bus.id} value={bus.id}>{bus.plate_number} ({bus.model})</option>
+                    ))}
+                </select>
+            </div>
              <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
                 <select name="status" value={formData.status} onChange={handleChange} className="mt-1 w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600">
@@ -72,6 +82,7 @@ interface CompanyDriversProps {
 
 const CompanyDrivers: React.FC<CompanyDriversProps> = ({ companyId, navigate }) => {
     const [drivers, setDrivers] = useState([]);
+    const [buses, setBuses] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentDriver, setCurrentDriver] = useState<any | null>(null);
@@ -80,20 +91,24 @@ const CompanyDrivers: React.FC<CompanyDriversProps> = ({ companyId, navigate }) 
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
     const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 
-    const fetchDrivers = async () => {
+    const fetchData = async () => {
         setIsLoading(true);
         try {
-            const data = await api.companyGetMyDrivers();
-            setDrivers(data);
+            const [driversData, busesData] = await Promise.all([
+                api.companyGetMyDrivers(),
+                api.companyGetMyBuses()
+            ]);
+            setDrivers(driversData);
+            setBuses(busesData);
         } catch (err) {
-            setError(err.message || 'Failed to load drivers.');
+            setError(err.message || 'Failed to load data.');
         } finally {
             setIsLoading(false);
         }
     }
 
     useEffect(() => {
-        fetchDrivers();
+        fetchData();
     }, []);
 
     const openModal = (driver = null) => {
@@ -110,7 +125,7 @@ const CompanyDrivers: React.FC<CompanyDriversProps> = ({ companyId, navigate }) 
             } else {
                 await api.companyCreateDriver(driverData);
             }
-            fetchDrivers();
+            fetchData();
         } catch (err) {
             setError(err.message || 'Failed to save driver.');
         } finally {
@@ -130,7 +145,7 @@ const CompanyDrivers: React.FC<CompanyDriversProps> = ({ companyId, navigate }) 
         setIsConfirmModalOpen(false);
         try {
             await api.companyDeleteDriver(itemToDelete);
-            fetchDrivers();
+            fetchData();
         } catch (err) {
             setError(err.message || 'Failed to delete driver.');
         } finally {
@@ -187,7 +202,7 @@ const CompanyDrivers: React.FC<CompanyDriversProps> = ({ companyId, navigate }) 
                                         <span>{driver.name}</span>
                                     </td>
                                     <td>{driver.phone}</td>
-                                    <td>{driver.assignedBusId || 'N/A'}</td>
+                                    <td>{driver.assignedBusId || 'None'}</td>
                                     <td>
                                         <span className={`px-2 py-1 text-xs font-semibold rounded-full ${driver.status === 'Active' ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300'}`}>
                                             {driver.status}
@@ -206,7 +221,7 @@ const CompanyDrivers: React.FC<CompanyDriversProps> = ({ companyId, navigate }) 
             </div>
 
             <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={currentDriver ? "Edit Driver" : "Add New Driver"}>
-                <DriverForm driver={currentDriver} onSave={handleSave} onCancel={() => setIsModalOpen(false)} />
+                <DriverForm driver={currentDriver} onSave={handleSave} onCancel={() => setIsModalOpen(false)} availableBuses={buses} />
             </Modal>
              <ConfirmationModal
                 isOpen={isConfirmModalOpen}
