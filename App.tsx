@@ -1,3 +1,4 @@
+
 import React, { Component, useState, useEffect, ErrorInfo, ReactNode } from 'react';
 import Header from './components/Header';
 import HeroSection from './components/HeroSection';
@@ -70,7 +71,7 @@ interface ErrorBoundaryState {
 }
 
 // Error Boundary to catch crashes
-class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
   state: ErrorBoundaryState = { hasError: false };
 
   static getDerivedStateFromError(_: Error): ErrorBoundaryState {

@@ -44,14 +44,14 @@ export const makeDepositForPassenger = async (agentId: number, passengerSerial: 
         if (passengerWalletRows.length === 0) throw new AppError('Passenger wallet not found.', 404);
         const passengerWalletId = passengerWalletRows[0].id;
 
-        // --- Financial Logic ---
-        // Agent receives 1.2% commission
-        // Admin receives 1.9% fee
-        const commissionRate = 0.012;
-        const adminFeeRate = 0.019;
+        // --- Financial Logic Updated ---
+        // Agent receives 1.9% commission
+        // Admin receives 2.8% fee
+        const commissionRate = 0.019; 
+        const adminFeeRate = 0.028;
         
-        const commissionAmount = amount * commissionRate;
-        const adminFeeAmount = amount * adminFeeRate;
+        const commissionAmount = Number((amount * commissionRate).toFixed(2));
+        const adminFeeAmount = Number((amount * adminFeeRate).toFixed(2));
 
         // 1. Credit Passenger Wallet (Full amount deposited)
         await connection.query('UPDATE wallets SET balance = balance + ? WHERE id = ?', [amount, passengerWalletId]);
@@ -62,14 +62,14 @@ export const makeDepositForPassenger = async (agentId: number, passengerSerial: 
         if (agentWalletId) {
             await connection.query('UPDATE wallets SET balance = balance + ? WHERE id = ?', [commissionAmount, agentWalletId]);
             await connection.query('INSERT INTO wallet_transactions (wallet_id, amount, type, description) VALUES (?, ?, ?, ?)', 
-                [agentWalletId, commissionAmount, 'commission', `Commission for deposit to ${passengerSerial}`]);
+                [agentWalletId, commissionAmount, 'commission', `1.9% Commission for deposit to ${passengerSerial}`]);
         }
 
         // 3. Credit Admin Fee
         if (adminWalletId) {
             await connection.query('UPDATE wallets SET balance = balance + ? WHERE id = ?', [adminFeeAmount, adminWalletId]);
             await connection.query('INSERT INTO wallet_transactions (wallet_id, amount, type, description) VALUES (?, ?, ?, ?)', 
-                [adminWalletId, adminFeeAmount, 'fee', `Platform fee for agent deposit`]);
+                [adminWalletId, adminFeeAmount, 'fee', `2.8% Platform fee for agent deposit`]);
         }
         
         await connection.commit();
@@ -110,8 +110,8 @@ export const getDashboardData = async (agentId: number) => {
         WHERE wallet_id = (SELECT id FROM wallets WHERE user_id = ?) AND type = 'commission'
     `, [agentId]);
     
-    // Approximate total volume handled based on 1.2% commission
-    const totalDeposits = (totalCommission || 0) / 0.012; 
+    // Approximate total volume handled based on 1.9% commission
+    const totalDeposits = (totalCommission || 0) / 0.019; 
     const uniquePassengers = transactions; 
 
     return {

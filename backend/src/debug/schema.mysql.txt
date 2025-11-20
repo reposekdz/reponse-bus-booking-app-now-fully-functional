@@ -60,7 +60,7 @@ CREATE TABLE `users` (
     `pin` VARCHAR(255),
     `serial_code` VARCHAR(20) UNIQUE,
     `location` VARCHAR(255),
-    `commission_rate` DECIMAL(5, 4) DEFAULT 0.012,
+    `commission_rate` DECIMAL(5, 4) DEFAULT 0.019, -- 1.9% default
     `loyalty_points` INT DEFAULT 0,
     `assigned_bus_id` INT,
     `reset_token` VARCHAR(255),
@@ -70,6 +70,7 @@ CREATE TABLE `users` (
     FOREIGN KEY (`company_id`) REFERENCES `companies`(`id`) ON DELETE SET NULL
 );
 
+-- Rest of schema remains identical
 ALTER TABLE `companies` ADD FOREIGN KEY (`owner_id`) REFERENCES `users`(`id`) ON DELETE RESTRICT;
 
 CREATE TABLE `buses` (

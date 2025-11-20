@@ -19,13 +19,17 @@ const config = {
         privateKey: process.env.VAPID_PRIVATE_KEY,
     },
     mtn: {
-        collections: {
-            primaryKey: process.env.MTN_COLLECTIONS_PRIMARY_KEY,
-            secondaryKey: process.env.MTN_COLLECTIONS_SECONDARY_KEY,
+        baseUrl: 'https://sandbox.momodeveloper.mtn.com',
+        environment: process.env.MTN_TARGET_ENV || 'sandbox',
+        collection: {
+            subscriptionKey: process.env.MTN_COLLECTION_SUB_KEY,
+            apiUserId: process.env.MTN_COLLECTION_USER_ID,
+            apiKey: process.env.MTN_COLLECTION_API_KEY,
         },
-        disbursements: {
-            primaryKey: process.env.MTN_DISBURSEMENTS_PRIMARY_KEY,
-            secondaryKey: process.env.MTN_DISBURSEMENTS_SECONDARY_KEY,
+        remittance: {
+            subscriptionKey: process.env.MTN_REMITTANCE_SUB_KEY,
+            apiUserId: process.env.MTN_REMITTANCE_USER_ID,
+            apiKey: process.env.MTN_REMITTANCE_API_KEY,
         }
     }
 };
@@ -36,12 +40,9 @@ if (process.env.NODE_ENV === 'production' && (
     !config.mysql.user || 
     !config.mysql.database || 
     !config.jwt.secret ||
-    !config.vapid.publicKey ||
-    !config.vapid.privateKey
+    !config.vapid.publicKey
 )) {
     console.error("FATAL ERROR: Missing critical environment variables for production. Check your .env file.");
-    console.error("Required: DB_HOST, DB_USER, DB_NAME, JWT_SECRET, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY");
-    // FIX: Cast `process` to `any` to resolve TypeScript error when node types are not fully loaded.
     (process as any).exit(1);
 }
 

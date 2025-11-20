@@ -1,3 +1,4 @@
+
 import { io } from '../../server';
 import { AppError } from '../../utils/AppError';
 import logger from '../../utils/logger';
@@ -5,64 +6,132 @@ import { pool } from '../../config/db';
 import config from '../../config';
 import * as mysql from 'mysql2/promise';
 import crypto from 'crypto';
+import { Buffer } from 'buffer';
+
+// Helper to get MTN Access Token
+const getMomoToken = async () => {
+    const { subscriptionKey, apiUserId, apiKey } = config.mtn.collection;
+    
+    if (!subscriptionKey || !apiUserId || !apiKey) {
+        logger.warn("MTN Collection credentials missing in config. Using mock mode.");
+        return null;
+    }
+
+    const authString = Buffer.from(`${apiUserId}:${apiKey}`).toString('base64');
+    
+    try {
+        const response = await fetch(`${config.mtn.baseUrl}/collection/token/`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Basic ${authString}`,
+                'Ocp-Apim-Subscription-Key': subscriptionKey,
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to get token: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        return data.access_token;
+    } catch (error) {
+        logger.error("MTN Token Generation Error:", error);
+        return null;
+    }
+};
 
 export const initiateMomoPayment = async (userId: number, phone: string, bookingDetails: any) => {
     
     logger.info(`Initiating MoMo payment for user ${userId} to phone ${phone} for ${bookingDetails.totalPrice} RWF`);
 
-    if (!phone || !phone.startsWith('07')) {
-        throw new AppError('A valid Rwandan phone number is required for Mobile Money payments.', 400);
+    // Standardize phone format for MTN (460...) or keep local format 
+    // Note: Sandbox typically accepts specific numbers defined in docs
+    if (!phone) {
+        throw new AppError('A valid phone number is required.', 400);
     }
 
-    // 1. Generate a unique transaction ID for tracking
-    const externalTransactionId = `MTN-${crypto.randomUUID()}`;
+    // 1. Generate a unique transaction ID for tracking (UUID v4)
+    const externalTransactionId = crypto.randomUUID();
     
-    // 2. Store the pending payment details in the database
+    // 2. Store the pending payment
     await pool.query(
         'INSERT INTO pending_payments (user_id, external_transaction_id, booking_payload) VALUES (?, ?, ?)',
         [userId, externalTransactionId, JSON.stringify(bookingDetails)]
     );
 
-    // 3. --- MOCK MTN API INTERACTION ---
-    // In a real implementation, we would use the keys from config.mtn.collections
-    // const mtnConfig = config.mtn.collections;
-    // logger.info(`Using MTN Primary Key: ${mtnConfig.primaryKey ? '******' : 'Not Set'}`);
+    // 3. Interact with Real MTN API
+    const accessToken = await getMomoToken();
 
-    // Simulate waiting for the user to enter their PIN on their phone by calling our own callback endpoint after a delay.
-    setTimeout(() => {
-        const isSuccessful = Math.random() > 0.1; // 90% success rate for demo
-        const callbackPayload = {
-            externalId: externalTransactionId,
-            status: isSuccessful ? 'SUCCESSFUL' : 'FAILED',
-        };
+    if (accessToken) {
+        try {
+            const response = await fetch(`${config.mtn.baseUrl}/collection/v1_0/requesttopay`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'X-Reference-Id': externalTransactionId,
+                    'X-Target-Environment': config.mtn.environment,
+                    'Ocp-Apim-Subscription-Key': config.mtn.collection.subscriptionKey!,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    amount: bookingDetails.totalPrice.toString(),
+                    currency: "RWF",
+                    externalId: bookingDetails.tripId.toString(),
+                    payer: {
+                        partyIdType: "MSISDN",
+                        partyId: phone
+                    },
+                    payerMessage: `Payment for GoBus Trip`,
+                    payeeNote: "GoBus Booking"
+                })
+            });
 
-        // In production, MTN would call this endpoint. Here, we call it ourselves to simulate that.
-        const callbackUrl = `http://localhost:${config.port}/api/v1/payments/momo/callback`;
+            if (response.status === 202) {
+                return { message: 'Payment request sent to your phone. Please approve.' };
+            } else {
+                // If API fails, throw generic error but log specific
+                const errData = await response.json();
+                logger.error("MTN API Error:", errData);
+                throw new AppError('Failed to initiate payment with provider.', 500);
+            }
+
+        } catch (error) {
+            logger.error("MTN Request Exception:", error);
+            throw new AppError('Payment provider unavailable.', 503);
+        }
+    } else {
+        // Fallback to Simulation if keys aren't set (for dev/testing without keys)
+        setTimeout(() => {
+            const isSuccessful = true; 
+            const callbackUrl = `http://localhost:${config.port}/api/v1/payments/momo/callback`;
+            fetch(callbackUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    externalId: externalTransactionId,
+                    status: isSuccessful ? 'SUCCESSFUL' : 'FAILED',
+                })
+            }).catch(err => logger.error(`[SIMULATION] Mock callback failed:`, err));
+        }, 5000);
         
-        fetch(callbackUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(callbackPayload)
-        }).catch(err => logger.error(`[SIMULATION] Mock callback to ${callbackUrl} failed:`, err));
-        
-    }, 8000); // 8-second delay to simulate user interaction
-
-    return { message: 'Please check your phone to approve the payment.' };
+        return { message: 'Simulated payment request sent. Please wait...' };
+    }
 };
 
 export const handleMomoCallback = async (callbackData: { externalId: string, status: 'SUCCESSFUL' | 'FAILED' }) => {
+    // NOTE: In production, the externalId usually comes in the body or route depending on callback config. 
+    // We assume the body contains { externalId, status } for this implementation.
+    
     const { externalId, status } = callbackData;
     
     const connection = await pool.getConnection();
     await connection.beginTransaction();
 
     try {
-        // 1. Find the pending payment and lock the row to prevent race conditions
         const [pendingRows] = await connection.query<any[] & mysql.RowDataPacket[]>('SELECT * FROM pending_payments WHERE external_transaction_id = ? AND status = "PENDING" FOR UPDATE', [externalId]);
         
         if (pendingRows.length === 0) {
-            logger.warn(`Received a callback for an unknown or already processed transaction: ${externalId}`);
-            await connection.commit(); // Commit to release the lock, even if we do nothing
+            await connection.commit();
             return;
         }
         
@@ -70,21 +139,19 @@ export const handleMomoCallback = async (callbackData: { externalId: string, sta
         const userId = pendingPayment.user_id;
         const bookingDetails = pendingPayment.booking_payload;
 
-        // 2. Update pending payment status
         const finalStatus = status === 'SUCCESSFUL' ? 'SUCCESSFUL' : 'FAILED';
         await connection.query('UPDATE pending_payments SET status = ? WHERE id = ?', [finalStatus, pendingPayment.id]);
         
-        // 3. Emit socket event to notify the user on the frontend
         if (finalStatus === 'SUCCESSFUL') {
-            logger.info(`Payment success for user ${userId} via callback for tx ${externalId}`);
+            logger.info(`Payment success for user ${userId}`);
             io.to(userId.toString()).emit('momoPaymentSuccess', {
                 message: 'Payment was successful.',
                 bookingDetails
             });
         } else {
-            logger.warn(`Payment failed for user ${userId} via callback for tx ${externalId}`);
+            logger.warn(`Payment failed for user ${userId}`);
             io.to(userId.toString()).emit('momoPaymentFailed', {
-                message: 'Payment was not approved or timed out.',
+                message: 'Payment was declined or timed out.',
                 bookingDetails
             });
         }

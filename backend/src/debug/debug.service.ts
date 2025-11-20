@@ -1,3 +1,4 @@
+
 import { pool } from '../../config/db';
 import * as mysql from 'mysql2/promise';
 import bcrypt from 'bcryptjs';
@@ -53,19 +54,27 @@ export const seedDatabase = async () => {
         const password_hash = await bcrypt.hash('password', 10);
         const pin_hash = await bcrypt.hash('1234', 10);
         
+        // Passenger
         const [passengerRes] = await connection.query<mysql.ResultSetHeader>("INSERT INTO users (name, email, password_hash, role, avatar_url, pin, serial_code, loyalty_points) VALUES ('Kalisa Jean', 'passenger@gobus.rw', ?, 'passenger', 'https://randomuser.me/api/portraits/men/32.jpg', ?, 'KAL1234', 1250)", [password_hash, pin_hash]);
         const passengerId = passengerRes.insertId;
+        await connection.query('INSERT INTO wallets (user_id, balance) VALUES (?, ?)', [passengerId, 50000]);
 
+        // Agent
+        const [agentRes] = await connection.query<mysql.ResultSetHeader>("INSERT INTO users (name, email, password_hash, role, pin, serial_code, commission_rate, location) VALUES ('Agent John', 'agent@gobus.rw', ?, 'agent', ?, 'AGT001', 0.019, 'Nyabugogo')", [password_hash, pin_hash]);
+        const agentId = agentRes.insertId;
+        await connection.query('INSERT INTO wallets (user_id, balance) VALUES (?, ?)', [agentId, 0]);
+
+        // Admin
+        const [adminRes] = await connection.query<mysql.ResultSetHeader>("INSERT INTO users (name, email, password_hash, role, serial_code) VALUES ('Admin User', 'admin@gobus.rw', ?, 'admin', 'ADM3456')", [password_hash]);
+        const adminId = adminRes.insertId;
+        await connection.query('INSERT INTO wallets (user_id, balance) VALUES (?, ?)', [adminId, 0]); // Admin wallet for fees
+
+        // Company Managers
         const [volcanoManagerRes] = await connection.query<mysql.ResultSetHeader>("INSERT INTO users (name, email, password_hash, role, pin, serial_code) VALUES ('Volcano Manager', 'company@gobus.rw', ?, 'company', ?, 'VOL5678')", [password_hash, pin_hash]);
         const volcanoManagerId = volcanoManagerRes.insertId;
         
         const [ritcoManagerRes] = await connection.query<mysql.ResultSetHeader>("INSERT INTO users (name, email, password_hash, role, pin, serial_code) VALUES ('RITCO Manager', 'company2@gobus.rw', ?, 'company', ?, 'RIT9012')", [password_hash, pin_hash]);
         const ritcoManagerId = ritcoManagerRes.insertId;
-        
-        await connection.query<mysql.ResultSetHeader>("INSERT INTO users (name, email, password_hash, role, serial_code) VALUES ('Admin User', 'admin@gobus.rw', ?, 'admin', 'ADM3456')", [password_hash]);
-
-        // Wallets
-        await connection.query('INSERT INTO wallets (user_id, balance) VALUES (?, ?)', [passengerId, 50000]);
 
         // 2. Create Companies
         const [volcanoRes] = await connection.query<mysql.ResultSetHeader>("INSERT INTO companies (name, owner_id, status, logo_url, cover_url, description) VALUES ('Volcano Express', ?, 'Active', 'https://pbs.twimg.com/profile_images/1237839357116452865/p-28c8o-_400x400.jpg', 'https://images.unsplash.com/photo-1593256398246-8853b3815c32?q=80&w=2070&auto=format&fit=crop', 'Volcano Express is one of the most popular transport companies in Rwanda, known for its excellent service, cleanliness, and punctuality, serving many major routes.')", [volcanoManagerId]);
@@ -110,8 +119,10 @@ export const seedDatabase = async () => {
         const arrival2 = new Date(departure2.getTime() + 150 * 60000);
         await connection.query("INSERT INTO trips (route_id, bus_id, driver_id, departure_time, arrival_time) VALUES (?, ?, ?, ?, ?)", [route2Id, bus2Id, driver2Id, departure2, arrival2]);
         
-        // 7. Site Settings, Reviews, and other new tables
+        // 7. Site Settings & Destinations
         await connection.query("INSERT INTO site_settings (setting_key, setting_value) VALUES ('hero_image', 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?q=80&w=2048&auto=format&fit=crop')");
+        await connection.query("INSERT INTO featured_destinations (from_location, to_location, price, image_data_uri) VALUES ('Kigali', 'Rubavu', 4500, 'https://images.unsplash.com/photo-1590632313655-e9c5220c4273?q=80&w=2070&auto=format&fit=crop')");
+        await connection.query("INSERT INTO featured_destinations (from_location, to_location, price, image_data_uri) VALUES ('Kigali', 'Musanze', 3500, 'https://www.andbeyond.com/wp-content/uploads/sites/5/one-of-the-reasons-to-visit-rwanda-gorilla.jpg')");
         await connection.query("INSERT INTO reviews (company_id, user_id, rating, comment) VALUES (?, ?, ?, ?)", [volcanoId, passengerId, 5, 'Nta kundi navuga, Volcano ni abahanga! Buri gihe serivisi ni nziza.']);
         await connection.query("INSERT INTO price_alerts (user_id, origin, destination, initial_price) VALUES (?, 'Kigali', 'Rubavu', 4500)", [passengerId]);
         await connection.query("INSERT INTO lost_and_found (item_name, date_found, route_found_on, location_stored) VALUES ('Black Backpack', '2024-10-27', 'Kigali - Huye', 'Nyabugogo Office')");
