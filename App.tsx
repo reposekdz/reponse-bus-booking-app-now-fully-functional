@@ -1,4 +1,5 @@
-import React, { useState, useEffect, ErrorInfo, ReactNode } from 'react';
+
+import React, { useState, useEffect, ErrorInfo, ReactNode, Component } from 'react';
 import Header from './components/Header';
 import HeroSection from './components/HeroSection';
 import HowItWorks from './components/HowItWorks';
@@ -70,7 +71,7 @@ interface ErrorBoundaryState {
 }
 
 // Error Boundary to catch crashes - Fixed Types
-class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   state: ErrorBoundaryState = {
     hasError: false
   };

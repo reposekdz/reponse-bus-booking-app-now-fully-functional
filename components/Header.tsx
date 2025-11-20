@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Page } from '../types';
 import { GoBusLogo, SunIcon, MoonIcon, MenuIcon, XIcon, UserCircleIcon, TicketIcon, LanguageIcon, ChevronDownIcon, WalletIcon, BusIcon, BellIcon, TagIcon, StarIcon, BellAlertIcon, SparklesIcon, CheckCircleIcon, ArchiveBoxIcon, BriefcaseIcon, MapIcon, ShieldCheckIcon, CreditCardIcon, QuestionMarkCircleIcon, BuildingStorefrontIcon, KeyIcon, PowerIcon } from './icons';
@@ -292,6 +293,39 @@ const Header: React.FC<HeaderProps> = ({ currentPage, onNavigate, onLogout, them
         </div>
       </div>
       
+       {/* Mobile Menu */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-50 bg-gray-900/80 backdrop-blur-sm lg:hidden">
+            <div className="absolute top-0 right-0 w-full max-w-xs bg-gradient-to-b from-[#0033A0] to-[#0c2461] h-full p-6">
+                <div className="flex justify-between items-center mb-8">
+                    <span className="text-xl font-bold">{t('mobile_menu_title')}</span>
+                    <button onClick={() => setIsMobileMenuOpen(false)}><XIcon className="w-6 h-6"/></button>
+                </div>
+                 <nav className="flex flex-col space-y-4">
+                    <button onClick={() => {onNavigate('home'); setIsMobileMenuOpen(false);}}>{t('nav_home')}</button>
+                    <button onClick={() => {onNavigate('bookingSearch'); setIsMobileMenuOpen(false);}}>{t('nav_booking')}</button>
+                    <button onClick={() => {onNavigate('companies'); setIsMobileMenuOpen(false);}}>{t('nav_companies')}</button>
+                    <button onClick={() => {onNavigate('services'); setIsMobileMenuOpen(false);}}>{t('nav_services')}</button>
+                    <button onClick={() => {onNavigate('help'); setIsMobileMenuOpen(false);}}>{t('nav_help')}</button>
+                    <button onClick={() => {onNavigate('contact'); setIsMobileMenuOpen(false);}}>{t('nav_contact')}</button>
+
+                     <div className="border-t border-white/20 my-4"></div>
+                     {user ? (
+                         <>
+                            <button onClick={() => {onNavigate('profile'); setIsMobileMenuOpen(false);}} className="flex items-center space-x-3">
+                                <img src={user.avatar_url} alt="User" className="w-8 h-8 rounded-full" />
+                                <span>{user.name}</span>
+                            </button>
+                            <button onClick={() => {onLogout(); setIsMobileMenuOpen(false);}} className="text-red-400 text-left">{t('usermenu_logout')}</button>
+                         </>
+                     ) : (
+                        <button onClick={() => {onNavigate('login'); setIsMobileMenuOpen(false);}} className="px-4 py-2 text-sm font-semibold bg-yellow-400 text-[#0033A0] rounded-md hover:bg-yellow-500 transition-colors">{t('login_button')}</button>
+                     )}
+                 </nav>
+            </div>
+        </div>
+      )}
+      
        {/* Advanced Mobile/Tablet Left Sidebar (Drawer) */}
       <div className={`fixed inset-0 z-50 lg:hidden transition-all duration-300 ease-in-out ${isMobileMenuOpen ? 'visible' : 'invisible'}`}>
         {/* Backdrop */}
@@ -301,7 +335,7 @@ const Header: React.FC<HeaderProps> = ({ currentPage, onNavigate, onLogout, them
         />
         
         {/* Sidebar Content */}
-        <div className={`absolute top-0 left-0 w-[85%] max-w-sm h-full bg-white dark:bg-gray-900 shadow-2xl transform transition-transform duration-300 ease-out flex flex-col ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className={`absolute top-0 bottom-0 left-0 w-[85%] max-w-sm h-screen bg-white dark:bg-gray-900 shadow-2xl transform transition-transform duration-300 ease-out flex flex-col ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
              
              {/* Sidebar Header / User Profile */}
              <div className="relative bg-gradient-to-br from-[#0033A0] to-[#00574B] p-6 text-white">
