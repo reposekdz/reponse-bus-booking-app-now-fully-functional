@@ -109,19 +109,25 @@ export const initiateMomoPayment = async (userId: number, phone: string, booking
     }
 };
 
-// 2. DISBURSEMENTS: Deposit/Refund (Sending money to user)
+// 2. DISBURSEMENTS: Deposit/Refund/Payout (Sending money to user)
 export const processRefund = async (userId: number, amount: number, phone: string, reason: string) => {
     const externalId = crypto.randomUUID();
     let token;
     try {
         token = await getMomoToken('disbursement');
     } catch (e) {
-        if(process.env.NODE_ENV === 'development') return true;
+        if(process.env.NODE_ENV === 'development') {
+            logger.info(`Dev Mode: Simulating disbursement of ${amount} to ${phone}`);
+            return true;
+        }
         throw e;
     }
 
     // Dev mode skip
-    if (token === 'mock_token_sandbox') return true;
+    if (token === 'mock_token_sandbox') {
+         logger.info(`Dev Mode: Simulating disbursement of ${amount} to ${phone}`);
+         return true;
+    }
 
     try {
         const response = await fetch(`${config.mtn.baseUrl}/disbursement/v1_0/deposit`, {
@@ -136,7 +142,7 @@ export const processRefund = async (userId: number, amount: number, phone: strin
             body: JSON.stringify({
                 amount: amount.toString(),
                 currency: config.mtn.currency,
-                externalId: `REFUND-${Date.now()}`,
+                externalId: `PAYOUT-${Date.now()}`,
                 payee: { partyIdType: "MSISDN", partyId: phone },
                 payerMessage: reason,
                 payeeNote: "GoBus Payout"
@@ -145,16 +151,16 @@ export const processRefund = async (userId: number, amount: number, phone: strin
 
         if (response.status !== 202) {
             const errText = await response.text();
-             throw new Error(`Refund initiation failed: ${errText}`);
+             throw new Error(`Disbursement initiation failed: ${errText}`);
         }
         return true;
     } catch (error) {
         logger.error("Disbursement Error:", error);
-        throw new AppError('Refund failed.', 500);
+        throw new AppError('Payout processing failed.', 500);
     }
 };
 
-// 3. REMITTANCE: Transfer (Agent to Admin, etc, if cross-border or specific use case)
+// 3. REMITTANCE: Transfer (Agent to Admin, etc)
 export const transferFundsExternal = async (amount: number, phone: string) => {
     const externalId = crypto.randomUUID();
     let token;

@@ -43,10 +43,8 @@ export const getCompanyDetailsById = async (id: string) => {
         WHERE r.company_id = ?
     `, [companyId]);
     
-    // Simple stats mocks for now, real implementation would require complex aggregation
     const stats = { passengers: '2M+', fleet: (fleet as any[]).length, routes: (routes as any[]).length };
     
-    // Mock schedule for now
     const schedule = {
       'Kigali-Rubavu': [
         { time: '07:00', arrival: '10:30', bus: 'Yutong Explorer', price: '4,500 RWF' },
@@ -240,7 +238,7 @@ export const getRoutesByCompany = async (companyId: number) => {
 
 export const createRouteForCompany = async (routeData: any, companyId: number) => {
     const { from, to, price, duration } = routeData;
-    const durationMinutes = parseFloat(duration) * 60; // Assuming duration is in hours (e.g., "3.5h")
+    const durationMinutes = parseFloat(duration) * 60; 
     const [result] = await pool.query<mysql.ResultSetHeader>('INSERT INTO routes (company_id, origin, destination, base_price, estimated_duration_minutes) VALUES (?, ?, ?, ?, ?)', [companyId, from, to, price, durationMinutes]);
     return { id: result.insertId, ...routeData };
 };
@@ -258,11 +256,10 @@ export const deleteRouteForCompany = async (routeId: string, companyId: number) 
     if (result.affectedRows === 0) throw new AppError('Route not found or permission denied', 404);
 };
 
-// --- Trip Scheduling / Driver Assignment ---
+// --- Trip Scheduling ---
 export const createTripForCompany = async (tripData: any, companyId: number) => {
     const { routeId, busId, driverId, departureTime } = tripData;
     
-    // Calculate arrival time based on route duration
     const [routeRows] = await pool.query<any[] & mysql.RowDataPacket[]>('SELECT estimated_duration_minutes, origin, destination FROM routes WHERE id = ? AND company_id = ?', [routeId, companyId]);
     if (routeRows.length === 0) throw new AppError('Invalid route or permission denied', 403);
     
@@ -271,7 +268,6 @@ export const createTripForCompany = async (tripData: any, companyId: number) => 
     const depTime = new Date(departureTime);
     const arrTime = new Date(depTime.getTime() + durationMins * 60000);
     
-    // Verify Driver & Bus ownership
     await checkDriverOwnership(driverId, companyId);
     const [busCheck] = await pool.query<any[] & mysql.RowDataPacket[]>('SELECT id FROM buses WHERE id = ? AND company_id = ?', [busId, companyId]);
     if(busCheck.length === 0) throw new AppError('Invalid bus or permission denied', 403);
@@ -281,7 +277,6 @@ export const createTripForCompany = async (tripData: any, companyId: number) => 
         [routeId, busId, driverId, departureTime, arrTime, 'Scheduled']
     );
 
-    // NOTIFY DRIVER via SMS/Email
     const msgBody = `New Trip Assigned: ${route.origin} to ${route.destination}. Departure: ${depTime.toLocaleString()}. Bus #${busId}. Check your dashboard.`;
     
     await dispatchNotification(driverId, 'sms', {
@@ -309,7 +304,6 @@ export const getPassengersForCompany = async (companyId: number) => {
         ORDER BY t.departure_time DESC
         LIMIT 100
     `, [companyId]);
-    // Transform route for frontend
     return (rows as any[]).map(r => ({...r, route: `${r.origin} - ${r.destination}`}));
 };
 
@@ -327,9 +321,7 @@ export const getFinancialsForCompany = async (companyId: number) => {
 };
 
 export const requestCompanyPayout = async (userId: number, companyId: number, amount: number, phone: string) => {
-    // Verify funds available in wallet linked to company manager or company account
-    // Assuming the user.id is the company manager's account which holds the wallet
-    
+    // 1. Verify Wallet Balance for the Company/User
     const [walletRows] = await pool.query<any[] & mysql.RowDataPacket[]>('SELECT id, balance FROM wallets WHERE user_id = ?', [userId]);
     if (walletRows.length === 0) throw new AppError('Wallet not found.', 404);
     const wallet = walletRows[0];
@@ -342,17 +334,22 @@ export const requestCompanyPayout = async (userId: number, companyId: number, am
     await connection.beginTransaction();
 
     try {
-        // Deduct funds
+        // 2. Deduct funds locally
         await connection.query('UPDATE wallets SET balance = balance - ? WHERE id = ?', [amount, wallet.id]);
         await connection.query('INSERT INTO wallet_transactions (wallet_id, amount, type, description) VALUES (?, ?, ?, ?)', 
             [wallet.id, -amount, 'transfer_out', `Payout to ${phone}`]);
 
-        // Initiate Disbursement via MTN API (Simulated or Real)
-        // This calls the logic from payments.service.ts
+        // 3. Initiate Disbursement via MTN API
         await paymentService.processRefund(userId, amount, phone, "Company Payout");
 
         await connection.commit();
-        return { success: true, amount };
+        
+        dispatchNotification(userId, 'sms', {
+            title: 'Payout Initiated',
+            body: `A payout of ${new Intl.NumberFormat('fr-RW').format(amount)} RWF has been initiated to ${phone}.`
+        });
+
+        return { success: true, amount, recipient: phone };
     } catch (error) {
         await connection.rollback();
         throw error;
