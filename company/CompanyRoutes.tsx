@@ -1,9 +1,15 @@
+
 import React, { useState, useEffect } from 'react';
 import { MapIcon, SearchIcon, PlusIcon, PencilSquareIcon, TrashIcon } from '../components/icons';
 import Modal from '../components/Modal';
 import ConfirmationModal from '../components/ConfirmationModal';
 import * as api from '../services/apiService';
 import LoadingSpinner from '../components/LoadingSpinner';
+import SearchableSelect from '../components/SearchableSelect'; // Re-using the advanced select
+import { rwandaAllStations } from '../lib/stations';
+
+// Get all location names for the dropdowns
+const allLocations = [...new Set(rwandaAllStations.map(s => s.name))].sort();
 
 const RouteForm = ({ route, onSave, onCancel }) => {
     const [formData, setFormData] = useState({
@@ -18,22 +24,38 @@ const RouteForm = ({ route, onSave, onCancel }) => {
         const { name, value, type } = e.target;
         setFormData(prev => ({ ...prev, [name]: type === 'number' ? parseFloat(value) : value }));
     };
+    
+    const handleLocationChange = (field, value) => {
+        setFormData(prev => ({ ...prev, [field]: value }));
+    }
 
     const handleSubmit = (e) => {
         e.preventDefault();
         onSave(formData);
     };
 
+    // Minimal wrapper for SearchableSelect to match the styling expected in the form
+    const LocationSelect = ({ value, onChange, placeholder }) => (
+        <div className="text-black dark:text-white">
+            <SearchableSelect 
+                options={allLocations} 
+                value={value} 
+                onChange={onChange} 
+                placeholder={placeholder}
+            />
+        </div>
+    );
+
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">From</label>
-                    <input type="text" name="from" value={formData.from} onChange={handleChange} className="mt-1 w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" required />
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Origin (From)</label>
+                    <LocationSelect value={formData.from} onChange={(val) => handleLocationChange('from', val)} placeholder="Select Origin" />
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">To</label>
-                    <input type="text" name="to" value={formData.to} onChange={handleChange} className="mt-1 w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" required />
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Destination (To)</label>
+                     <LocationSelect value={formData.to} onChange={(val) => handleLocationChange('to', val)} placeholder="Select Destination" />
                 </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -45,6 +67,13 @@ const RouteForm = ({ route, onSave, onCancel }) => {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Duration (in hours)</label>
                     <input type="number" step="0.1" name="duration" value={formData.duration} onChange={handleChange} className="mt-1 w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" placeholder="e.g., 3.5"/>
                 </div>
+            </div>
+            <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
+                <select name="status" value={formData.status} onChange={handleChange} className="mt-1 w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600">
+                    <option>Active</option>
+                    <option>Inactive</option>
+                </select>
             </div>
             <div className="flex justify-end space-x-3 pt-4">
                 <button type="button" onClick={onCancel} className="px-4 py-2 text-sm font-semibold border rounded-lg dark:border-gray-600">Cancel</button>

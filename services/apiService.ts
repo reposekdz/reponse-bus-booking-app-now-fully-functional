@@ -1,3 +1,4 @@
+
 // services/apiService.ts - REAL BACKEND API CLIENT
 
 const BASE_URL = '/api/v1';
@@ -5,7 +6,6 @@ let TOKEN: string | null = null;
 
 // Helper to handle API responses
 const handleResponse = async (response: Response) => {
-    // .json() can only be called once, so we need to handle no-content responses
     if (response.status === 204 || response.headers.get('content-length') === '0') {
         return { success: true, data: {} };
     }
@@ -41,7 +41,8 @@ export const getCurrentUser = async () => {
     return data;
 };
 export const updatePassword = (passwords: any) => apiFetch('/auth/updatepassword', { method: 'PUT', body: JSON.stringify(passwords) });
-
+export const forgotPassword = (email: string) => apiFetch('/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) });
+export const resetPassword = (token: string, password: string) => apiFetch(`/auth/reset-password/${token}`, { method: 'POST', body: JSON.stringify({ password }) });
 
 // --- TRIPS ---
 export const searchTrips = async (from: string, to: string, date: string, companyId?: string) => {

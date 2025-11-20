@@ -12,4 +12,5 @@ export type Page =
   | 'corporateTravel' | 'tourPackages' | 'travelInsurance' | 'giftCards' | 'adminAnnouncements'
   | 'hotelBooking' | 'eventTickets' | 'vehicleRentals' | 'vipLounge' | 'companyRouteAnalytics'
   | 'bookingConfirmation' | 'favorites' | 'priceAlerts' | 'loyalty' | 'wallet' | 'companyDriverProfile'
-  | 'adminMessages' | 'adminSettings' | 'adminDestinations' | 'registrationSuccess' | 'driverSettings';
+  | 'adminMessages' | 'adminSettings' | 'adminDestinations' | 'registrationSuccess' | 'driverSettings'
+  | 'forgotPassword' | 'resetPassword';

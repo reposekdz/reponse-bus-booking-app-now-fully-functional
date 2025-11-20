@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, ErrorInfo, ReactNode } from 'react';
+import React, { Component, useState, useEffect, ErrorInfo, ReactNode } from 'react';
 import Header from './components/Header';
 import HeroSection from './components/HeroSection';
 import HowItWorks from './components/HowItWorks';
@@ -7,6 +7,8 @@ import OurPartners from './components/PartnerCompanies';
 import Footer from './components/Footer';
 import LoginPage from './LoginPage';
 import RegisterPage from './RegisterPage';
+import ForgotPasswordPage from './ForgotPasswordPage';
+import ResetPasswordPage from './ResetPasswordPage';
 import RegistrationSuccessPage from './RegistrationSuccessPage';
 import SearchResultsPage from './SearchResultsPage';
 import SeatSelectionPage from './SeatSelectionPage';
@@ -69,7 +71,7 @@ interface ErrorBoundaryState {
 }
 
 // Error Boundary to catch crashes
-class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   public state: ErrorBoundaryState = { hasError: false };
 
   static getDerivedStateFromError(_: Error): ErrorBoundaryState {
@@ -95,7 +97,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
       );
     }
 
-    return (this.props as any).children;
+    return this.props.children;
   }
 }
 
@@ -107,6 +109,15 @@ const AppContent: React.FC = () => {
   const [viewingTicket, setViewingTicket] = useState<{ ticket: any; isActive: boolean } | null>(null);
   const [favoriteTripIds, setFavoriteTripIds] = useState<string[]>([]);
   const { t } = useLanguage();
+
+  // Handle URL-based navigation for reset password
+  useEffect(() => {
+      const path = window.location.pathname;
+      if (path.startsWith('/reset-password/')) {
+          const token = path.split('/')[2];
+          navigate('resetPassword', { token });
+      }
+  }, []);
 
   useEffect(() => {
     const storedFavorites = localStorage.getItem('favoriteTrips');
@@ -185,6 +196,8 @@ const AppContent: React.FC = () => {
     switch (currentPage) {
       case 'login': return <LoginPage onNavigate={navigate} />;
       case 'register': return <RegisterPage onNavigate={navigate} />;
+      case 'forgotPassword': return <ForgotPasswordPage onNavigate={navigate} />;
+      case 'resetPassword': return <ResetPasswordPage onNavigate={navigate} token={pageData?.token} />;
       case 'registrationSuccess': return <RegistrationSuccessPage onNavigate={navigate} />;
       case 'search': return <SearchResultsPage results={pageData} onTripSelect={(tripId) => navigate('seatSelection', { tripId })} favoriteTripIds={favoriteTripIds} onToggleFavorite={handleToggleFavorite} />;
       case 'seatSelection': return <SeatSelectionPage tripId={pageData.tripId} onConfirm={(bookingDetails) => navigate('payment', bookingDetails)} onBack={() => navigate('bookingSearch')} />;
@@ -255,7 +268,7 @@ const AppContent: React.FC = () => {
   };
   
   const isDashboard = ['adminDashboard', 'companyDashboard', 'driverDashboard', 'agentDashboard', 'adminCompanies', 'adminDrivers', 'adminAgents', 'adminUsers', 'adminFinancials', 'adminAds', 'adminPromotions', 'adminAnnouncements', 'adminMessages', 'adminSettings', 'adminDestinations', 'companyBuses', 'companyDrivers', 'companyRoutes', 'companyPassengers', 'companyFinancials', 'companySettings', 'fleetMonitoring', 'agentProfile', 'driverProfile', 'passengerProfile', 'companyRouteAnalytics', 'companyDriverProfile', 'driverSettings'].includes(currentPage);
-  const isFullScreenPage = ['bookingConfirmation', 'registrationSuccess'].includes(currentPage);
+  const isFullScreenPage = ['bookingConfirmation', 'registrationSuccess', 'login', 'register', 'forgotPassword', 'resetPassword'].includes(currentPage);
   const showHeader = !isDashboard && !isFullScreenPage;
   const showFooter = !isDashboard && !isFullScreenPage;
   const mainPadding = showHeader ? 'pt-20' : '';

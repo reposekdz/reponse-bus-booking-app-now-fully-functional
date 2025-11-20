@@ -10,11 +10,12 @@ interface BookingFormProps {
   onSearch: (from: string, to: string, date: string, passengers: { adults: number; children: number; }) => void;
 }
 
-const locations = [...new Set(rwandaAllStations.map(station => station.district))].sort();
+// Create a unique sorted list of all station names for the dropdown
+const allLocations = [...new Set(rwandaAllStations.map(s => s.name))].sort();
 
 const BookingForm: React.FC<BookingFormProps> = ({ onSearch }) => {
   const { t } = useLanguage();
-  const [fromLocation, setFromLocation] = useState('Gasabo');
+  const [fromLocation, setFromLocation] = useState('Kigali (Nyabugogo)');
   const [toLocation, setToLocation] = useState('Rubavu');
   const [journeyDate, setJourneyDate] = useState(new Date().toISOString().split('T')[0]);
   const [returnDate, setReturnDate] = useState('');
@@ -42,7 +43,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ onSearch }) => {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-4 items-center">
           <SearchableSelect
-            options={locations}
+            options={allLocations}
             value={fromLocation}
             onChange={setFromLocation}
             placeholder={t('form_from')}
@@ -56,7 +57,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ onSearch }) => {
           </div>
 
            <SearchableSelect
-            options={locations}
+            options={allLocations}
             value={toLocation}
             onChange={setToLocation}
             placeholder={t('form_to')}

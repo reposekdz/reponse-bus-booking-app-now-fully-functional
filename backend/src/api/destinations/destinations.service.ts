@@ -1,9 +1,19 @@
+
 import { pool } from '../../config/db';
 import { AppError } from '../../utils/AppError';
 import * as mysql from 'mysql2/promise';
 
-export const getAllDestinations = async () => {
-    const [rows] = await pool.query('SELECT * FROM featured_destinations ORDER BY id');
+export const getAllDestinations = async (query?: string) => {
+    let sql = 'SELECT * FROM featured_destinations';
+    const params = [];
+
+    if (query) {
+        sql += ' WHERE from_location LIKE ? OR to_location LIKE ?';
+        params.push(`%${query}%`, `%${query}%`);
+    }
+    
+    sql += ' ORDER BY id';
+    const [rows] = await pool.query(sql, params);
     return rows;
 };
 

@@ -66,6 +66,12 @@ const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
               </button>
             </div>
 
+            <div className="flex justify-end">
+                <button type="button" onClick={() => onNavigate('forgotPassword')} className="text-sm text-blue-600 hover:underline dark:text-blue-400">
+                    Forgot Password?
+                </button>
+            </div>
+
              {error && <p className="text-red-500 text-sm font-semibold bg-red-50 dark:bg-red-900/20 p-2 rounded">{error}</p>}
             <div>
               <button type="submit" disabled={isLoading} className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 shadow-lg disabled:opacity-50">

@@ -22,17 +22,17 @@ export const createBooking = async (userId: number, details: BookingDetails) => 
 
     try {
         const [tripRows] = await connection.query<any[] & mysql.RowDataPacket[]>(`
-            SELECT t.status, b.capacity, r.base_price 
+            SELECT t.status, b.capacity, r.base_price, r.origin, r.destination, t.departure_time, c.name as company_name 
             FROM trips t 
             JOIN buses b ON t.bus_id = b.id
             JOIN routes r ON t.route_id = r.id
-            WHERE t.id = ? FOR UPDATE`, [tripId]); // Lock the trip row
+            JOIN companies c ON r.company_id = c.id
+            WHERE t.id = ? FOR UPDATE`, [tripId]);
         
         if (tripRows.length === 0) throw new AppError('Trip not found', 404);
         const trip = tripRows[0];
         if (trip.status !== 'Scheduled') throw new AppError('This trip is no longer available for booking', 400);
 
-        // --- Critical Section: Check Seat Availability ---
         const [bookedSeats] = await connection.query('SELECT seat_number FROM seats WHERE trip_id = ?', [tripId]);
         const bookedSeatSet = new Set((bookedSeats as any[]).map(s => s.seat_number));
 
@@ -42,7 +42,6 @@ export const createBooking = async (userId: number, details: BookingDetails) => 
             }
         }
         
-        // --- Payment Processing ---
         if (paymentMethod === 'wallet') {
             await verifyPin(userId, pin!);
             
@@ -51,16 +50,13 @@ export const createBooking = async (userId: number, details: BookingDetails) => 
                 throw new AppError('Insufficient wallet balance', 400);
             }
             
-            // Log wallet transaction
             const [walletRows] = await connection.query<any[] & mysql.RowDataPacket[]>('SELECT id FROM wallets WHERE user_id = ?', [userId]);
             const walletId = walletRows[0].id;
             await connection.query(
                 'INSERT INTO wallet_transactions (wallet_id, amount, type, description) VALUES (?, ?, ?, ?)',
                 [walletId, -totalPrice, 'purchase', `Ticket purchase for trip #${tripId}`]
             );
-
         }
-        // Other payment methods like 'momo' are handled client-side first, then confirmed here.
 
         const bookingId = `GB-${Date.now().toString().slice(-6)}`;
         const [bookingResult] = await connection.query<mysql.ResultSetHeader>(
@@ -74,8 +70,7 @@ export const createBooking = async (userId: number, details: BookingDetails) => 
         );
         await Promise.all(seatInsertPromises);
 
-        // --- Award Loyalty Points ---
-        const pointsEarned = Math.floor(totalPrice / 100); // 1 point for every 100 RWF
+        const pointsEarned = Math.floor(totalPrice / 100); 
         if (pointsEarned > 0) {
             await connection.query('UPDATE users SET loyalty_points = loyalty_points + ? WHERE id = ?', [pointsEarned, userId]);
             await connection.query(
@@ -86,17 +81,30 @@ export const createBooking = async (userId: number, details: BookingDetails) => 
 
         await connection.commit();
 
-        // Send push notification after successful booking
-        try {
-            await notificationService.sendNotification(userId, {
-                title: 'Booking Confirmed!',
-                body: `Your ticket for trip #${tripId} has been booked successfully.`,
-                data: { bookingId: newBookingId, screen: 'TicketDetails' } // For deep linking on mobile
-            });
-        } catch (notificationError) {
-            logger.error(`Failed to send booking confirmation notification for user ${userId}:`, notificationError);
-        }
+        // NOTIFICATIONS
+        const formattedDate = new Date(trip.departure_time).toLocaleString();
+        const seatsStr = seats.join(', ');
         
+        // 1. Email
+        notificationService.dispatchNotification(userId, 'email', {
+            title: 'Booking Confirmed! ✅',
+            body: `Your trip to ${trip.destination} is confirmed.<br/><br/>
+                   <b>Booking ID:</b> ${bookingId}<br/>
+                   <b>Route:</b> ${trip.origin} to ${trip.destination}<br/>
+                   <b>Company:</b> ${trip.company_name}<br/>
+                   <b>Date:</b> ${formattedDate}<br/>
+                   <b>Seats:</b> ${seatsStr}<br/>
+                   <b>Total Paid:</b> ${totalPrice} RWF`,
+            btnText: 'View Ticket',
+            link: `${process.env.FRONTEND_URL}/bookings`
+        });
+
+        // 2. SMS
+        notificationService.dispatchNotification(userId, 'sms', {
+            title: 'GoBus Booking',
+            body: `Confirmed: ${trip.company_name} to ${trip.destination} on ${formattedDate}. Seats: ${seatsStr}. ID: ${bookingId}.`
+        });
+
         return {
             bookingId: bookingId,
             seats: seats,
@@ -150,13 +158,11 @@ export const getBookingsForUser = async (userId: number) => {
     }));
 };
 
-// New Service: Update Booking Status
 export const updateBookingStatus = async (bookingId: string, newStatus: string, currentUser: any) => {
     const connection = await pool.getConnection();
     await connection.beginTransaction();
 
     try {
-        // 1. Verify Authorization & Get Booking
         const [bookingRows] = await connection.query<any[] & mysql.RowDataPacket[]>(`
             SELECT b.id, b.user_id, b.total_price, b.status, c.id as company_id
             FROM bookings b
@@ -173,7 +179,6 @@ export const updateBookingStatus = async (bookingId: string, newStatus: string, 
              throw new AppError('Unauthorized to manage this booking.', 403);
         }
 
-        // 2. Process Cancellation Refund (if applicable)
         if (newStatus === 'Cancelled' && booking.status === 'Confirmed') {
              const [walletRows] = await connection.query<any[] & mysql.RowDataPacket[]>('SELECT id FROM wallets WHERE user_id = ?', [booking.user_id]);
              if(walletRows.length > 0) {
@@ -184,24 +189,17 @@ export const updateBookingStatus = async (bookingId: string, newStatus: string, 
                     [walletId, booking.total_price, 'refund', `Refund for cancelled booking #${bookingId}`, bookingId]
                 );
              }
-             // Free up seats
              await connection.query('DELETE FROM seats WHERE booking_id = ?', [bookingId]);
         }
 
-        // 3. Update Status
         await connection.query('UPDATE bookings SET status = ? WHERE id = ?', [newStatus, bookingId]);
-
         await connection.commit();
         
-        // 4. Notify User
-        try {
-            await notificationService.sendNotification(booking.user_id, {
-                title: `Booking ${newStatus}`,
-                body: `Your booking #${bookingId} has been marked as ${newStatus}.`
-            });
-        } catch (err) {
-            logger.warn("Failed to send update notification", err);
-        }
+        // Notify User about status change via Email
+        notificationService.dispatchNotification(booking.user_id, 'email', {
+            title: `Booking Status Update: ${newStatus}`,
+            body: `Your booking #${bookingId} status has been updated to: <strong>${newStatus}</strong>. ${newStatus === 'Cancelled' ? 'A refund has been processed to your wallet.' : ''}`
+        });
 
         return { id: bookingId, status: newStatus };
 

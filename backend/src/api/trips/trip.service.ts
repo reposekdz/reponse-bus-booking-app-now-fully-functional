@@ -3,6 +3,7 @@ import { pool } from '../../config/db';
 import { AppError } from '../../utils/AppError';
 import { io } from '../../server';
 import * as mysql from 'mysql2/promise';
+import { dispatchNotification } from '../notifications/notifications.service';
 
 interface TripQuery {
     from: string;
@@ -12,14 +13,11 @@ interface TripQuery {
     minPrice?: number;
     maxPrice?: number;
     amenities?: string[];
-    sortBy?: string; // e.g., 'price_asc', 'time_asc', 'duration_asc'
+    sortBy?: string; 
 }
 
-// Function to get available seats for multiple trips efficiently
 async function getAvailableSeatsForTrips(tripIds: number[]) {
-    if (tripIds.length === 0) {
-        return {};
-    }
+    if (tripIds.length === 0) return {};
     const placeholders = tripIds.map(() => '?').join(',');
     const [seatCounts] = await pool.query(`
         SELECT t.id as trip_id, b.capacity, COUNT(s.id) as booked_seats
@@ -76,7 +74,6 @@ export const findTrips = async (query: TripQuery) => {
         params.push(maxPrice);
     }
 
-    // Handle amenity filtering - simplistic text matching for comma-separated string
     if (amenities && amenities.length > 0) {
         amenities.forEach(amenity => {
             sql += ' AND b.amenities LIKE ?';
@@ -84,26 +81,14 @@ export const findTrips = async (query: TripQuery) => {
         });
     }
 
-    // Dynamic Sorting
     if (sortBy) {
         switch (sortBy) {
-            case 'price_asc':
-                sql += ' ORDER BY r.base_price ASC';
-                break;
-            case 'price_desc':
-                sql += ' ORDER BY r.base_price DESC';
-                break;
-            case 'duration_asc':
-                sql += ' ORDER BY r.estimated_duration_minutes ASC';
-                break;
-            case 'time_asc':
-                sql += ' ORDER BY t.departure_time ASC';
-                break;
-            case 'time_desc':
-                sql += ' ORDER BY t.departure_time DESC';
-                break;
-            default:
-                sql += ' ORDER BY t.departure_time ASC'; // Default sort
+            case 'price_asc': sql += ' ORDER BY r.base_price ASC'; break;
+            case 'price_desc': sql += ' ORDER BY r.base_price DESC'; break;
+            case 'duration_asc': sql += ' ORDER BY r.estimated_duration_minutes ASC'; break;
+            case 'time_asc': sql += ' ORDER BY t.departure_time ASC'; break;
+            case 'time_desc': sql += ' ORDER BY t.departure_time DESC'; break;
+            default: sql += ' ORDER BY t.departure_time ASC'; 
         }
     } else {
         sql += ' ORDER BY t.departure_time ASC';
@@ -114,7 +99,6 @@ export const findTrips = async (query: TripQuery) => {
     const tripIds = (trips as any[]).map(t => t.id);
     const availableSeatsMap = await getAvailableSeatsForTrips(tripIds);
 
-    // Re-structure data to match frontend expectations
     const formattedTrips = (trips as any[]).map(trip => ({
         _id: trip.id,
         departureTime: trip.departure_time,
@@ -136,9 +120,8 @@ export const findTrips = async (query: TripQuery) => {
             name: trip.driver_name,
             avatarUrl: trip.driver_avatar_url,
         },
-        seatMap: {} // To match the old structure, will be populated on detail view
+        seatMap: {} 
     }));
-
 
     return formattedTrips;
 };
@@ -168,14 +151,12 @@ export const findTripById = async (id: string) => {
     const seatMap: { [key: string]: string } = {};
     for (let i = 1; i <= Math.ceil(trip.capacity / 4); i++) {
         for (const char of ['A', 'B', 'C', 'D']) {
-             // Don't create more seats than capacity
             if (Object.keys(seatMap).length >= trip.capacity) break;
             const seatId = `${i}${char}`;
             seatMap[seatId] = bookedSeatSet.has(seatId) ? 'occupied' : 'available';
         }
     }
     
-    // Re-structure to match frontend expectations
     return {
         _id: trip.id,
         departureTime: trip.departure_time,
@@ -231,19 +212,16 @@ export const confirmPassengerBoarding = async (data: BoardingData) => {
     
     await pool.query('UPDATE bookings SET status = "Completed" WHERE id = ?', [booking.id]);
     
-    // Log the boarding action
     await pool.query(
         'INSERT INTO boardings (booking_id, trip_id, driver_id) VALUES (?, ?, ?)',
         [booking.id, tripId, driverId]
     );
 
-    // Emit a real-time notification to the driver's room for this trip
     io.to(`trip:${tripId}`).emit('passengerBoarded', {
-        bookingId: booking.id, // Use the internal booking ID for updates
+        bookingId: booking.id,
         newStatus: 'Completed',
     });
 
-    // Also emit a notification to the specific passenger
     const notificationMessage = `Welcome, ${booking.passenger_name}! You have successfully boarded the bus for ${trip.origin} to ${trip.destination}.`;
     io.to(booking.passenger_id.toString()).emit('passengerBoarded', {
         message: notificationMessage,
@@ -291,4 +269,30 @@ export const arriveTrip = async (tripId: string, driverId: number) => {
         throw new AppError(`Trip cannot arrive. Current status: ${trip.status}`, 400);
     }
     await pool.query('UPDATE trips SET status = "Arrived" WHERE id = ?', [tripId]);
+};
+
+// New: Logic to update trip status (e.g. Delayed) and notify passengers
+export const updateTripStatus = async (tripId: number, newStatus: string) => {
+    await pool.query('UPDATE trips SET status = ? WHERE id = ?', [newStatus, tripId]);
+    
+    if (newStatus === 'Delayed') {
+        // Notify all booked passengers
+        const [bookings] = await pool.query<any[] & mysql.RowDataPacket[]>(`
+            SELECT u.id, u.email, u.phone_number 
+            FROM bookings b 
+            JOIN users u ON b.user_id = u.id 
+            WHERE b.trip_id = ?
+        `, [tripId]);
+
+        bookings.forEach(user => {
+            dispatchNotification(user.id, 'sms', {
+                title: 'Trip Delayed',
+                body: `Important: Your trip #${tripId} has been delayed. We apologize for the inconvenience.`
+            });
+            dispatchNotification(user.id, 'email', {
+                title: 'Important Update: Trip Delay',
+                body: `Your upcoming trip #${tripId} has been marked as delayed. Please check the app for the latest schedule.`
+            });
+        });
+    }
 };
