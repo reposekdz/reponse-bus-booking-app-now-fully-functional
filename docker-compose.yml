@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: gobus-app
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      - DB_HOST=db
+      - DB_USER=gobus_user
+      - DB_PASSWORD=secure_password_123
+      - DB_NAME=gobus
+      - JWT_SECRET=change_this_to_a_long_random_secret
+      - FRONTEND_URL=http://localhost:5000
+    depends_on:
+      - db
+    restart: always
+    networks:
+      - gobus-network
+
+  db:
+    image: mysql:8.0
+    container_name: gobus-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password_123
+      MYSQL_DATABASE: gobus
+      MYSQL_USER: gobus_user
+      MYSQL_PASSWORD: secure_password_123
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: always
+    networks:
+      - gobus-network
+
+volumes:
+  db_data:
+
+networks:
+  gobus-network:
+    driver: bridge

@@ -28,13 +28,18 @@ export const LanguageContext = createContext<LanguageContextType | undefined>(un
 
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { t, i18n } = useTranslation();
-  const [language, setLanguageState] = useState<LanguageCode>('EN');
+  // Default to Kinyarwanda
+  const [language, setLanguageState] = useState<LanguageCode>('RW');
 
   // Sync local state with i18n state
   useEffect(() => {
       const current = i18n.language?.toUpperCase().substring(0, 2) as LanguageCode;
       if (current && ['RW', 'EN', 'FR'].includes(current)) {
           setLanguageState(current);
+      } else {
+          // Enforce RW if detection fails or returns something else
+          setLanguageState('RW');
+          i18n.changeLanguage('rw');
       }
   }, [i18n.language]);
 

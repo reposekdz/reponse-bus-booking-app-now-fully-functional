@@ -18,7 +18,7 @@ export const translations = {
     // Header & Nav
     'nav_home': 'Ahabanza',
     'nav_booking': 'Gukata Itike',
-    'nav_companies': 'Ibigo by\'Ingendo',
+    'nav_companies': 'Ibigo',
     'nav_services': 'Serivisi',
     'nav_help': 'Ubufasha',
     'nav_contact': 'Twandikire',
@@ -65,7 +65,7 @@ export const translations = {
     'search_no_results': 'Nta rugendo rubonetse.',
 
     // Admin Dashboard
-    'admin_overview': 'Incamake',
+    'admin_overview': 'Incamake y\'Ubuyobozi',
     'admin_stat_revenue': 'Amafaranga Yinjiye',
     'admin_stat_passengers': 'Abagenzi Bose',
     'admin_stat_companies': 'Ibigo Bikora',
@@ -77,12 +77,12 @@ export const translations = {
     'admin_system_operational': 'Sisitemu irakora neza',
 
     // Company Dashboard
-    'company_dashboard_title': 'Ikigo',
+    'company_dashboard_title': 'Ikibuga cy\'Ikigo',
     'company_stat_drivers': 'Abashoferi',
     'company_stat_revenue_today': 'Yinjiye Uyu Munsi',
     'company_stat_active_buses': 'Bisi Ziri mu Muhanda',
     'company_stat_popular_route': 'Urugendo Rukorwa Cyane',
-    'company_live_fleet': 'Ikurikirana rya Bisi',
+    'company_live_fleet': 'Ikurikirana rya Bisi (Live)',
     'company_top_drivers': 'Abashoferi b\'Indashyikirwa',
     'company_no_buses_route': 'Nta bisi iri mu muhanda.',
 
@@ -95,7 +95,7 @@ export const translations = {
     'promoted_companies_title': 'Abo Dukorana B\'Imena',
 
     // Booking Form
-    'form_one_way': 'Urugendo Rumwe',
+    'form_one_way': 'Kugenda Gusa',
     'form_round_trip': 'Kugenda no Kugaruka',
     'form_from': 'Aho uherereye',
     'form_to': 'Aho werekeje',
@@ -106,7 +106,7 @@ export const translations = {
     'form_children': 'Mwana(ba)',
     'form_adults_label': 'Abakuru',
     'form_children_label': 'Abana',
-    'form_promo_code': 'Kode',
+    'form_promo_code': 'Kode ya Promosiyo',
     'form_promo_placeholder': 'Shyiramo kode',
     'form_search_button': 'Shakisha Ingendo',
 
@@ -387,7 +387,22 @@ export const translations = {
     'driver_history_date': 'Itariki',
     'driver_history_route': 'Urugendo',
     'driver_history_passengers': 'Abagenzi',
-    'driver_history_status': 'Imiterere'
+    'driver_history_status': 'Imiterere',
+
+    // Fleet Monitoring
+    'fleet_live_title': 'Ikurikirana rya Bisi',
+    'fleet_bus_locations': 'Aho Bisi Ziherereye',
+    'fleet_selected_details': 'Amakuru ya Bisi',
+    'fleet_status_on_route': 'Mu Muhanda',
+    'fleet_status_idle': 'Irahagaze',
+    'fleet_status_maintenance': 'Mu Igaraje',
+    'fleet_driver': 'Umushoferi',
+    'fleet_speed': 'Umuvuduko',
+    'fleet_last_update': 'Iheruka Kuboneka',
+    'fleet_all_buses': 'Bisi Zose',
+    'live_tracking_modal_title': 'Kurikirana Bisi',
+    'live_tracking_eta': 'Izahagera',
+    'live_tracking_status': 'Imiterere',
   },
   EN: {
     // App & Global
@@ -776,7 +791,22 @@ export const translations = {
     'driver_history_date': 'Date',
     'driver_history_route': 'Route',
     'driver_history_passengers': 'Passengers',
-    'driver_history_status': 'Status'
+    'driver_history_status': 'Status',
+
+    // Fleet Monitoring
+    'fleet_live_title': 'Live Fleet Monitoring',
+    'fleet_bus_locations': 'Bus Locations',
+    'fleet_selected_details': 'Selected Bus Details',
+    'fleet_status_on_route': 'On Route',
+    'fleet_status_idle': 'Idle',
+    'fleet_status_maintenance': 'Maintenance',
+    'fleet_driver': 'Driver',
+    'fleet_speed': 'Speed',
+    'fleet_last_update': 'Last Update',
+    'fleet_all_buses': 'All Buses On Route',
+    'live_tracking_modal_title': 'Live Bus Tracking',
+    'live_tracking_eta': 'Estimated Arrival',
+    'live_tracking_status': 'Status',
   },
   FR: {
     'app_loading': 'Chargement...',
@@ -1128,6 +1158,21 @@ export const translations = {
     'driver_history_date': 'Date',
     'driver_history_route': 'Trajet',
     'driver_history_passengers': 'Passagers',
-    'driver_history_status': 'Statut'
+    'driver_history_status': 'Statut',
+
+    // Fleet Monitoring
+    'fleet_live_title': 'Suivi de la Flotte',
+    'fleet_bus_locations': 'Emplacements des Bus',
+    'fleet_selected_details': 'Détails du Bus',
+    'fleet_status_on_route': 'En Route',
+    'fleet_status_idle': 'Inactif',
+    'fleet_status_maintenance': 'Maintenance',
+    'fleet_driver': 'Chauffeur',
+    'fleet_speed': 'Vitesse',
+    'fleet_last_update': 'Dernière mise à jour',
+    'fleet_all_buses': 'Tous les bus en route',
+    'live_tracking_modal_title': 'Suivi en Direct',
+    'live_tracking_eta': 'Arrivée Estimée',
+    'live_tracking_status': 'Statut',
   }
 };

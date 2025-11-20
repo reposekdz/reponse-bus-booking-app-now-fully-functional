@@ -1,5 +1,4 @@
 
-
 import { Server, Socket } from 'socket.io';
 import jwt from 'jsonwebtoken';
 import config from './config';
@@ -31,13 +30,31 @@ export const initSocket = (io: Server) => {
             }
         });
         
-        socket.on('updateDriverLocation', (location: { lat: number, lng: number }) => {
+        // Handle Driver Location Updates
+        // Expected payload: { tripId: string, location: { lat: number, lng: number }, speed: number }
+        socket.on('updateDriverLocation', (data) => {
             const userContext = (socket as any).userContext;
-            if (userContext && userContext.role === 'driver' && userContext.companyId) {
-                io.to(`company:${userContext.companyId}`).emit('fleetLocationUpdate', {
-                    driverId: userContext.id,
-                    location,
-                });
+            if (userContext && userContext.role === 'driver') {
+                
+                // Broadcast to company room
+                if (userContext.companyId) {
+                    io.to(`company:${userContext.companyId}`).emit('fleetLocationUpdate', {
+                        driverId: userContext.id,
+                        tripId: data.tripId,
+                        location: data.location,
+                        speed: data.speed,
+                        lastUpdate: new Date().toISOString()
+                    });
+                }
+
+                // Broadcast to specific trip room (for passengers)
+                if (data.tripId) {
+                     io.to(`trip:${data.tripId}`).emit('tripLocationUpdate', {
+                        location: data.location,
+                        speed: data.speed,
+                        lastUpdate: new Date().toISOString()
+                    });
+                }
             }
         });
 
@@ -45,6 +62,12 @@ export const initSocket = (io: Server) => {
             if (tripId) {
                 socket.join(`trip:${tripId}`);
                 logger.info(`Socket ${socket.id} joined room for trip ${tripId}`);
+            }
+        });
+
+        socket.on('leaveTripRoom', (tripId: string) => {
+             if (tripId) {
+                socket.leave(`trip:${tripId}`);
             }
         });
 

@@ -1,4 +1,3 @@
-
 import bcrypt from 'bcryptjs';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import crypto from 'crypto';
@@ -8,6 +7,7 @@ import { AppError } from '../../utils/AppError';
 import { User } from '../../types';
 import * as mysql from 'mysql2/promise';
 import { dispatchNotification } from '../notifications/notifications.service';
+import { formatRwandaPhone } from '../../utils/rwandaUtils';
 
 const generateToken = (user: { id: number, company_id?: number, role: string }) => {
     return jwt.sign({ id: user.id, companyId: user.company_id, role: user.role }, config.jwt.secret, {
@@ -26,14 +26,24 @@ export const registerUser = async (userData: any) => {
         throw new AppError('Password must be at least 8 characters long', 400);
     }
 
+    // Normalize Phone if present
+    let formattedPhone = null;
+    if (phone) {
+        try {
+            formattedPhone = formatRwandaPhone(phone);
+        } catch (e: any) {
+            throw new AppError(e.message, 400);
+        }
+    }
+
     // Check duplicates
     if(email){
         const [existingUsers] = await pool.query<User[] & mysql.RowDataPacket[]>('SELECT id FROM users WHERE email = ?', [email]);
         if (existingUsers.length > 0) throw new AppError('User with this email already exists', 400);
     }
 
-    if(phone){
-        const [existingUsers] = await pool.query<User[] & mysql.RowDataPacket[]>('SELECT id FROM users WHERE phone_number = ?', [phone]);
+    if(formattedPhone){
+        const [existingUsers] = await pool.query<User[] & mysql.RowDataPacket[]>('SELECT id FROM users WHERE phone_number = ?', [formattedPhone]);
         if (existingUsers.length > 0) throw new AppError('User with this phone number already exists', 400);
     }
     
@@ -42,7 +52,7 @@ export const registerUser = async (userData: any) => {
 
     const [result] = await pool.query<mysql.ResultSetHeader>(
         'INSERT INTO users (name, email, password_hash, phone_number, role, serial_code) VALUES (?, ?, ?, ?, ?, ?)',
-        [name, email, password_hash, phone, 'passenger', serial_code]
+        [name, email, password_hash, formattedPhone, 'passenger', serial_code]
     );
 
     const userId = result.insertId;
@@ -70,9 +80,20 @@ export const loginUser = async (loginData: any) => {
     }
     
     const isEmail = emailOrPhone.includes('@');
-    const queryField = isEmail ? 'email' : 'phone_number';
+    let queryValue = emailOrPhone;
+    let queryField = 'email';
 
-    const [rows] = await pool.query<User[] & mysql.RowDataPacket[]>(`SELECT * FROM users WHERE ${queryField} = ?`, [emailOrPhone]);
+    if (!isEmail) {
+        queryField = 'phone_number';
+        // Try to format it to match DB format, otherwise use as is
+        try {
+            queryValue = formatRwandaPhone(emailOrPhone);
+        } catch (e) {
+            queryValue = emailOrPhone;
+        }
+    }
+
+    const [rows] = await pool.query<User[] & mysql.RowDataPacket[]>(`SELECT * FROM users WHERE ${queryField} = ?`, [queryValue]);
     const user = rows[0];
 
     if (!user || !(await bcrypt.compare(password, user.password_hash!))) {
