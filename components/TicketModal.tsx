@@ -1,45 +1,62 @@
 
 import React, { useRef, useEffect } from 'react';
 import { toCanvas } from 'qrcode';
-import { XIcon, BusIcon } from './icons';
+import { XIcon, BusIcon, ShieldCheckIcon } from './icons';
 import { useLanguage } from '../contexts/LanguageContext';
+
+const generateSignature = (data: string) => {
+  // Simple hash function to simulate a digital signature for the QR payload
+  let hash = 0;
+  for (let i = 0; i < data.length; i++) {
+    const char = data.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash |= 0; 
+  }
+  return Math.abs(hash).toString(16).padStart(16, '0');
+};
 
 const RealQRCode: React.FC<{ ticketData: any; size: number }> = ({ ticketData, size }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     if (canvasRef.current && ticketData) {
-      const qrDataString = JSON.stringify({
-        bookingId: ticketData.id,
-        passenger: ticketData.passenger,
-        route: `${ticketData.from} to ${ticketData.to}`,
-        datetime: `${ticketData.date} at ${ticketData.time}`,
-        seats: ticketData.seats,
-        busPlate: ticketData.busPlate,
+      // Create a dense, informative payload
+      const rawData = `${ticketData.id}${ticketData.passenger}${ticketData.seats}${ticketData.date}`;
+      const signature = generateSignature(rawData);
+      
+      const qrPayload = JSON.stringify({
+        ver: 'v1',
+        bid: ticketData.id,
+        psg: ticketData.passenger,
+        rt: `${ticketData.from} > ${ticketData.to}`,
+        dt: `${ticketData.date} ${ticketData.time}`,
+        st: ticketData.seats,
+        pl: ticketData.busPlate,
+        sig: signature // Simulated security signature
       });
 
-      toCanvas(canvasRef.current, qrDataString, {
+      toCanvas(canvasRef.current, qrPayload, {
         width: size,
         margin: 1,
         color: {
-          dark: '#002B7F', // GoBus dark blue
-          light: '#FFFFFFFF',
+          dark: '#111827', // Dark gray/black for better contrast scanning
+          light: '#FFFFFF',
         },
-        errorCorrectionLevel: 'H', // High error correction
+        errorCorrectionLevel: 'Q', // Good balance of density and error correction
       }, (error) => {
         if (error) console.error('QR Code generation failed:', error);
       });
     }
   }, [ticketData, size]);
 
-  return <canvas ref={canvasRef} style={{ width: size, height: size }} />;
+  return <canvas ref={canvasRef} className="rounded-md shadow-sm border border-gray-100" style={{ width: size, height: size }} />;
 };
 
 
-const InfoRow: React.FC<{ label: string; value: string }> = ({ label, value }) => (
-    <div className="py-3 border-b border-dashed border-gray-300 dark:border-gray-600">
-        <p className="text-xs text-gray-500 dark:text-gray-400 uppercase">{label}</p>
-        <p className="font-bold text-gray-800 dark:text-white text-lg">{value}</p>
+const InfoRow: React.FC<{ label: string; value: string; highlight?: boolean }> = ({ label, value, highlight = false }) => (
+    <div className="flex justify-between items-center py-3 border-b border-dashed border-gray-200 dark:border-gray-700/50 last:border-0">
+        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">{label}</p>
+        <p className={`font-bold text-right ${highlight ? 'text-blue-600 dark:text-blue-400 text-lg' : 'text-gray-900 dark:text-white'}`}>{value}</p>
     </div>
 );
 
@@ -49,72 +66,75 @@ export const TicketModal: React.FC<{ ticket: any; onClose: () => void, isActive?
 
   return (
     <div
-      className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 animate-fade-in backdrop-blur-sm"
+      className="fixed inset-0 bg-black/80 z-[60] flex items-center justify-center p-4 animate-fade-in backdrop-blur-sm"
       onClick={onClose}
     >
       <div
-        className="bg-gray-50 dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-sm transform transition-transform duration-300 scale-95 animate-scale-in"
+        className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden transform transition-transform duration-300 scale-95 animate-scale-in relative"
         onClick={e => e.stopPropagation()}
       >
-        <header className="bg-gradient-to-r from-blue-600 to-green-500 p-6 rounded-t-2xl text-white relative animated-gradient-bg">
-            <button onClick={onClose} className="absolute top-3 right-3 p-1 rounded-full bg-white/20 hover:bg-white/40 transition-colors">
+        {/* Decorative Header Gradient */}
+        <div className="h-32 bg-gradient-to-br from-[#0033A0] to-[#00574B] relative p-6">
+            <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20"></div>
+            <button onClick={onClose} className="absolute top-4 right-4 p-2 rounded-full bg-black/20 hover:bg-black/30 text-white transition-colors z-10">
                 <XIcon className="w-5 h-5"/>
             </button>
-            <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                     <BusIcon className="w-8 h-8"/>
-                     <h2 className="text-2xl font-bold">{t('ticket_modal_title')}</h2>
-                </div>
-                {isActive && (
-                    <div className="flex items-center space-x-2">
-                        <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse"></div>
-                        <span className="text-xs font-bold tracking-wider">LIVE</span>
-                    </div>
-                )}
+            <div className="flex flex-col items-center justify-center h-full text-white relative z-0">
+                <BusIcon className="w-10 h-10 mb-2 opacity-90"/>
+                <h2 className="text-xl font-bold tracking-tight">GoBus E-Ticket</h2>
+                <p className="text-xs font-medium opacity-80 uppercase tracking-widest mt-1">{ticket.company}</p>
             </div>
-            <p className="text-sm opacity-80 mt-1">{ticket.company}</p>
-        </header>
+        </div>
 
-        <main className="p-6">
-            <div className="flex items-center justify-center mb-4">
-                <div className={`p-2 bg-white rounded-lg transition-shadow duration-300 ${isActive ? 'activated-ticket-glow' : 'shadow-md'}`}>
-                    <RealQRCode ticketData={ticket} size={164} />
+        {/* Main Content */}
+        <div className="px-6 pb-6 -mt-6 relative z-10">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-1 border border-gray-100 dark:border-gray-700">
+                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-6 flex flex-col items-center">
+                    <div className="bg-white p-3 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-4">
+                        <RealQRCode ticketData={ticket} size={180} />
+                    </div>
+                    <div className="flex items-center space-x-2 bg-green-100 dark:bg-green-900/30 px-3 py-1 rounded-full">
+                        <ShieldCheckIcon className="w-4 h-4 text-green-600 dark:text-green-400"/>
+                        <span className="text-xs font-bold text-green-700 dark:text-green-300 uppercase tracking-wide">Secure Ticket</span>
+                    </div>
+                     {isActive && (
+                        <p className="text-center font-bold text-sm text-blue-600 dark:text-blue-400 mt-3 animate-pulse">
+                            {t('ticket_modal_activated')}
+                        </p>
+                    )}
+                </div>
+
+                <div className="px-4 pb-4 mt-4">
+                    <InfoRow label={t('ticket_modal_passenger')} value={ticket.passenger} />
+                    <InfoRow label={t('ticket_modal_route')} value={`${ticket.from} → ${ticket.to}`} />
+                    <InfoRow label={t('ticket_modal_datetime')} value={`${ticket.date} • ${ticket.time}`} />
+                    <div className="flex border-t border-dashed border-gray-200 dark:border-gray-700 pt-3 mt-2">
+                         <div className="w-1/2 border-r border-dashed border-gray-200 dark:border-gray-700 pr-4">
+                             <p className="text-xs text-gray-500 dark:text-gray-400 uppercase mb-1">{t('ticket_modal_seats')}</p>
+                             <p className="font-bold text-xl text-gray-900 dark:text-white">{ticket.seats}</p>
+                         </div>
+                         <div className="w-1/2 pl-4">
+                             <p className="text-xs text-gray-500 dark:text-gray-400 uppercase mb-1">{t('ticket_modal_plate')}</p>
+                             <p className="font-bold text-xl text-gray-900 dark:text-white">{ticket.busPlate}</p>
+                         </div>
+                    </div>
                 </div>
             </div>
-             {isActive ? (
-                <p className="text-center font-bold text-lg text-green-500 animate-pulse">{t('ticket_modal_activated')}</p>
-            ) : (
-                <p className="text-center text-sm text-gray-500 dark:text-gray-400 mb-6">{t('ticket_modal_scan_prompt')}</p>
-            )}
-            
-            <div className="space-y-2">
-                <InfoRow label={t('ticket_modal_passenger')} value={ticket.passenger} />
-                <InfoRow label={t('ticket_modal_route')} value={`${ticket.from} to ${ticket.to}`} />
-                <InfoRow label={t('ticket_modal_datetime')} value={`${ticket.date} at ${ticket.time}`} />
-                <div className="flex pt-3">
-                    <div className="w-1/2 pr-2">
-                        <p className="text-xs text-gray-500 dark:text-gray-400 uppercase">{t('ticket_modal_seats')}</p>
-                        <p className="font-bold text-gray-800 dark:text-white text-lg">{ticket.seats}</p>
-                    </div>
-                     <div className="w-1/2 pl-2">
-                        <p className="text-xs text-gray-500 dark:text-gray-400 uppercase">{t('ticket_modal_plate')}</p>
-                        <p className="font-bold text-gray-800 dark:text-white text-lg">{ticket.busPlate}</p>
-                    </div>
-                </div>
-            </div>
-        </main>
+        </div>
         
-        <footer className="p-4 bg-gray-100 dark:bg-gray-900 rounded-b-2xl">
-            <p className="text-xs text-center text-gray-500 dark:text-gray-400">{t('ticket_modal_id')}: {ticket.id}</p>
-        </footer>
+        {/* Footer Ticket ID */}
+        <div className="bg-gray-50 dark:bg-gray-900/50 p-4 text-center border-t border-gray-100 dark:border-gray-800">
+            <p className="text-xs font-mono text-gray-400">ID: {ticket.id}</p>
+        </div>
       </div>
+      
       <style>{`
         @keyframes scaleIn {
-          from { transform: scale(0.9); opacity: 0; }
+          from { transform: scale(0.95); opacity: 0; }
           to { transform: scale(1); opacity: 1; }
         }
         .animate-scale-in {
-          animation: scaleIn 0.3s ease-out forwards;
+          animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
       `}</style>
     </div>
