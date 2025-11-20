@@ -1,4 +1,4 @@
-import React, { Component, useState, useEffect, ErrorInfo, ReactNode } from 'react';
+import React, { useState, useEffect, ErrorInfo, ReactNode, Component } from 'react';
 import Header from './components/Header';
 import HeroSection from './components/HeroSection';
 import HowItWorks from './components/HowItWorks';
@@ -71,10 +71,9 @@ interface ErrorBoundaryState {
 
 // Error Boundary to catch crashes - Fixed Types
 class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  constructor(props: ErrorBoundaryProps) {
-    super(props);
-    this.state = { hasError: false };
-  }
+  state: ErrorBoundaryState = {
+    hasError: false
+  };
 
   static getDerivedStateFromError(_: Error): ErrorBoundaryState {
     return { hasError: true };
@@ -111,6 +110,11 @@ const AppContent: React.FC = () => {
   const [viewingTicket, setViewingTicket] = useState<{ ticket: any; isActive: boolean } | null>(null);
   const [favoriteTripIds, setFavoriteTripIds] = useState<string[]>([]);
   const { t } = useLanguage();
+
+  const navigate = (page: Page, data?: any) => {
+    setCurrentPage(page);
+    setPageData(data);
+  };
 
   // Handle URL-based navigation for reset password
   useEffect(() => {
@@ -149,12 +153,6 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [currentPage]);
-
-
-  const navigate = (page: Page, data?: any) => {
-    setCurrentPage(page);
-    setPageData(data);
-  };
 
   const handleLogout = () => {
     logout();

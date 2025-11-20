@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { TicketIcon, QrCodeIcon, ArrowPathIcon, ShareIcon, StarIcon, CheckCircleIcon, ClockIcon, BusIcon, CalendarIcon, MapPinIcon } from './components/icons';
 import Modal from './components/Modal';
@@ -76,7 +77,7 @@ const NextTripCard: React.FC<{ booking: any; onViewTicket: (ticketDetails: any, 
         id: booking.bookingId, from: route.from, to: route.to, company: route.company.name,
         date: departureTime.toLocaleDateString(), time: departureTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         seats: booking.seats.join(', '), price: `${new Intl.NumberFormat('fr-RW').format(booking.totalPrice)} RWF`,
-        passenger: user?.name, busPlate: 'N/A'
+        passenger: user?.name, busPlate: trip.busPlate || 'TBA'
     };
 
     return (
@@ -98,6 +99,7 @@ const NextTripCard: React.FC<{ booking: any; onViewTicket: (ticketDetails: any, 
                     <span className="flex items-center"><CalendarIcon className="w-4 h-4 mr-1.5"/> {departureTime.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })}</span>
                     <span className="flex items-center"><ClockIcon className="w-4 h-4 mr-1.5"/> {departureTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                     <span className="flex items-center">Seats: <span className="font-bold ml-1.5">{booking.seats.join(', ')}</span></span>
+                    <span className="flex items-center">Plate: <span className="font-bold ml-1.5">{trip.busPlate || 'TBA'}</span></span>
                 </div>
             </div>
             <div className="mt-6 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
@@ -146,7 +148,7 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewTicket, onRate
         seats: booking.seats.join(', '),
         price: `${new Intl.NumberFormat('fr-RW').format(booking.totalPrice)} RWF`,
         passenger: user?.name,
-        busPlate: 'N/A' // This data isn't in the model yet
+        busPlate: trip.busPlate || 'TBA'
     };
 
     return (
@@ -167,6 +169,7 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewTicket, onRate
                         <div><p className="text-xs text-gray-500">Date</p><p className="font-semibold dark:text-gray-200">{new Date(trip.departureTime).toLocaleDateString()}</p></div>
                         <div><p className="text-xs text-gray-500">Time</p><p className="font-semibold dark:text-gray-200">{new Date(trip.departureTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p></div>
                         <div><p className="text-xs text-gray-500">Seats</p><p className="font-semibold dark:text-gray-200">{booking.seats.join(', ')}</p></div>
+                        <div><p className="text-xs text-gray-500">Plate</p><p className="font-semibold dark:text-gray-200">{trip.busPlate || 'TBA'}</p></div>
                     </div>
                 </div>
                 <div className="bg-gray-50 dark:bg-gray-700/50 p-5 flex items-center justify-center sm:w-40">

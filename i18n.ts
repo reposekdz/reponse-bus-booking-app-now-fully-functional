@@ -1,3 +1,4 @@
+
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
@@ -12,8 +13,8 @@ i18n
       rw: { translation: translations.RW },
       fr: { translation: translations.FR },
     },
-    lng: 'rw', // Force default to Kinyarwanda
-    fallbackLng: 'rw', // Fallback to Kinyarwanda
+    fallbackLng: 'en',
+    debug: process.env.NODE_ENV === 'development',
     interpolation: {
       escapeValue: false,
     },

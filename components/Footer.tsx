@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { FacebookIcon, TwitterIcon, LinkedinIcon, PaperAirplaneIcon, PhoneIcon, EnvelopeIcon, MapPinIcon, GoBusLogo } from './icons';
+import { FacebookIcon, TwitterIcon, LinkedinIcon, PaperAirplaneIcon, PhoneIcon, EnvelopeIcon, MapPinIcon, GoBusLogo, AppStoreIcon, GooglePlayIcon } from './icons';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useToast } from '../contexts/ToastContext';
 
@@ -118,14 +118,14 @@ const Footer: React.FC = () => {
         <div className="border-t border-gray-800 pt-8 flex flex-col lg:flex-row justify-between items-center gap-6">
            <div className="flex items-center space-x-4">
               <button className="bg-black hover:bg-gray-900 border border-gray-700 px-4 py-2 rounded-xl flex items-center transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5">
-                 <span className="text-2xl mr-2">🍎</span>
+                 <AppStoreIcon className="w-6 h-6 mr-2 text-white"/>
                  <div className="text-left">
                     <p className="text-[10px] uppercase text-gray-400">Download on the</p>
                     <p className="text-sm font-bold leading-none">App Store</p>
                  </div>
               </button>
                <button className="bg-black hover:bg-gray-900 border border-gray-700 px-4 py-2 rounded-xl flex items-center transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5">
-                 <span className="text-2xl mr-2">🤖</span>
+                 <GooglePlayIcon className="w-6 h-6 mr-2 text-white"/>
                  <div className="text-left">
                     <p className="text-[10px] uppercase text-gray-400">Get it on</p>
                     <p className="text-sm font-bold leading-none">Google Play</p>

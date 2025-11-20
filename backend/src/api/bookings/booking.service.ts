@@ -75,11 +75,13 @@ export const getBookingsForUser = async (userId: number) => {
                t.departure_time, t.arrival_time, 
                r.origin as 'from', r.destination as 'to', 
                c.name as company,
+               bu.plate_number as plate,
                (SELECT JSON_ARRAYAGG(seat_number) FROM seats WHERE booking_id = b.id) as seats
         FROM bookings b
         JOIN trips t ON b.trip_id = t.id
         JOIN routes r ON t.route_id = r.id
         JOIN companies c ON r.company_id = c.id
+        JOIN buses bu ON t.bus_id = bu.id
         WHERE b.user_id = ?
         ORDER BY b.created_at DESC
     `, [userId]);
@@ -89,6 +91,7 @@ export const getBookingsForUser = async (userId: number) => {
         ...row,
         trip: {
             departureTime: row.departure_time,
+            busPlate: row.plate,
             route: {
                 from: row.from,
                 to: row.to,

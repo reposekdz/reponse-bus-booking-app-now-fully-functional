@@ -12,7 +12,7 @@ const WalletPage: React.FC<{ onNavigate: (page: Page) => void }> = ({ onNavigate
     const { user, setUser } = useAuth();
     const [isTopUpOpen, setIsTopUpOpen] = useState(false);
     const [isSendMoneyOpen, setIsSendMoneyOpen] = useState(false);
-    const [history, setHistory] = useState([]);
+    const [history, setHistory] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     const fetchHistory = async () => {
@@ -34,7 +34,10 @@ const WalletPage: React.FC<{ onNavigate: (page: Page) => void }> = ({ onNavigate
         setIsTopUpOpen(false);
         try {
             const response = await api.topUpWallet(amount);
-            setUser(prevUser => ({...prevUser, wallet_balance: response.data.wallet_balance }));
+            // Update user context with new balance
+            if (user) {
+                 setUser({ ...user, wallet_balance: response.data.wallet_balance });
+            }
             alert(`Successfully added ${new Intl.NumberFormat('fr-RW').format(amount)} RWF to your wallet!`);
             fetchHistory();
         } catch (error: any) {
@@ -44,7 +47,9 @@ const WalletPage: React.FC<{ onNavigate: (page: Page) => void }> = ({ onNavigate
     
      const handleSendSuccess = (newBalance: number) => {
         setIsSendMoneyOpen(false);
-        setUser(prevUser => ({ ...prevUser, wallet_balance: newBalance }));
+        if (user) {
+            setUser({ ...user, wallet_balance: newBalance });
+        }
         alert(`Money sent successfully!`);
         fetchHistory(); // Refresh transaction history
     };
@@ -70,7 +75,10 @@ const WalletPage: React.FC<{ onNavigate: (page: Page) => void }> = ({ onNavigate
                         {/* Left Column: Balance and Stats */}
                         <div className="lg:col-span-1 space-y-8">
                             <div className="bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-2xl shadow-xl p-8">
-                                <WalletIcon className="w-10 h-10 mb-4 opacity-70"/>
+                                <div className="flex items-center justify-between mb-4">
+                                     <WalletIcon className="w-10 h-10 opacity-70"/>
+                                     <span className="text-xs font-mono bg-white/20 px-2 py-1 rounded">Ref: {user?.serial_code || 'N/A'}</span>
+                                </div>
                                 <p className="text-lg opacity-80">Current Balance</p>
                                 <p className="text-5xl font-bold tracking-tight">{new Intl.NumberFormat('fr-RW').format(user?.wallet_balance || 0)} <span className="text-3xl opacity-80">RWF</span></p>
                                 <div className="mt-6 grid grid-cols-2 gap-2">
@@ -101,11 +109,11 @@ const WalletPage: React.FC<{ onNavigate: (page: Page) => void }> = ({ onNavigate
                         <div className="lg:col-span-2 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
                              <h2 className="text-xl font-bold dark:text-white mb-4">Transaction History</h2>
                              {isLoading ? (
-                                <p>Loading history...</p>
+                                <p className="text-center py-8 text-gray-500">Loading history...</p>
                              ) : (
                                 <div className="space-y-3 max-h-[30rem] overflow-y-auto custom-scrollbar pr-2">
                                     {history.length > 0 ? (
-                                        history.map(tx => <WalletTransactionCard key={tx.id} transaction={tx} />)
+                                        history.map((tx: any) => <WalletTransactionCard key={tx.id} transaction={tx} />)
                                     ) : (
                                         <p className="text-center text-gray-500 py-8">No transactions yet.</p>
                                     )}
@@ -116,7 +124,6 @@ const WalletPage: React.FC<{ onNavigate: (page: Page) => void }> = ({ onNavigate
                 </main>
             </div>
             {isTopUpOpen && (
-// FIX: Pass the user's PIN to the modal as required by its props.
                 <WalletTopUpModal 
                     onClose={() => setIsTopUpOpen(false)}
                     onSuccess={handleTopUpSuccess}

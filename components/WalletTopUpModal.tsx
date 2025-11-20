@@ -6,10 +6,10 @@ import { PhoneIcon } from './icons';
 interface WalletTopUpModalProps {
     onClose: () => void;
     onSuccess: (amount: number) => void;
-    userPin: string;
+    userPin?: string;
 }
 
-const WalletTopUpModal: React.FC<WalletTopUpModalProps> = ({ onClose, onSuccess }) => {
+const WalletTopUpModal: React.FC<WalletTopUpModalProps> = ({ onClose, onSuccess, userPin }) => {
     const [amount, setAmount] = useState('10000');
     const [customAmount, setCustomAmount] = useState('');
     const [phone, setPhone] = useState('');
